@@ -38,7 +38,10 @@ export class PistonService {
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const headers = { "Content-Type": "application/json" };
+      const headers = { 
+        "Content-Type": "application/json",
+        "User-Agent": "Codefora-Compiler-Service"
+      };
       if (PISTON_AUTH_TOKEN && PISTON_AUTH_TOKEN.length > 0) {
         headers.Authorization = `${PISTON_AUTH_SCHEME} ${PISTON_AUTH_TOKEN}`.trim();
       }
