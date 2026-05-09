@@ -17,7 +17,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
     });
 
     const handleJoin = async ({ roomId, username, inviteCode, hostToken, userId, sessionId, force, profile, emotionId }) => {
-      console.log(`[Socket] Join request from ${username} (ID: ${userId}) with emotion: ${emotionId || profile?.emotionId}`);
+      console.log(`[Socket] Join request from ${username} (ID: ${userId}) - Force: ${force}`);
       const requestUserId = (userId && String(userId).trim()) || null;
       const requestSessionId = (sessionId && String(sessionId).trim()) || null;
       const cleanInviteCode = normalizeInvite(inviteCode);
@@ -37,44 +37,35 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         return;
       }
 
-      // 1. Session Takeover for Refresh (Same Tab)
-      // If we see the exact same sessionId in the same room, it's a refresh.
-      const existingSession = room.users.find(u => u.sessionId === requestSessionId && u.socketId !== socket.id);
-      if (existingSession) {
-        console.log(`[Refresh Detect] User ${requestUserId} refreshed tab. Disconnecting old socket ${existingSession.socketId}`);
-        const oldSocket = io.sockets.sockets.get(existingSession.socketId);
-        if (oldSocket) oldSocket.disconnect(true);
-        room.users = room.users.filter(u => u.socketId !== existingSession.socketId);
-        socketUsers.delete(existingSession.socketId);
-      }
-
-      // 2. Multi-room / Multi-tab Protection (Different Tab/Room)
+      // 1. Check for existing active session for this specific User ID
       if (requestUserId && userIdToRoomId.has(requestUserId)) {
         const existingRoomId = userIdToRoomId.get(requestUserId);
+        const isDifferentRoom = existingRoomId !== room.id;
         
-        // If it's a different room OR a different tab (session), block unless forced
-        if (!force && (existingRoomId !== room.id || (requestSessionId && !existingSession))) {
-          console.warn(`[Multi-Tab Block] User ${requestUserId} already active in ${existingRoomId}`);
-          socket.emit("room:error", "You are already active in another room or tab.");
+        // If not forcing, and we have an active session elsewhere, block
+        if (!force && isDifferentRoom) {
+          socket.emit("room:error", "You are already active in another room.");
           socket.emit("room:join:failed", { reason: "already_in_room", roomId, existingRoomId });
           return;
         }
 
-        // Takeover previous tab/room if forced
-        if (force) {
-          const oldRoom = roomRepository.findById(existingRoomId);
-          if (oldRoom) {
-            const oldUser = oldRoom.users.find(u => u.userId === requestUserId && u.socketId !== socket.id);
-            if (oldUser) {
-              const oldSocket = io.sockets.sockets.get(oldUser.socketId);
-              if (oldSocket) oldSocket.disconnect(true);
-              oldRoom.users = oldRoom.users.filter(u => u.socketId !== oldUser.socketId);
-              io.to(existingRoomId).emit("presence:update", oldRoom.users);
-              socketUsers.delete(oldUser.socketId);
+        // If forcing OR it's the same room (refresh), clean up the OLD socket first
+        const oldRoom = roomRepository.findById(existingRoomId);
+        if (oldRoom) {
+          const oldUser = oldRoom.users.find(u => u.userId === requestUserId && u.socketId !== socket.id);
+          if (oldUser) {
+            console.log(`[Session Takeover] Moving user ${requestUserId} to new socket/room`);
+            const oldSocket = io.sockets.sockets.get(oldUser.socketId);
+            if (oldSocket) {
+              oldSocket.leave(existingRoomId);
+              oldSocket.emit("room:error", "You have joined from another tab/location.");
+              // We don't necessarily disconnect them, just remove them from the room state
             }
+            oldRoom.users = oldRoom.users.filter(u => u.socketId !== oldUser.socketId);
+            io.to(existingRoomId).emit("presence:update", oldRoom.users);
+            socketUsers.delete(oldUser.socketId);
           }
         }
-
         userIdToRoomId.delete(requestUserId);
       }
 
@@ -101,30 +92,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
 
       socket.join(room.id);
       socketUsers.set(socket.id, room.id);
-      // Track authenticated userId to prevent multi-room access
       if (requestUserId) userIdToRoomId.set(requestUserId, room.id);
-      const reconnectingHost = isHost || hostToken === room.hostToken || isOwner;
-      if (reconnectingHost) {
-        const currentHost = room.users.find(u => u.role === "Host" && u.socketId !== socket.id);
-        if (currentHost && (!requestUserId || currentHost.userId !== requestUserId)) {
-          currentHost.role = "Member";
-          currentHost.color = "#8BE9FD";
-        }
-      }
-      room.users = room.users.filter((existing) => {
-        if (existing.socketId === socket.id) return false;
-        if (requestUserId && existing.userId === requestUserId) return false;
-        return true;
-      });
 
-      // Increment roomsJoined stat if it's a registered user joining
-      if (user.userId && profileController?.incrementStat) {
-        profileController.incrementStat(user.userId, "roomsJoined");
-      }
+      // Final cleanup to ensure no duplicate socket IDs for the SAME user in THIS room
+      room.users = room.users.filter(u => u.socketId !== socket.id && u.userId !== requestUserId);
 
       room.users.push(user);
       socket.emit("room:state", roomService.snapshot(room));
-      socket.to(room.id).emit("presence:update", room.users);
+      io.to(room.id).emit("presence:update", room.users);
       broadcastRooms();
     };
 
