@@ -39,8 +39,7 @@ export class PistonService {
 
     try {
       const headers = { "Content-Type": "application/json" };
-      if (PISTON_AUTH_TOKEN) {
-        // The public Piston API now requires authorization for execution requests.
+      if (PISTON_AUTH_TOKEN && PISTON_AUTH_TOKEN.length > 0) {
         headers.Authorization = `${PISTON_AUTH_SCHEME} ${PISTON_AUTH_TOKEN}`.trim();
       }
 
