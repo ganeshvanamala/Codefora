@@ -23,9 +23,8 @@ const LANGUAGE_ALIASES = {
 };
 
 const FALLBACK_URLS = [
-  process.env.PISTON_EXECUTE_URL,
   "https://emkc.org/api/v2/piston/execute",
-  "https://piston.pydis.com/api/v2/execute",
+  process.env.PISTON_EXECUTE_URL,
   "https://piston.engineeringman.work/api/v2/execute"
 ].filter(Boolean).map(url => url.trim());
 
@@ -54,8 +53,11 @@ export class PistonService {
           "User-Agent": "Codefora-Compiler-Service"
         };
         
-        // Only send token if we are hitting the primary URL and it exists
-        if (targetUrl === process.env.PISTON_EXECUTE_URL && PISTON_AUTH_TOKEN) {
+        // Only send token if it's the user's custom URL and we HAVE a token
+        const isCustomUrl = targetUrl === process.env.PISTON_EXECUTE_URL;
+        const isPublicUrl = targetUrl.includes("emkc.org") || targetUrl.includes("engineeringman.work");
+        
+        if (isCustomUrl && !isPublicUrl && PISTON_AUTH_TOKEN && PISTON_AUTH_TOKEN.trim().length > 0) {
           headers.Authorization = `${PISTON_AUTH_SCHEME} ${PISTON_AUTH_TOKEN}`.trim();
         }
 
