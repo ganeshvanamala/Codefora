@@ -65,6 +65,24 @@ export function createProfileController() {
         console.warn(`Profile save failed: ${error.message}`);
         return response.status(500).json({ error: error.message });
       }
+    },
+
+    incrementStat: async (userId, statName, amount = 1) => {
+      if (!userId || !db) return;
+      try {
+        const docRef = db.collection("users").doc(userId);
+        const doc = await docRef.get();
+        const data = doc.exists ? doc.data() : { profile: { stats: {} } };
+        const stats = data.profile?.stats || {};
+        stats[statName] = (Number(stats[statName]) || 0) + amount;
+        
+        await docRef.set({ 
+          profile: { ...data.profile, stats },
+          updatedAt: Date.now() 
+        }, { merge: true });
+      } catch (error) {
+        console.warn(`Stat increment failed for ${userId}: ${error.message}`);
+      }
     }
   };
 }

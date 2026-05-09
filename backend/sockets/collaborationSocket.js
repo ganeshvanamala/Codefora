@@ -1,6 +1,6 @@
 import { cryptoId } from "../utils/id.js";
 
-export function registerCollaborationSocket(io, { roomRepository, roomService }) {
+export function registerCollaborationSocket(io, { roomRepository, roomService, profileController }) {
   const socketUsers = new Map();
   const userIdToRoomId = new Map(); // Track authenticated userId -> roomId to prevent multi-room access
   const broadcastRooms = () => io.emit("rooms:update", roomRepository.allPublicSummaries((room) => roomService.publicRoom(room)));
@@ -116,6 +116,12 @@ export function registerCollaborationSocket(io, { roomRepository, roomService })
         if (requestUserId && existing.userId === requestUserId) return false;
         return true;
       });
+
+      // Increment roomsJoined stat if it's a registered user joining
+      if (user.userId && profileController?.incrementStat) {
+        profileController.incrementStat(user.userId, "roomsJoined");
+      }
+
       room.users.push(user);
       socket.emit("room:state", roomService.snapshot(room));
       socket.to(room.id).emit("presence:update", room.users);

@@ -9,16 +9,19 @@ import { RoomService } from "./services/roomService.js";
 import { registerCollaborationSocket } from "./sockets/collaborationSocket.js";
 import { initializeEmotionsInFirestore } from "./services/emotionService.js";
 
+import { createProfileController } from "./controllers/profileController.js";
+
 const port = Number(process.env.PORT || 5000);
 
 const roomRepository = new RoomRepository([]);
 await roomRepository.load();
 const roomService = new RoomService(roomRepository);
-const app = createApp({ roomRepository, roomService });
+const profileController = createProfileController();
+const app = createApp({ roomRepository, roomService, profileController });
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: allowedOrigins(), methods: ["GET", "POST"] } });
 
-registerCollaborationSocket(io, { roomRepository, roomService });
+registerCollaborationSocket(io, { roomRepository, roomService, profileController });
 
 // Initialize emotions in Firestore
 await initializeEmotionsInFirestore();

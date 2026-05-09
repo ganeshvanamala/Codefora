@@ -14,13 +14,12 @@ import { ExecutionService } from "./services/executionService.js";
 import { PistonService } from "./services/pistonService.js";
 import { corsOrigin } from "./config/cors.js";
 
-export function createApp({ roomRepository, roomService }) {
+export function createApp({ roomRepository, roomService, profileController }) {
   const app = express();
-  const roomController = createRoomController(roomRepository, roomService);
+  const roomController = createRoomController(roomRepository, roomService, profileController);
   const executionController = createExecutionController(new ExecutionService());
   const aiController = createAiController(new AiService());
   const emotionController = { getEmotions, getEmotionImage, initEmotions };
-  const profileController = createProfileController();
   const accountController = createAccountController();
   const compilerController = createCompilerController(new PistonService());
   const adminController = createAdminController(roomRepository);
