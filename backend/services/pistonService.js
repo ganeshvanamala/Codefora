@@ -90,7 +90,12 @@ export class PistonService {
       } catch (error) {
         clearTimeout(timeoutId);
         lastError = error;
-        console.warn(`[Piston] Connection failed at ${targetUrl}: ${error.message}`);
+        console.error(`[Piston] Connection failed at ${targetUrl}:`, {
+          message: error.message,
+          code: error.code,
+          cause: error.cause,
+          name: error.name
+        });
         continue;
       }
     }
