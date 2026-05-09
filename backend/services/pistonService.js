@@ -22,6 +22,13 @@ const LANGUAGE_ALIASES = {
   node: "javascript"
 };
 
+const FALLBACK_URLS = [
+  process.env.PISTON_EXECUTE_URL,
+  "https://emkc.org/api/v2/piston/execute",
+  "https://piston.pydis.com/api/v2/execute",
+  "https://piston.engineeringman.work/api/v2/execute"
+].filter(Boolean).map(url => url.trim());
+
 export class PistonService {
   async run({ language, version, code, input }) {
     const resolved = resolveLanguage(language, version);
@@ -32,73 +39,68 @@ export class PistonService {
       throw createCompilerError("EMPTY_CODE", "Code cannot be empty.", 400);
     }
 
-    const startedAt = Date.now();
-    const controller = new AbortController();
-    const timeoutMs = 20000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    let lastError = null;
+    
+    // Try each fallback URL until one works
+    for (const targetUrl of FALLBACK_URLS) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    try {
-      const targetUrl = PISTON_EXECUTE_URL.trim();
-      console.log(`[Piston] Attempting execution at: ${targetUrl}`);
+      try {
+        console.log(`[Piston] Attempting execution at: ${targetUrl}`);
 
-      const headers = { 
-        "Content-Type": "application/json",
-        "User-Agent": "Codefora-Compiler-Service"
-      };
-      if (PISTON_AUTH_TOKEN && PISTON_AUTH_TOKEN.length > 0) {
-        headers.Authorization = `${PISTON_AUTH_SCHEME} ${PISTON_AUTH_TOKEN}`.trim();
+        const headers = { 
+          "Content-Type": "application/json",
+          "User-Agent": "Codefora-Compiler-Service"
+        };
+        
+        // Only send token if we are hitting the primary URL and it exists
+        if (targetUrl === process.env.PISTON_EXECUTE_URL && PISTON_AUTH_TOKEN) {
+          headers.Authorization = `${PISTON_AUTH_SCHEME} ${PISTON_AUTH_TOKEN}`.trim();
+        }
+
+        const response = await fetch(targetUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            language: resolved.pistonLanguage,
+            version: resolved.version,
+            files: [{ name: resolved.filename, content: sourceCode }],
+            stdin,
+            compile_timeout: 10000,
+            run_timeout: 10000
+          }),
+          signal: controller.signal
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        
+        if (response.status === 401 || response.status === 403) {
+          console.warn(`[Piston] Auth error at ${targetUrl}, trying next fallback...`);
+          continue;
+        }
+
+        if (!response.ok) {
+          console.warn(`[Piston] Server error ${response.status} at ${targetUrl}, trying next fallback...`);
+          continue;
+        }
+
+        clearTimeout(timeoutId);
+        return formatExecutionResult(payload, resolved, Date.now());
+      } catch (error) {
+        clearTimeout(timeoutId);
+        lastError = error;
+        console.warn(`[Piston] Connection failed at ${targetUrl}: ${error.message}`);
+        continue;
       }
-
-      const response = await fetch(targetUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          language: resolved.pistonLanguage,
-          version: resolved.version,
-          files: [{ name: resolved.filename, content: sourceCode }],
-          stdin,
-          compile_timeout: 3000,
-          run_timeout: 3000
-        }),
-        signal: controller.signal
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw createCompilerError(
-          "PISTON_ERROR",
-          response.status === 401
-            ? "Piston requires an authorization token. Configure PISTON_AUTH_TOKEN to enable compiler execution."
-            : payload.message || payload.error || "Piston execution failed.",
-          502,
-          payload
-        );
-      }
-
-      return formatExecutionResult(payload, resolved, startedAt);
-    } catch (error) {
-      console.error(`[Piston] Execution Error: ${error.message}`, error);
-      
-      if (error?.name === "AbortError" || error?.code === "UND_ERR_CONNECT_TIMEOUT") {
-        throw createCompilerError("TIMEOUT", "Execution timed out.", 408);
-      }
-
-      if (error?.cause?.code === "ECONNREFUSED" || error?.code === "ECONNREFUSED" || error?.message?.includes("fetch failed")) {
-        throw createCompilerError("PISTON_UNAVAILABLE", `Local compiler service is offline or unreachable. Error: ${error.message}`, 503);
-      }
-
-      if (error?.code === "EMPTY_CODE" || error?.code === "INVALID_LANGUAGE") {
-        throw error;
-      }
-
-      if (error?.statusCode) {
-        throw error;
-      }
-
-      throw createCompilerError("PISTON_UNAVAILABLE", error?.message || "Compiler service unavailable.", 502);
-    } finally {
-      clearTimeout(timeoutId);
     }
+
+    // If we get here, all fallbacks failed
+    throw createCompilerError(
+      "PISTON_UNAVAILABLE",
+      `All compiler services are currently unreachable. Last error: ${lastError?.message || "Unknown"}`,
+      503
+    );
   }
 }
 
