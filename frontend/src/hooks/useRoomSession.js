@@ -444,50 +444,74 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
   async function toggleMic() {
     if (!canSpeak) return;
+
     if (micOn) {
-      stopMic();
+      // Mute the mic instead of destroying connections
+      if (localStream.current) {
+        localStream.current.getAudioTracks().forEach((track) => {
+          track.enabled = false;
+        });
+      }
       setMicOn(false);
       socket.emit("mic:update", { roomId: activeRoomId, mic: false, speaking: false });
       return;
     }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      localStream.current = stream;
+      if (!localStream.current) {
+        // First time initialization
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        localStream.current = stream;
+
+        // Add voice activity detection
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        let isSpeaking = false;
+
+        const checkSpeaking = () => {
+          if (!localStream.current) {
+            audioContext.close();
+            return;
+          }
+          
+          // Skip analysis if mic is muted
+          if (!localStream.current.getAudioTracks().some(t => t.enabled)) {
+            if (isSpeaking) {
+              isSpeaking = false;
+              socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: false });
+            }
+            requestAnimationFrame(checkSpeaking);
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+          const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          const currentlySpeaking = volume > 20;
+
+          if (currentlySpeaking !== isSpeaking) {
+            isSpeaking = currentlySpeaking;
+            socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: isSpeaking });
+          }
+
+          requestAnimationFrame(checkSpeaking);
+        };
+
+        checkSpeaking();
+      } else {
+        // Just unmute
+        localStream.current.getAudioTracks().forEach((track) => {
+          track.enabled = true;
+        });
+      }
+
       setMicOn(true);
       socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: false });
 
-      // Add voice activity detection
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
-      source.connect(analyser);
-
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      let isSpeaking = false;
-
-      const checkSpeaking = () => {
-        if (!localStream.current) {
-          audioContext.close();
-          return;
-        }
-        analyser.getByteFrequencyData(dataArray);
-        const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
-
-        // Threshold for speaking (adjust as needed)
-        const currentlySpeaking = volume > 20;
-
-        if (currentlySpeaking !== isSpeaking) {
-          isSpeaking = currentlySpeaking;
-          socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: isSpeaking });
-        }
-
-        requestAnimationFrame(checkSpeaking);
-      };
-
-      checkSpeaking();
-
-      // Let the useEffect handle the peer creation to prevent double-offer collisions
     } catch (error) {
       setOutput(`Microphone permission failed: ${error.message}`);
     }
