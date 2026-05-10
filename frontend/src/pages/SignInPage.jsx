@@ -4,7 +4,7 @@ import { logoutUser, signInWithGoogle } from "../lib/firebase";
 import { saveUsername } from "../lib/navigation";
 import { api } from "../api/client";
 import { BrandButton } from "../components/BrandButton";
-import lvssbg from "../../assets/lvssbg.mp4";
+import homevideo from "../../assets/homevideo.mp4";
 
 export default function SignInPage() {
   const navigate = useNavigate();
@@ -49,10 +49,10 @@ export default function SignInPage() {
     localStorage.setItem("codefora_user_id", account.userId);
     if (account.role) localStorage.setItem("codefora_role", account.role);
     if (account.token) localStorage.setItem("codefora_admin_token", account.token);
-    
+
     setAuthForm({ username: "", password: "", confirmPassword: "" });
     setAuthStatus("");
-    
+
     if (account.role === "admin") {
       navigate('/admin');
     } else {
@@ -102,7 +102,7 @@ export default function SignInPage() {
           opacity: 1
         }}
       >
-        <source src={lvssbg} type="video/mp4" />
+        <source src={homevideo} type="video/mp4" />
       </video>
 
       <div className="home-main-layout animate-fade-in-up" style={{ position: 'relative', zIndex: 2 }}>
@@ -153,7 +153,7 @@ export default function SignInPage() {
                 padding: '0 10px'
               }}>Compete Together.</span>
             </h1>
-            
+
             <p style={{
               fontSize: '1.3rem',
               maxWidth: '650px',
@@ -184,8 +184,8 @@ export default function SignInPage() {
                   alignItems: 'center',
                   gap: '10px'
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(255, 145, 0, 0.6)'; e.currentTarget.style.background = '#ffa32a'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 145, 0, 0.4)'; e.currentTarget.style.background = '#FF9100'; }}
+                  onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(255, 145, 0, 0.6)'; e.currentTarget.style.background = '#ffa32a'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 145, 0, 0.4)'; e.currentTarget.style.background = '#FF9100'; }}
                 >
                   Get Started <span style={{ fontSize: '1.3rem' }}>→</span>
                 </button>
@@ -201,8 +201,8 @@ export default function SignInPage() {
                   boxShadow: '0 8px 25px rgba(0, 229, 255, 0.4)',
                   transition: 'all 0.3s ease'
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 229, 255, 0.6)'; e.currentTarget.style.background = '#33edff'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 229, 255, 0.4)'; e.currentTarget.style.background = '#00E5FF'; }}
+                  onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 229, 255, 0.6)'; e.currentTarget.style.background = '#33edff'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 229, 255, 0.4)'; e.currentTarget.style.background = '#00E5FF'; }}
                 >
                   Continue as Guest
                 </button>
