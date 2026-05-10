@@ -214,8 +214,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         }
       }
 
-      console.log(`Joining room ${targetRoomId} as ${username} (Session: ${sessionId})`);
-      socket.emit("room:join", {
+      const joinData = {
         roomId: targetRoomId,
         username,
         inviteCode: targetInviteCode,
@@ -224,7 +223,15 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         sessionId,
         profile: userProfile,
         emotionId: userProfile?.emotionId || null
-      });
+      };
+
+      const onConnect = () => {
+        console.log(`[Socket] Connected. Joining room ${targetRoomId} as ${username} (Session: ${sessionId})`);
+        socket.emit("room:join", joinData);
+      };
+
+      socket.on("connect", onConnect);
+      if (socket.connected) onConnect();
     };
 
 
@@ -233,6 +240,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     return () => {
       cancelled = true;
       stopMic();
+      socket.off("connect");
       socket.disconnect();
       socket.off("room:join:failed", handleJoinFailed);
       socket.off("room:state", handleRoomState);
