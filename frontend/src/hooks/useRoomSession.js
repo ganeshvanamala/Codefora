@@ -479,7 +479,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
       checkSpeaking();
 
-      users.filter((user) => user.socketId !== socket.id && user.role !== "Viewer").forEach((user) => createPeer(user.socketId, true));
+      // Let the useEffect handle the peer creation to prevent double-offer collisions
     } catch (error) {
       setOutput(`Microphone permission failed: ${error.message}`);
     }
@@ -519,8 +519,16 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
         { urls: "stun:stun2.l.google.com:19302" },
-        { urls: "stun:stun3.l.google.com:19302" },
-        { urls: "stun:stun4.l.google.com:19302" }
+        { 
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject"
+        },
+        { 
+          urls: "turn:openrelay.metered.ca:443",
+          username: "openrelayproject",
+          credential: "openrelayproject"
+        }
       ]
     });
 
@@ -613,6 +621,15 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         }
 
         await peer.setRemoteDescription(new RTCSessionDescription(signal.description));
+        
+        // Process any ICE candidates that arrived early and were queued
+        if (peer.pendingCandidates && peer.pendingCandidates.length > 0) {
+          for (const candidate of peer.pendingCandidates) {
+            await peer.addIceCandidate(candidate).catch(e => console.warn("Queued candidate error", e));
+          }
+          peer.pendingCandidates = [];
+        }
+
         if (signal.description.type === "offer") {
           const answer = await peer.createAnswer();
           await peer.setLocalDescription(answer);
@@ -624,8 +641,15 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         }
       }
 
-      if (signal.candidate && peer.remoteDescription) {
-        await peer.addIceCandidate(new RTCIceCandidate(signal.candidate));
+      if (signal.candidate) {
+        const iceCandidate = new RTCIceCandidate(signal.candidate);
+        if (peer.remoteDescription) {
+          await peer.addIceCandidate(iceCandidate).catch(e => console.warn("Candidate error", e));
+        } else {
+          // The description hasn't arrived yet, queue this candidate!
+          if (!peer.pendingCandidates) peer.pendingCandidates = [];
+          peer.pendingCandidates.push(iceCandidate);
+        }
       }
     } catch (e) {
       console.warn("[WebRTC] Signal handling error:", e);

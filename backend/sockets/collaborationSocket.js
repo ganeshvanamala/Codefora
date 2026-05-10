@@ -108,7 +108,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       }
 
       // Final cleanup
-      room.users = room.users.filter(u => u.socketId !== socket.id && u.userId !== requestUserId);
+      room.users = room.users.filter(u => u.socketId !== socket.id && (!requestUserId || u.userId !== requestUserId));
 
       room.users.push(user);
       socket.emit("room:state", roomService.snapshot(room));

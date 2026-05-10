@@ -44,7 +44,7 @@ export class PistonService {
       }
 
       const result = await response.json();
-      
+
       return {
         stdout: result.stdout || "",
         stderr: result.stderr || result.compile_output || "",
