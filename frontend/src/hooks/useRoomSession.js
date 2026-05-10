@@ -85,6 +85,19 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   }, [canSpeak, micOn, users]);
 
   useEffect(() => {
+    // If user is demoted to Viewer while mic is on, force it off
+    if (!canSpeak && micOn) {
+      if (localStream.current) {
+        localStream.current.getAudioTracks().forEach((track) => {
+          track.enabled = false;
+        });
+      }
+      setMicOn(false);
+      socket.emit("mic:update", { roomId: activeRoomId, mic: false, speaking: false });
+    }
+  }, [canSpeak, micOn, activeRoomId]);
+
+  useEffect(() => {
     const activeTyping = typingCursors[0];
     setTyping(activeTyping ? `${activeTyping.user} is typing in ${activeTyping.fileName}...` : "");
   }, [typingCursors]);
