@@ -141,7 +141,7 @@ export default function HomePage() {
         height: '80vw',
         background: 'radial-gradient(circle, rgba(255, 145, 0, 0.18) 0%, transparent 70%)',
         filter: 'blur(130px)',
-        zIndex: 5,
+        zIndex: 0,
         pointerEvents: 'none',
         opacity: 0.9
       }}></div>
@@ -153,7 +153,7 @@ export default function HomePage() {
         height: '40vw',
         background: 'radial-gradient(circle, rgba(255, 122, 24, 0.12) 0%, transparent 70%)',
         filter: 'blur(100px)',
-        zIndex: 5,
+        zIndex: 0,
         pointerEvents: 'none',
         opacity: 0.7
       }}></div>
@@ -165,7 +165,7 @@ export default function HomePage() {
         height: '50vw',
         background: 'radial-gradient(circle, rgba(0, 229, 255, 0.05) 0%, transparent 70%)',
         filter: 'blur(150px)',
-        zIndex: 5,
+        zIndex: 0,
         pointerEvents: 'none',
         opacity: 0.4
       }}></div>
