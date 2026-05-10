@@ -514,90 +514,90 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   }
 
   async function createPeer(targetId, initiator) {
+    let peer;
+    let isNew = false;
+
     if (peers.current.has(targetId)) {
-      const existing = peers.current.get(targetId);
-      if (existing.connectionState !== "failed" && existing.connectionState !== "closed") {
-        return existing;
+      peer = peers.current.get(targetId);
+      if (peer.connectionState === "failed" || peer.connectionState === "closed") {
+        peers.current.delete(targetId);
+        peer = null;
       }
-      peers.current.delete(targetId);
     }
 
-    const peer = new RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-        { urls: "stun:stun2.l.google.com:19302" },
-        { 
-          urls: "turn:openrelay.metered.ca:80",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        },
-        { 
-          urls: "turn:openrelay.metered.ca:443",
-          username: "openrelayproject",
-          credential: "openrelayproject"
+    if (!peer) {
+      isNew = true;
+      peer = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+          { urls: "stun:stun2.l.google.com:19302" },
+          { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+          { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" }
+        ]
+      });
+
+      peers.current.set(targetId, peer);
+
+      peer.onconnectionstatechange = () => {
+        console.log(`[WebRTC] Connection to ${targetId}: ${peer.connectionState}`);
+        if (peer.connectionState === "failed") {
+          peers.current.delete(targetId);
+          if (micOn && localStream.current) {
+            setTimeout(() => createPeer(targetId, true), 1000);
+          }
         }
-      ]
-    });
+      };
 
-    peers.current.set(targetId, peer);
-
-    // Watch for connection failures and cleanup
-    peer.onconnectionstatechange = () => {
-      console.log(`[WebRTC] Connection to ${targetId}: ${peer.connectionState}`);
-      if (peer.connectionState === "failed") {
-        peers.current.delete(targetId);
-        // If we are the ones speaking, try to recreate the connection once
-        if (micOn && localStream.current) {
-          setTimeout(() => createPeer(targetId, true), 1000);
+      peer.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit("voice:signal", {
+            roomId: activeRoomId,
+            target: targetId,
+            signal: { candidate: event.candidate }
+          });
         }
-      }
-    };
+      };
 
-    // Add local tracks
+      peer.ontrack = (event) => {
+        console.log(`[WebRTC] Receiving stream from ${targetId}`);
+        const existingAudio = document.getElementById(`remote-audio-${targetId}`);
+        if (existingAudio) existingAudio.remove();
+
+        const audio = document.createElement("audio");
+        audio.autoplay = true;
+        audio.srcObject = event.streams[0];
+        audio.id = `remote-audio-${targetId}`;
+        audio.muted = false;
+        audioHost.current?.appendChild(audio);
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            const playOnInteraction = () => {
+              audio.play().catch(() => {});
+              document.removeEventListener("click", playOnInteraction);
+            };
+            document.addEventListener("click", playOnInteraction);
+          });
+        }
+      };
+    }
+
+    // Add local tracks if they are missing (crucial for when a user turns on mic LATER)
+    let tracksAdded = false;
     if (localStream.current) {
+      const existingSenders = peer.getSenders();
       localStream.current.getTracks().forEach((track) => {
-        peer.addTrack(track, localStream.current);
+        if (!existingSenders.some(sender => sender.track === track)) {
+          peer.addTrack(track, localStream.current);
+          tracksAdded = true;
+        }
       });
     }
 
-    peer.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("voice:signal", {
-          roomId: activeRoomId,
-          target: targetId,
-          signal: { candidate: event.candidate }
-        });
-      }
-    };
-
-    peer.ontrack = (event) => {
-      console.log(`[WebRTC] Receiving stream from ${targetId}`);
-      
-      // Remove any existing audio for this user first
-      const existingAudio = document.getElementById(`remote-audio-${targetId}`);
-      if (existingAudio) existingAudio.remove();
-
-      const audio = document.createElement("audio");
-      audio.autoplay = true;
-      audio.srcObject = event.streams[0];
-      audio.id = `remote-audio-${targetId}`;
-      audio.muted = false;
-      audioHost.current?.appendChild(audio);
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          const playOnInteraction = () => {
-            audio.play().catch(() => {});
-            document.removeEventListener("click", playOnInteraction);
-          };
-          document.addEventListener("click", playOnInteraction);
-        });
-      }
-    };
-
-    if (initiator) {
+    // Renegotiate if we are the initiator OR if we just added new audio tracks
+    if (initiator || tracksAdded) {
       try {
         const offer = await peer.createOffer({ offerToReceiveAudio: true });
         await peer.setLocalDescription(offer);
@@ -615,22 +615,25 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   }
 
   async function handleVoiceSignal({ from, signal }) {
-    // If we aren't even a member/host, we can't listen
     if (!canSpeakRef.current) return;
 
     try {
       const peer = await createPeer(from, false);
 
       if (signal.description) {
-        // Handle potential signaling race conditions
-        if (signal.description.type === "offer" && peer.signalingState !== "stable") {
-          console.warn("[WebRTC] Signaling collision detected, ignoring stale offer");
-          return;
+        const collision = signal.description.type === "offer" && peer.signalingState !== "stable";
+        if (collision) {
+          const polite = socket.id > from;
+          if (!polite) {
+            console.warn("[WebRTC] Impolite peer ignoring collision offer");
+            return;
+          }
+          console.warn("[WebRTC] Polite peer rolling back to resolve collision");
+          await peer.setLocalDescription({ type: "rollback" });
         }
 
         await peer.setRemoteDescription(new RTCSessionDescription(signal.description));
         
-        // Process any ICE candidates that arrived early and were queued
         if (peer.pendingCandidates && peer.pendingCandidates.length > 0) {
           for (const candidate of peer.pendingCandidates) {
             await peer.addIceCandidate(candidate).catch(e => console.warn("Queued candidate error", e));
@@ -654,7 +657,6 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         if (peer.remoteDescription) {
           await peer.addIceCandidate(iceCandidate).catch(e => console.warn("Candidate error", e));
         } else {
-          // The description hasn't arrived yet, queue this candidate!
           if (!peer.pendingCandidates) peer.pendingCandidates = [];
           peer.pendingCandidates.push(iceCandidate);
         }
