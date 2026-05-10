@@ -7,7 +7,8 @@ import { API_URL } from '../config';
 import { 
   Users, Server, Code, Trophy, 
   Activity, ShieldAlert, Settings, LayoutDashboard,
-  Eye, Lock, Trash2, Edit, AlertTriangle, Play, RefreshCw
+  Eye, Lock, Trash2, Edit, AlertTriangle, Play, RefreshCw,
+  MessageSquare, Star
 } from 'lucide-react';
 import '../styles/admin.css';
 
