@@ -75,7 +75,20 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       
       // A user is a Host if they are authorized OR if they were already the host before refresh
       const isHost = isAuthorizedHost || (room.users.length === 0 && cleanName === room.hostName);
-      const role = isHost ? "Host" : room.visibility === "public" ? "Viewer" : "Member";
+      
+      const authKey = requestUserId || requestSessionId;
+      let role;
+      
+      if (isHost) {
+        role = "Host";
+      } else if (room.userRoles && authKey && room.userRoles[authKey]) {
+        role = room.userRoles[authKey];
+        if (role === "Host" && room.users.some(u => u.role === "Host")) {
+          role = "Member"; // Downgrade if the host role was already transferred away
+        }
+      } else {
+        role = room.visibility === "public" ? "Viewer" : "Member";
+      }
       
       const user = {
         socketId: socket.id,
@@ -143,6 +156,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         target.mic = false;
         target.speaking = false;
       }
+      
+      // Persist the roles so they survive reconnections
+      if (!room.userRoles) room.userRoles = {};
+      const targetAuthKey = target.userId || target.sessionId;
+      const userAuthKey = user.userId || user.sessionId;
+      if (targetAuthKey) room.userRoles[targetAuthKey] = target.role;
+      if (userAuthKey) room.userRoles[userAuthKey] = user.role;
+
       io.to(roomId).emit("presence:update", room.users);
       roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
     });
