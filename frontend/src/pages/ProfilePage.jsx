@@ -8,6 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { API_URL } from "../config";
 import { getProfile, saveProfile } from "../api/client";
 import bannerImage from "../../assets/scene1.jpeg";
+import { trackEvent } from "../lib/analytics";
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -42,6 +43,10 @@ export function ProfilePage() {
       setSelectedCommunity(profile.community || "sider");
 
       setLoadingProfile(false);
+    }
+
+    if (user?.uid) {
+      trackEvent("profile_visit", { user_id: user.uid });
     }
 
     loadProfile();
@@ -98,7 +103,10 @@ export function ProfilePage() {
           <UserCircle2 size={48} />
           <h2>Authentication Required</h2>
           <p>Please sign in to view your profile</p>
-          <button onClick={() => navigate("/home")} className="button primary">
+          <button onClick={() => {
+            trackEvent("nav_home_click", { from: "profile_auth_required" });
+            navigate("/home");
+          }} className="button primary">
             Go to Home
           </button>
         </div>

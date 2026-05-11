@@ -11,6 +11,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import Loader from "./components/Loader";
 import { useLocation } from "react-router-dom";
+import { trackPageView } from "./lib/analytics";
 
 function LoaderManager({ children }) {
   const location = useLocation();
@@ -26,6 +27,7 @@ function LoaderManager({ children }) {
   useEffect(() => {
     // show on route changes briefly
     setLoading(true);
+    trackPageView(location.pathname);
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, [location.pathname]);

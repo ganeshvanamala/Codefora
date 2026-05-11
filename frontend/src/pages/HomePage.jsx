@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Code, Users, Trophy, Zap, Flame } from "lucide-react";
 import { BrandButton } from "../components/BrandButton";
+import { trackEvent } from "../lib/analytics";
 
 import { logoutUser, signInWithGoogle } from "../lib/firebase";
 import { saveUsername } from "../lib/navigation";
@@ -425,7 +426,14 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <button className="btn-modern secondary" style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }} onClick={() => navigate('/rooms')}>
+            <button 
+              className="btn-modern secondary" 
+              style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }} 
+              onClick={() => {
+                trackEvent("battle_join", { context: "homepage_battles" });
+                navigate('/rooms');
+              }}
+            >
               View All Battles
             </button>
           </div>

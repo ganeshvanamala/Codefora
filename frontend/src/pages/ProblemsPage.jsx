@@ -5,6 +5,7 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { api } from "../api/client";
 import { BrandButton } from "../components/BrandButton";
 import { Navbar } from "../components/Navbar";
+import { trackEvent } from "../lib/analytics";
 import { problems } from "../data/problems";
 import { saveUsername, saveHostToken, saveInviteCode } from "../lib/navigation";
 import { useAuth } from "../hooks/useAuth";
@@ -113,6 +114,7 @@ export function ProblemsPage() {
     setIsRunning(true);
     setJudgeStatus("running");
     setRunOutput("Compiling and running sample test case 1...");
+    trackEvent("code_run", { problem_id: selectedProblem.id, language });
     try {
       const [result] = await runAgainstTests([selectedProblem.tests[0]]);
       setJudgeStatus(result.passed ? "accepted" : "wrong");
@@ -138,6 +140,7 @@ export function ProblemsPage() {
     setIsRunning(true);
     setJudgeStatus("running");
     setRunOutput("Submitting against all sample test cases...");
+    trackEvent("submission", { problem_id: selectedProblem.id, language });
     try {
       const results = await runAgainstTests(selectedProblem.tests);
       const failed = results.find((result) => !result.passed);
@@ -243,7 +246,11 @@ export function ProblemsPage() {
 
       saveHostToken(room.id, room.hostToken);
       saveInviteCode(room.id, room.inviteCode);
-
+      trackEvent("room_create", { 
+        problem_id: selectedProblem.id, 
+        visibility: isPublic ? "public" : "private",
+        room_id: room.id 
+      });
       setCreateStatus("Room created! Redirecting...");
       setTimeout(() => {
         if (room.visibility === "private") navigate(`/code/private/${room.id}`);
@@ -324,6 +331,7 @@ export function ProblemsPage() {
                   className="problem-overview-card"
                   onClick={() => {
                     setSelectedProblemId(problem.id);
+                    trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
                     setRunOutput("Ready.");
                     setJudgeStatus("idle");
                   }}

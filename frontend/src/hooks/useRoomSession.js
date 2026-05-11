@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { getHostToken, getInviteCode, getUsername, saveHostToken, saveInviteCode } from "../lib/navigation";
 import { buildPreview } from "../lib/preview";
 import { socket } from "../lib/socket";
+import { trackEvent } from "../lib/analytics";
 
 export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "", bypassBlockerRef = null) {
   const navigate = useNavigate();
@@ -286,6 +287,9 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
   function handleRoomState(snapshot) {
     setJoinError(null); // Clear error on successful state receive
+    if (!room) {
+      trackEvent("room_join", { room_id: snapshot.id, visibility: snapshot.visibility });
+    }
     setRoom(snapshot);
     handleFilesUpdate(snapshot.files);
     setMessages(snapshot.messages || []);
@@ -381,6 +385,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     setIsRunningCode(true);
     setCompilerStatus("running");
     setOutput("Running...");
+    trackEvent("code_run", { room_id: activeRoomId, language });
     try {
       const result = await api.runCode({
         language,

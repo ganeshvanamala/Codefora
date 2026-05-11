@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import { api } from "../api/client";
 import { BrandButton } from "../components/BrandButton";
+import { trackEvent } from "../lib/analytics";
 
 import { socket } from "../lib/socket";
 import { saveHostToken, saveInviteCode, saveUsername } from "../lib/navigation";
@@ -88,6 +89,11 @@ export function RoomsPage() {
       });
       saveHostToken(room.id, room.hostToken);
       saveInviteCode(room.id, room.inviteCode);
+      trackEvent("room_create", { 
+        name: cleanName, 
+        visibility: isPublic ? "public" : "private",
+        room_id: room.id 
+      });
       setStatus("Room created. Opening workspace...");
       setShowCreateModal(false);
       // Reset form
@@ -235,7 +241,14 @@ export function RoomsPage() {
                     <button 
                       className="button button-join" 
                       disabled={room.users >= room.max}
-                      onClick={() => room.visibility === 'private' ? joinRoom(room.id) : navigate(`/code/${room.id}`)}
+                      onClick={() => {
+                        if (room.visibility === 'private') {
+                          joinRoom(room.id);
+                        } else {
+                          trackEvent("room_join", { room_id: room.id, visibility: "public" });
+                          navigate(`/code/${room.id}`);
+                        }
+                      }}
                     >
                       {room.users >= room.max ? "Full" : "Join"}
                     </button>
