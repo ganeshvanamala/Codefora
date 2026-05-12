@@ -57,6 +57,7 @@ export function ProblemsPage() {
 
   const [problems, setProblems] = useState([]);
   const [loadingProblems, setLoadingProblems] = useState(true);
+  const [error, setError] = useState(null);
 
   const selectedProblem = problems.find((problem) => problem.id === selectedProblemId) || null;
   const selectedLanguage = LANGUAGE_OPTIONS.find((item) => item.value === language) || LANGUAGE_OPTIONS[0];
@@ -65,10 +66,18 @@ export function ProblemsPage() {
   useEffect(() => {
     async function loadProblems() {
       try {
+        setLoadingProblems(true);
+        setError(null);
         const data = await api.request("/api/problems");
-        setProblems(data);
+        if (Array.isArray(data)) {
+          setProblems(data);
+        } else {
+          setProblems([]);
+          console.error("API did not return an array:", data);
+        }
       } catch (err) {
         console.error("Failed to load problems:", err);
+        setError("Unable to connect to problem library. Please try again later.");
       } finally {
         setLoadingProblems(false);
       }
@@ -340,33 +349,51 @@ export function ProblemsPage() {
             </div>
 
             <div className="problems-overview-grid">
-              {filteredProblems.map((problem, index) => (
-                <button
-                  type="button"
-                  key={problem.id}
-                  className="problem-overview-card"
-                  onClick={() => {
-                    setSelectedProblemId(problem.id);
-                    trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
-                    setRunOutput("Ready.");
-                    setJudgeStatus("idle");
-                  }}
-                >
-                  <div className="problem-overview-card__top">
-                    <span>#{String(index + 1).padStart(2, "0")}</span>
-                    <small className={`difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</small>
-                  </div>
-                  <h2>{problem.title}</h2>
-                  <p>{problem.statement}</p>
-                  <div className="problem-tags">
-                    {problem.tags.map((tag) => <span key={tag}>{tag}</span>)}
-                  </div>
-                  <div className="problem-overview-card__meta">
-                    <span>{problem.acceptance}% acceptance</span>
-                    <span>{problem.tests.length} samples</span>
-                  </div>
-                </button>
-              ))}
+              {loadingProblems ? (
+                <div className="problems-empty-state">
+                  <Loader2 className="animate-spin" size={48} />
+                  <p>Loading problems...</p>
+                </div>
+              ) : error ? (
+                <div className="problems-empty-state error">
+                  <XCircle size={48} />
+                  <p>{error}</p>
+                  <button onClick={() => window.location.reload()} className="button secondary">Retry</button>
+                </div>
+              ) : filteredProblems.length === 0 ? (
+                <div className="problems-empty-state">
+                  <Search size={48} />
+                  <p>No problems found matching your criteria.</p>
+                </div>
+              ) : (
+                filteredProblems.map((problem, index) => (
+                  <button
+                    type="button"
+                    key={problem.id}
+                    className="problem-overview-card"
+                    onClick={() => {
+                      setSelectedProblemId(problem.id);
+                      trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
+                      setRunOutput("Ready.");
+                      setJudgeStatus("idle");
+                    }}
+                  >
+                    <div className="problem-overview-card__top">
+                      <span>#{String(index + 1).padStart(2, "0")}</span>
+                      <small className={`difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</small>
+                    </div>
+                    <h2>{problem.title}</h2>
+                    <p>{problem.statement}</p>
+                    <div className="problem-tags">
+                      {problem.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                    </div>
+                    <div className="problem-overview-card__meta">
+                      <span>{problem.acceptance}% acceptance</span>
+                      <span>{problem.tests?.length || 0} samples</span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </section>
         </section>
