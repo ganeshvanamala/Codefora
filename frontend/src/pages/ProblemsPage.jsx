@@ -93,9 +93,9 @@ export function ProblemsPage() {
     const term = search.trim().toLowerCase();
     return problems
       .filter((problem) => {
-        const matchesSearch = !term || [problem.title, problem.difficulty, ...problem.tags].some((field) => field.toLowerCase().includes(term));
+        const matchesSearch = !term || [problem.title, problem.difficulty, ...(problem.tags || [])].some((field) => field.toLowerCase().includes(term));
         const matchesDifficulty = selectedDifficulty === "All" || problem.difficulty === selectedDifficulty;
-        const matchesTags = selectedTags.length === 0 || selectedTags.some((tag) => problem.tags.includes(tag));
+        const matchesTags = selectedTags.length === 0 || selectedTags.some((tag) => (problem.tags || []).includes(tag));
         return matchesSearch && matchesDifficulty && matchesTags;
       })
       .sort((a, b) => {
@@ -104,7 +104,7 @@ export function ProblemsPage() {
         if (sortBy === "Newest") return b.id.localeCompare(a.id);
         return b.acceptance - a.acceptance;
       });
-  }, [search, selectedDifficulty, selectedTags, sortBy]);
+  }, [problems, search, selectedDifficulty, selectedTags, sortBy]);
 
   function toggleTag(tag) {
     setSelectedTags((current) =>
