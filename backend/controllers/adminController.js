@@ -8,9 +8,10 @@ const localProblemsPath = path.join(__dirname, "../data/problems.json");
 
 async function readJSON(filePath) {
   try {
-    return JSON.parse(await fs.readFile(filePath, "utf8"));
+    const data = await fs.readFile(filePath, "utf8");
+    return JSON.parse(data);
   } catch {
-    return Array.isArray(JSON.parse("{}")) ? [] : {};
+    return [];
   }
 }
 
