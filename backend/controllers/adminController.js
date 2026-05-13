@@ -32,14 +32,10 @@ export function createAdminController(roomRepository) {
         
         let totalUsers = 0;
         if (auth) {
-          const listUsersResult = await auth.listUsers(1);
-          // listUsers doesn't give a total count easily without iterating, 
-          // but we can at least get an estimate or use a counter if we had one.
-          // For now, let's try to get a better count if possible or use Firestore profiles count.
-          if (db) {
-            const snapshot = await db.collection("profiles").count().get();
-            totalUsers = snapshot.data().count;
-          }
+          // For small user bases, we can list all to get count.
+          // For larger ones, we'd use a metadata counter or loop through pages.
+          const listUsersResult = await auth.listUsers(1000);
+          totalUsers = listUsersResult.users.length;
         }
 
         // Calculate online users (users in rooms)
