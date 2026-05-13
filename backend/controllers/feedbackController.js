@@ -23,6 +23,12 @@ async function writeJSON(filePath, data) {
 export function createFeedbackController() {
   const db = createFirestore();
 
+  if (db) {
+    console.log("✓ Feedback controller using Firestore (persistent)");
+  } else {
+    console.warn("⚠ Feedback controller using local file (will reset on deploy)");
+  }
+
   return {
     submit: async (request, response) => {
       try {
@@ -36,18 +42,19 @@ export function createFeedbackController() {
           createdAt: Date.now()
         };
 
-        // Always save to local file (primary storage)
-        const allFeedback = await readJSON(localFeedbackPath);
-        allFeedback.push(feedback);
-        await writeJSON(localFeedbackPath, allFeedback);
-
-        // Also save to Firestore if available (backup)
+        // Save to Firestore (primary — survives deploys)
         if (db) {
-          try {
-            await db.collection("feedback").doc(feedback.id).set(feedback);
-          } catch (fbErr) {
-            console.warn("Firestore feedback backup failed:", fbErr.message);
-          }
+          await db.collection("feedback").doc(feedback.id).set(feedback);
+          console.log(`✓ Feedback saved to Firestore: ${feedback.id}`);
+        }
+
+        // Also save to local file (backup)
+        try {
+          const allFeedback = await readJSON(localFeedbackPath);
+          allFeedback.push(feedback);
+          await writeJSON(localFeedbackPath, allFeedback);
+        } catch (localErr) {
+          console.warn("Local feedback backup failed:", localErr.message);
         }
 
         return response.json({ success: true });
@@ -59,12 +66,27 @@ export function createFeedbackController() {
 
     getAll: async (request, response) => {
       try {
-        // Always read from local file (primary)
+        // Try Firestore first (primary — persistent)
+        if (db) {
+          const snapshot = await db.collection("feedback").orderBy("createdAt", "desc").get();
+          const feedback = [];
+          snapshot.forEach(doc => feedback.push(doc.data()));
+          console.log(`✓ Loaded ${feedback.length} feedback entries from Firestore`);
+          return response.json(feedback);
+        }
+
+        // Fallback to local file
         const allFeedback = await readJSON(localFeedbackPath);
         return response.json(allFeedback.sort((a, b) => b.createdAt - a.createdAt));
       } catch (error) {
         console.error("Fetching feedback failed:", error);
-        return response.status(500).json({ error: error.message });
+        // If Firestore fails, try local file as last resort
+        try {
+          const allFeedback = await readJSON(localFeedbackPath);
+          return response.json(allFeedback.sort((a, b) => b.createdAt - a.createdAt));
+        } catch {
+          return response.status(500).json({ error: error.message });
+        }
       }
     }
   };
