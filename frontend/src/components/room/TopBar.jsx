@@ -1,6 +1,6 @@
-import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen } from "lucide-react";
+import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info } from "lucide-react";
 
-export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem }) {
+export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo }) {
 
   return (
     <header className="topbar">
@@ -43,6 +43,15 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
       </div>
 
       <div className="top-actions">
+        <button
+          className="button compact secondary"
+          onClick={onShowInfo}
+          title="Room Information & Guide"
+          style={{ width: '40px', padding: '0', justifyContent: 'center' }}
+        >
+          <Info size={18} />
+        </button>
+
         <button
           className={`button compact ${micOn ? "primary mic-live" : "secondary"}`}
           disabled={!permissions.canSpeak}

@@ -4,6 +4,7 @@ import { Loader2, AlertTriangle, MessageSquare, X } from "lucide-react";
 import { useRoomSession } from "../hooks/useRoomSession";
 import { TopBar } from "../components/room/TopBar";
 import { EditorPanel } from "../components/room/EditorPanel";
+import { InfoModal } from "../components/room/InfoModal";
 import { Navbar } from "../components/Navbar";
 import { UsersPanel } from "../components/room/UsersPanel";
 import { CommsPanel } from "../components/room/CommsPanel";
@@ -23,6 +24,9 @@ export function RoomPage() {
   const initialName = getUsername() || user?.displayName || user?.email?.split("@")[0] || generateGuestName();
   const [joinName, setJoinName] = useState(() => initialName);
   const [joinNameError, setJoinNameError] = useState("");
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [feedbackType, setFeedbackType] = useState('general');
+  const infoShownRef = useRef(false);
   const [activeCommsTab, setActiveCommsTab] = useState("chat");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showFloatingProblem, setShowFloatingProblem] = useState(false);
@@ -104,6 +108,7 @@ export function RoomPage() {
   const handleLeaveRequest = () => {
     setShowLeavePrompt(true);
   };
+  
 
   const getActiveProblem = () => {
     if (room?.problemId) return problems.find(p => p.id === room.problemId);
@@ -195,6 +200,14 @@ export function RoomPage() {
     if (joinName && joinName.trim()) saveUsername(joinName.trim());
   }, [joinName]);
 
+  // Show Info Modal on first join
+  useEffect(() => {
+    if (room && !infoShownRef.current) {
+      setShowInfoModal(true);
+      infoShownRef.current = true;
+    }
+  }, [room]);
+
   /* ── Loading state ── */
   if (!room && !joinError) {
     return (
@@ -243,6 +256,11 @@ export function RoomPage() {
           ))}
         </div>
 
+        <InfoModal 
+          isOpen={showInfoModal} 
+          onClose={() => setShowInfoModal(false)} 
+        />
+
         <TopBar
           room={room}
           users={users}
@@ -255,6 +273,7 @@ export function RoomPage() {
           actions={actions}
           onLeaveRequest={handleLeaveRequest}
           onToggleProblem={() => setShowFloatingProblem(!showFloatingProblem)}
+          onShowInfo={() => setShowInfoModal(true)}
         />
 
         {showFloatingProblem && activeProblem && (
