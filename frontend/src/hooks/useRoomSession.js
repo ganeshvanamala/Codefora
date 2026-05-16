@@ -27,6 +27,8 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const [aiThinking, setAiThinking] = useState(false);
   const [micOn, setMicOn] = useState(false);
   const [notes, setNotes] = useState({ text: "", draws: [] });
+  const [timer, setTimer] = useState({ endTime: null, duration: 25 * 60, isRunning: false });
+  const [history, setHistory] = useState([]);
   const remoteUpdate = useRef(false);
   const runRequestId = useRef(0);
   const typingTimer = useRef(null);
@@ -220,9 +222,9 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         if (bypassBlockerRef) bypassBlockerRef.current = true;
         navigate("/rooms?message=You have been removed from the room");
       });
-      socket.on("notes:update", ({ text }) => {
-        setNotes((prev) => ({ ...prev, text }));
-      });
+      socket.on("notes:update", (newNotes) => setNotes(newNotes));
+      socket.on("timer:sync", (newTimer) => setTimer(newTimer));
+      socket.on("history:update", (newHistory) => setHistory(newHistory));
       socket.on("notes:draw", (draw) => {
         setNotes((prev) => {
           if (draw === "clear") return { ...prev, draws: [] };
@@ -293,6 +295,9 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
       socket.off("room:error");
       socket.off("room:ended");
       socket.off("room:kicked");
+      socket.off("notes:update");
+      socket.off("timer:sync");
+      socket.off("history:update");
     };
   }, [roomId, activeUsername, activeUserId]);
 
@@ -306,6 +311,8 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     setMessages(snapshot.messages || []);
     setUsers(snapshot.usersList || []);
     setNotes(snapshot.notes || { text: "", draws: [] });
+    setTimer(snapshot.timer || { endTime: null, duration: 25 * 60, isRunning: false });
+    setHistory(snapshot.history || []);
     setTypingCursors([]);
   }
 
@@ -397,6 +404,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     setIsRunningCode(true);
     setCompilerStatus("running");
     setOutput("Running...");
+    pushHistory();
     trackEvent("code_run", { room_id: activeRoomId, language });
     try {
       const result = await api.runCode({
@@ -439,6 +447,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     setIsSubmittingCode(true);
     setCompilerStatus("running");
     setOutput("Submitting against all sample test cases...");
+    pushHistory();
     trackEvent("submission", { room_id: activeRoomId, problem_id: problem.id, language });
 
     try {
@@ -836,6 +845,43 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     setOutput("");
   };
 
+  function updateNotes(text) {
+    setNotes(prev => ({ ...prev, text }));
+    socket.emit("notes:update", { roomId: activeRoomId, text });
+  }
+
+  function drawNote(draw) {
+    socket.emit("notes:draw", { roomId: activeRoomId, draw });
+  }
+
+  function startTimer(duration = 25 * 60) {
+    socket.emit("timer:start", { roomId: activeRoomId, duration });
+  }
+
+  function stopTimer() {
+    socket.emit("timer:stop", { roomId: activeRoomId });
+  }
+
+  function pushHistory() {
+    socket.emit("history:push", { roomId: activeRoomId });
+  }
+
+  async function saveWork(name, customFiles = null) {
+    if (!activeUserId) return { success: false, error: "Please log in to save your work." };
+    try {
+      const response = await api.saveWork(activeUserId, {
+        name,
+        files: customFiles || files,
+        type: room?.problemId ? "problem" : "lab",
+        originRoomId: activeRoomId
+      });
+      return { success: true, work: response.work };
+    } catch (error) {
+      console.error("Save work failed", error);
+      return { success: false, error: error.message };
+    }
+  }
+
   return {
     room,
     files,
@@ -849,6 +895,8 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     aiMessages,
     output,
     notes,
+    timer,
+    history,
     typing,
     typingCursors,
     suggestion,
@@ -863,17 +911,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     actions: {
       updateCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
       updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput,
-      updateNotes: (text) => {
-        setNotes(prev => ({ ...prev, text }));
-        socket.emit("notes:update", { roomId: activeRoomId, text });
-      },
-      drawNote: (draw) => {
-        setNotes(prev => {
-          if (draw === "clear") return { ...prev, draws: [] };
-          return { ...prev, draws: [...prev.draws, draw].slice(-2000) };
-        });
-        socket.emit("notes:draw", { roomId: activeRoomId, draw });
-      }
+      updateNotes, drawNote, startTimer, stopTimer, pushHistory, saveWork
     }
   };
 }

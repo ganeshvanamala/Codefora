@@ -1,4 +1,4 @@
-import { createFirestore } from "../config/firebase.js";
+import { createFirestore, admin } from "../config/firebase.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -63,6 +63,58 @@ export function createProfileController() {
         return response.json({ ok: true });
       } catch (error) {
         console.warn(`Profile save failed: ${error.message}`);
+        return response.status(500).json({ error: error.message });
+      }
+    },
+
+    saveWork: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const work = request.body || {};
+      if (!userId) return response.status(400).json({ error: "Missing userId" });
+      
+      const newWork = {
+        ...work,
+        id: `work-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        createdAt: Date.now()
+      };
+
+      try {
+        if (!db) {
+          const users = await readLocalUsers();
+          if (!users[userId]) users[userId] = { profile: {}, works: [] };
+          if (!users[userId].works) users[userId].works = [];
+          users[userId].works.push(newWork);
+          await writeLocalUsers(users);
+          return response.json({ ok: true, work: newWork });
+        }
+
+        await db.collection("users").doc(userId).set({
+          works: admin.firestore.FieldValue.arrayUnion(newWork)
+        }, { merge: true });
+        
+        return response.json({ ok: true, work: newWork });
+      } catch (error) {
+        console.warn(`Work save failed: ${error.message}`);
+        return response.status(500).json({ error: error.message });
+      }
+    },
+
+    listWorks: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      if (!userId) return response.status(400).json({ error: "Missing userId" });
+      try {
+        if (!db) {
+          const users = await readLocalUsers();
+          const user = users[userId] || {};
+          return response.json(user.works || []);
+        }
+
+        const doc = await db.collection("users").doc(userId).get();
+        if (!doc.exists) return response.json([]);
+        const data = doc.data() || {};
+        return response.json(data.works || []);
+      } catch (error) {
+        console.warn(`Works list failed: ${error.message}`);
         return response.status(500).json({ error: error.message });
       }
     },

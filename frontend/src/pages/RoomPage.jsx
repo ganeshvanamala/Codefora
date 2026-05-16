@@ -11,6 +11,7 @@ import { CommsPanel } from "../components/room/CommsPanel";
 import { ConsolePanel } from "../components/room/ConsolePanel";
 import { FloatingProblem } from "../components/room/FloatingProblem";
 import { NotesModal } from "../components/room/NotesModal";
+import { TimeTravelModal } from "../components/room/TimeTravelModal";
 import { FooterBar } from "../components/room/FooterBar";
 import { problems } from "../data/problems";
 import { getUsername, saveUsername } from "../lib/navigation";
@@ -32,6 +33,7 @@ export function RoomPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showFloatingProblem, setShowFloatingProblem] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showTimeTravel, setShowTimeTravel] = useState(false);
 
   const isBypassingBlocker = useRef(false);
 
@@ -48,6 +50,8 @@ export function RoomPage() {
     aiMessages,
     output,
     notes,
+    timer,
+    history,
     typing,
     typingCursors,
     suggestion,
@@ -208,6 +212,11 @@ export function RoomPage() {
     if (room && !infoShownRef.current) {
       setShowInfoModal(true);
       infoShownRef.current = true;
+      
+      // Auto-open problem if it exists
+      if (room.problemId) {
+        setShowFloatingProblem(true);
+      }
     }
   }, [room]);
 
@@ -278,6 +287,7 @@ export function RoomPage() {
           onToggleProblem={() => setShowFloatingProblem(!showFloatingProblem)}
           onShowInfo={() => setShowInfoModal(true)}
           onShowNotes={() => setShowNotes(true)}
+          timer={timer}
         />
 
         <NotesModal 
@@ -288,6 +298,15 @@ export function RoomPage() {
           onDraw={actions.drawNote}
           permissions={permissions}
         />
+
+        {showTimeTravel && (
+          <TimeTravelModal 
+            isOpen={showTimeTravel}
+            onClose={() => setShowTimeTravel(false)}
+            history={history}
+            files={files}
+          />
+        )}
 
         {showFloatingProblem && activeProblem && (
           <FloatingProblem 
@@ -335,6 +354,7 @@ export function RoomPage() {
               onChange={actions.updateCode}
               onCreateFile={actions.createFile}
               onDeleteFile={actions.deleteActiveFile}
+              onSaveWork={actions.saveWork}
             />
             <ConsolePanel
               output={output}
@@ -349,8 +369,14 @@ export function RoomPage() {
               setRunFile={setRunFile}
               isRunningCode={compiler.isRunningCode}
               isSubmittingCode={compiler.isSubmittingCode}
-              onRun={() => actions.runCode(stdin)}
-              onSubmit={() => actions.submitCode(activeProblem)}
+              onRun={() => {
+                actions.runCode(stdin);
+                setShowTimeTravel(true);
+              }}
+              onSubmit={() => {
+                actions.submitCode(activeProblem);
+                setShowTimeTravel(true);
+              }}
               activeProblem={activeProblem}
               canSubmit={permissions.canEdit}
             />

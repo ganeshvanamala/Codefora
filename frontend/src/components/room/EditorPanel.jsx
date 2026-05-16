@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2 } from "lucide-react";
+import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2, Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { socket } from "../../lib/socket";
@@ -23,13 +23,15 @@ const FILE_TYPES = [
   { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
-export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile }) {
+export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile, onSaveWork }) {
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
   const [editorInstance, setEditorInstance] = useState(null);
   const [editorTick, setEditorTick] = useState(0);
   const fileInputRef = useRef(null);
@@ -114,6 +116,21 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
     } finally {
       setIsExporting(false);
     }
+  }
+
+  async function handleSaveWork() {
+    if (!onSaveWork) return;
+    setIsSaving(true);
+    setSaveMessage("");
+    const result = await onSaveWork(`Project in ${roomId}`);
+    if (result.success) {
+      setSaveMessage("Saved!");
+    } else {
+      setSaveMessage("Error");
+      alert(result.error || "Failed to save work");
+    }
+    setIsSaving(false);
+    setTimeout(() => setSaveMessage(""), 3000);
   }
 
   function toggleFileSelection(fileName) {
@@ -308,6 +325,17 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
           title="Export"
         >
           <Download size={14} /> <span>Export</span>
+        </button>
+
+        <button 
+          className={`button compact ${saveMessage === 'Saved!' ? 'success' : 'secondary'} create-file-button`} 
+          onClick={handleSaveWork}
+          disabled={isSaving}
+          title="Save to My Works"
+          style={{ gap: '6px' }}
+        >
+          <Save size={14} /> 
+          <span>{isSaving ? "Saving..." : saveMessage || "Save Work"}</span>
         </button>
       </div>
 

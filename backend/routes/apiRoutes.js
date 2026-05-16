@@ -18,6 +18,8 @@ export function createApiRoutes({ roomController, executionController, aiControl
   if (profileController) {
     router.get("/profiles/:userId", profileController.get);
     router.post("/profiles/:userId", profileController.save);
+    router.post("/profiles/:userId/save-work", profileController.saveWork);
+    router.get("/profiles/:userId/works", profileController.listWorks);
   }
   if (accountController) {
     router.post("/auth/signup", accountController.signup);

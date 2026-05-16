@@ -1,4 +1,4 @@
-import { Save, UserCircle2, X, Edit3, Code, Users, Flame, Trophy, Calendar, ChevronDown, Activity, Award, CheckCircle2, UserPlus, Image as ImageIcon, Shield } from "lucide-react";
+import { Save, UserCircle2, X, Edit3, Code, Users, Flame, Trophy, Calendar, ChevronDown, Activity, Award, CheckCircle2, UserPlus, Image as ImageIcon, Shield, Folder, ExternalLink, Clock, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -6,7 +6,7 @@ import { Navbar } from "../components/Navbar";
 import EmotionPicker from "../components/EmotionPicker";
 import { useAuth } from "../hooks/useAuth";
 import { API_URL } from "../config";
-import { getProfile, saveProfile } from "../api/client";
+import { getProfile, saveProfile, api } from "../api/client";
 import bannerImage from "../../assets/scene1.jpeg";
 import { trackEvent } from "../lib/analytics";
 
@@ -22,6 +22,8 @@ export function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
   const [showEmotionModal, setShowEmotionModal] = useState(false);
+  const [works, setWorks] = useState([]);
+  const [loadingWorks, setLoadingWorks] = useState(false);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -43,6 +45,12 @@ export function ProfilePage() {
       setSelectedCommunity(profile.community || "sider");
 
       setLoadingProfile(false);
+      
+      // Load works
+      setLoadingWorks(true);
+      const userWorks = await api.getWorks(user.uid).catch(() => []);
+      setWorks(userWorks || []);
+      setLoadingWorks(false);
     }
 
     if (user?.uid) {
@@ -336,6 +344,86 @@ export function ProfilePage() {
                   <span>Participate in contests to build your rating graph.</span>
                 </div>
               </div>
+            </div>
+
+            {/* MY WORKS SECTION */}
+            <div className="profile-v2-card widget-card" style={{ gridColumn: '1 / -1' }}>
+              <div className="card-header-flex">
+                <div className="card-title">
+                  <Folder size={16} className="text-blue" /> MY SAVED WORKS
+                </div>
+                <button className="view-all-btn" onClick={() => navigate('/playground')}>Open Playground</button>
+              </div>
+
+              {loadingWorks ? (
+                <div className="works-loading" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto 10px' }} />
+                  <span>Loading your works...</span>
+                </div>
+              ) : works.length === 0 ? (
+                <div className="works-empty" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+                  <Code size={32} style={{ marginBottom: '15px', opacity: 0.3 }} />
+                  <p>You haven't saved any work yet.</p>
+                  <button className="button-text-orange" onClick={() => navigate('/playground')}>Start a new project</button>
+                </div>
+              ) : (
+                <div className="works-grid" style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+                  gap: '16px',
+                  marginTop: '15px'
+                }}>
+                  {works.map(work => (
+                    <div key={work.id} className="work-item-card" style={{ 
+                      background: 'rgba(255,255,255,0.03)', 
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      transition: 'all 0.2s',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }} onClick={() => navigate('/playground', { state: { initialFiles: work.files } })}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        <div style={{ 
+                          padding: '4px 8px', 
+                          borderRadius: '6px', 
+                          fontSize: '10px', 
+                          fontWeight: '800', 
+                          textTransform: 'uppercase',
+                          background: work.type === 'playground' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 115, 22, 0.1)',
+                          color: work.type === 'playground' ? '#3b82f6' : '#f97316'
+                        }}>
+                          {work.type}
+                        </div>
+                        <ExternalLink size={14} style={{ color: 'var(--text-muted)' }} />
+                      </div>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: 'var(--text-primary)' }}>{work.name}</h4>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                        <Clock size={12} />
+                        {new Date(work.createdAt).toLocaleDateString()}
+                      </div>
+                      <div style={{ 
+                        marginTop: '12px', 
+                        display: 'flex', 
+                        gap: '6px', 
+                        flexWrap: 'wrap' 
+                      }}>
+                        {work.files?.slice(0, 3).map(f => (
+                          <span key={f.name} style={{ 
+                            fontSize: '10px', 
+                            padding: '2px 6px', 
+                            background: 'rgba(255,255,255,0.05)', 
+                            borderRadius: '4px',
+                            border: '1px solid var(--glass-border)'
+                          }}>{f.name}</span>
+                        ))}
+                        {work.files?.length > 3 && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>+{work.files.length - 3}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* RECENT ACTIVITY */}

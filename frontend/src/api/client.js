@@ -38,7 +38,9 @@ export const api = {
   login: (body) => request("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
   signup: (body) => request("/api/auth/signup", { method: "POST", body: JSON.stringify(body) }),
   getProfile: (userId) => request(`/api/profiles/${encodeURIComponent(userId)}`),
-  saveProfile: (userId, profile) => request(`/api/profiles/${encodeURIComponent(userId)}`, { method: "POST", body: JSON.stringify(profile) })
+  saveProfile: (userId, profile) => request(`/api/profiles/${encodeURIComponent(userId)}`, { method: "POST", body: JSON.stringify(profile) }),
+  saveWork: (userId, work) => request(`/api/profiles/${encodeURIComponent(userId)}/save-work`, { method: "POST", body: JSON.stringify(work) }),
+  getWorks: (userId) => request(`/api/profiles/${encodeURIComponent(userId)}/works`)
 };
 
 // Export individual helpers for backward compatibility/flexibility

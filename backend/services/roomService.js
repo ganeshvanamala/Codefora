@@ -33,6 +33,8 @@ export class RoomService {
       messages: [],
       users: [],
       notes: { text: "", draws: [] },
+      timer: { endTime: null, duration: 25 * 60, isRunning: false },
+      history: [],
       hostName: username?.trim() || "Host",
       ownerUserId: userId?.trim() || null,
       hostToken: cryptoId() + cryptoId(),
@@ -64,8 +66,25 @@ export class RoomService {
       files: room.files,
       messages: room.messages.slice(-50),
       usersList: room.users,
-      notes: room.notes || { text: "", draws: [] }
+      notes: room.notes || { text: "", draws: [] },
+      timer: room.timer || { endTime: null, duration: 25 * 60, isRunning: false },
+      history: (room.history || []).slice(-10) // Only send recent 10 major snapshots
     };
+  }
+
+  addToHistory(room, user) {
+    // Only add if code changed significantly from last snapshot
+    const lastSnapshot = room.history[room.history.length - 1];
+    const currentFiles = room.files.map(f => ({ name: f.name, code: f.code }));
+    
+    if (!lastSnapshot || JSON.stringify(lastSnapshot.files) !== JSON.stringify(currentFiles)) {
+      room.history.push({
+        timestamp: Date.now(),
+        user: user.name,
+        files: structuredClone(currentFiles)
+      });
+      if (room.history.length > 50) room.history.shift(); // Keep last 50
+    }
   }
 
   findUser(room, socketId) {

@@ -1,6 +1,32 @@
-import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote } from "lucide-react";
+import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes }) {
+export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes, timer }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!timer.isRunning || !timer.endTime) {
+      setTimeLeft("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = timer.endTime - now;
+
+      if (diff <= 0) {
+        setTimeLeft("00:00");
+        clearInterval(interval);
+        return;
+      }
+
+      const mins = Math.floor(diff / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer.isRunning, timer.endTime]);
 
   return (
     <header className="topbar">
@@ -39,6 +65,49 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           <span style={{ marginTop: '4px' }}>
             <Users size={14} /> {users.length} online — {permissions.me?.role || "Member"}
           </span>
+        </div>
+
+        {/* Pomodoro Timer */}
+        <div className="pomodoro-timer" style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '10px',
+          background: 'rgba(255,255,255,0.03)',
+          padding: '4px 12px',
+          borderRadius: '12px',
+          border: '1px solid var(--glass-border)',
+          marginLeft: '20px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: timer.isRunning ? 'var(--primary-orange)' : 'var(--text-muted)' }}>
+            <Timer size={16} className={timer.isRunning ? "animate-pulse" : ""} />
+            <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 'bold', minWidth: '50px' }}>
+              {timer.isRunning ? timeLeft : "25:00"}
+            </span>
+          </div>
+          
+          {permissions.isHost && (
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {!timer.isRunning ? (
+                <button 
+                  className="button-icon-sm" 
+                  onClick={() => actions.startTimer(25 * 60)}
+                  title="Start Sprint (25m)"
+                  style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer', padding: '4px' }}
+                >
+                  <Play size={14} />
+                </button>
+              ) : (
+                <button 
+                  className="button-icon-sm" 
+                  onClick={actions.stopTimer}
+                  title="Stop Timer"
+                  style={{ background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer', padding: '4px' }}
+                >
+                  <Square size={14} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

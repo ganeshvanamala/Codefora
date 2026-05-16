@@ -303,6 +303,34 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       socket.to(roomId).emit("notes:draw", draw);
     });
 
+    socket.on("timer:start", ({ roomId, duration }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role !== "Host") return;
+      
+      const endTime = Date.now() + (duration * 1000);
+      room.timer = { endTime, duration, isRunning: true };
+      io.to(roomId).emit("timer:sync", room.timer);
+    });
+
+    socket.on("timer:stop", ({ roomId }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role !== "Host") return;
+      
+      room.timer = { endTime: null, duration: room.timer?.duration || 25 * 60, isRunning: false };
+      io.to(roomId).emit("timer:sync", room.timer);
+    });
+
+    socket.on("history:push", ({ roomId }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role === "Viewer") return;
+      
+      roomService.addToHistory(room, user);
+      io.to(roomId).emit("history:update", (room.history || []).slice(-10));
+    });
+
     socket.on("room:end", ({ roomId }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
