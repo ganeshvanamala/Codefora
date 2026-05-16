@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Shield, Code, Eye, MessageSquare, Zap, Mic, BookOpen, Info } from 'lucide-react';
+import { X, Shield, Code, Eye, MessageSquare, Zap, Mic, BookOpen, Info, StickyNote, Upload } from 'lucide-react';
 
 export function InfoModal({ isOpen, onClose }) {
   if (!isOpen) return null;
@@ -43,25 +43,37 @@ export function InfoModal({ isOpen, onClose }) {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <MessageSquare size={16} style={{ color: '#50fa7b', flexShrink: 0 }} />
                 <div style={{ fontSize: '0.85rem' }}>
-                  <strong>Chat & AI:</strong> Use the bottom-right bubble to chat with others or ask the AI for coding help.
+                  <strong>Chat & AI:</strong> Chat with members or ask the AI for coding help in the bottom-right bubble.
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <Mic size={16} style={{ color: '#ff7a18', flexShrink: 0 }} />
+                <StickyNote size={16} style={{ color: '#facc15', flexShrink: 0 }} />
                 <div style={{ fontSize: '0.85rem' }}>
-                  <strong>Voice Comms:</strong> Click the Mic button at the top to talk to everyone live.
+                  <strong>Rough/Notes:</strong> Use the "Rough" button at the top for a shared live scratchpad (Doodle/Type).
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <Upload size={16} style={{ color: '#ff7a18', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.85rem' }}>
+                  <strong>Import/Export:</strong> Upload files from your device or export the entire room as a ZIP archive.
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <Mic size={16} style={{ color: '#8be9fd', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.85rem' }}>
+                  <strong>Voice Comms:</strong> Click the Mic button at the top to talk to everyone live in high quality.
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <BookOpen size={16} style={{ color: '#a855f7', flexShrink: 0 }} />
                 <div style={{ fontSize: '0.85rem' }}>
-                  <strong>Problem Info:</strong> If it's a problem room, click "View Problem" at the top to see the description.
+                  <strong>Problem Info:</strong> Click "View Problem" at the top to see the description and constraints.
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <Code size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                <Zap size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
                 <div style={{ fontSize: '0.85rem' }}>
-                  <strong>Code Sync:</strong> Your edits are synced instantly with everyone else in the room.
+                  <strong>Instant Sync:</strong> Code, notes, and file changes are synced instantly for all participants.
                 </div>
               </div>
             </div>
