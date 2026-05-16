@@ -393,12 +393,56 @@
   }
 
   .file-tools {
-    padding: 4px 12px;
+    padding: 6px 12px;
     display: flex;
-    gap: 8px;
+    gap: 10px;
     background: var(--bg-primary);
     border-bottom: 1px solid var(--glass-border);
     align-items: center;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .file-tools::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+
+  .file-tools input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-size: 12px;
+    width: 100px;
+    height: 30px;
+    transition: all 0.2s;
+  }
+
+  .file-tools input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .file-type-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    padding: 0 8px;
+    color: white;
+    font-size: 12px;
+    height: 30px;
+    cursor: pointer;
+    max-width: 130px;
+  }
+
+  .create-file-button {
+    white-space: nowrap;
+    height: 30px;
+    padding: 0 12px;
+    font-size: 12px;
   }
 
   .file-tools-divider {
