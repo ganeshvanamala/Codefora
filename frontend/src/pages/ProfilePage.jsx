@@ -193,6 +193,42 @@ export function ProfilePage() {
               <div><Calendar size={12} /> {joinDate}</div>
             </div>
           </div>
+
+          {/* COMPETITIVE STATS MOVED TO SIDEBAR */}
+          <div className="profile-v2-card widget-card" style={{ marginTop: '16px' }}>
+            <div className="card-title">
+              <Activity size={16} className="text-orange" /> COMPETITIVE STATS
+            </div>
+            <div className="stats-mini-grid">
+              <div className="mini-stat">
+                <Shield size={16} className="text-blue" />
+                <strong>N/A</strong>
+                <span>Current Rating</span>
+              </div>
+              <div className="mini-stat">
+                <Award size={16} className="text-orange" />
+                <strong>N/A</strong>
+                <span>Max Rating</span>
+              </div>
+              <div className="mini-stat">
+                <Users size={16} className="text-blue" />
+                <strong>0</strong>
+                <span>Rooms Hosted</span>
+              </div>
+              <div className="mini-stat">
+                <Code size={16} className="text-orange" />
+                <strong>0</strong>
+                <span>Problems Solved</span>
+              </div>
+            </div>
+            
+            <div className="chart-placeholder">
+              <div className="chart-empty-state">
+                <p>No competitive info available yet.</p>
+                <span style={{ fontSize: '10px' }}>Participate in contests to build your rating graph.</span>
+              </div>
+            </div>
+          </div>
         </aside>
 
         {/* MAIN CONTENT */}
@@ -310,42 +346,6 @@ export function ProfilePage() {
 
           {/* BOTTOM WIDGETS */}
           <div className="profile-v2-widgets">
-            {/* COMPETITIVE STATS */}
-            <div className="profile-v2-card widget-card">
-              <div className="card-title">
-                <Activity size={16} className="text-orange" /> COMPETITIVE STATS
-              </div>
-              <div className="stats-mini-grid">
-                <div className="mini-stat">
-                  <Shield size={16} className="text-blue" />
-                  <strong>N/A</strong>
-                  <span>Current Rating</span>
-                </div>
-                <div className="mini-stat">
-                  <Award size={16} className="text-orange" />
-                  <strong>N/A</strong>
-                  <span>Max Rating</span>
-                </div>
-                <div className="mini-stat">
-                  <Users size={16} className="text-blue" />
-                  <strong>0</strong>
-                  <span>Rooms Hosted</span>
-                </div>
-                <div className="mini-stat">
-                  <Code size={16} className="text-orange" />
-                  <strong>0</strong>
-                  <span>Problems Solved</span>
-                </div>
-              </div>
-              
-              <div className="chart-placeholder">
-                <div className="chart-empty-state">
-                  <p>No competitive info available yet.</p>
-                  <span>Participate in contests to build your rating graph.</span>
-                </div>
-              </div>
-            </div>
-
             {/* MY WORKS SECTION */}
             <div className="profile-v2-card widget-card" style={{ gridColumn: '1 / -1' }}>
               <div className="card-header-flex">
