@@ -7,6 +7,7 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
   const [isDrawing, setIsDrawing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const lastPos = useRef({ x: 0, y: 0 });
+  const currentPath = useRef([]);
 
   useEffect(() => {
     if (!canvasRef.current || !isOpen) return;
@@ -63,7 +64,6 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
     lastPos.current = { x, y };
   };
 
-  const currentPath = useRef([]);
 
   const stopDrawing = () => {
     if (isDrawing && permissions.canEdit) {
