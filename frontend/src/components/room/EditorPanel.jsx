@@ -274,7 +274,17 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         </div>
       </div>
 
-      <div className="file-tools">
+      <div className="file-tools" style={{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        gap: '8px', 
+        padding: '6px 12px',
+        overflowX: 'auto',
+        flexWrap: 'nowrap',
+        width: '100%',
+        justifyContent: 'flex-start'
+      }}>
         <input
           disabled={!permissions.canEdit}
           value={newFileName}

@@ -87,19 +87,21 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 {timeLeft}
               </span>
             ) : permissions.isHost ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.2)', padding: '2px 4px', borderRadius: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
                 <input 
-                  type="number" 
+                  type="text" 
+                  inputMode="numeric"
                   value={customMin} 
-                  onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value) || 0))}
-                  style={{ width: '24px', background: 'none', border: 'none', color: 'white', fontSize: '12px', textAlign: 'right', outline: 'none' }}
+                  onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
+                  style={{ width: '28px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
                 />
-                <span style={{ fontSize: '12px' }}>:</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>:</span>
                 <input 
-                  type="number" 
-                  value={customSec} 
-                  onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
-                  style={{ width: '24px', background: 'none', border: 'none', color: 'white', fontSize: '12px', textAlign: 'left', outline: 'none' }}
+                  type="text" 
+                  inputMode="numeric"
+                  value={customSec.toString().padStart(2, '0')} 
+                  onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
+                  style={{ width: '28px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
                 />
               </div>
             ) : (
