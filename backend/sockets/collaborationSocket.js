@@ -209,11 +209,11 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       socket.to(roomId).emit("file:update", { fileName, code, user: user.name });
     });
 
-    socket.on("file:create", ({ roomId, fileName, language }) => {
+    socket.on("file:create", ({ roomId, fileName, language, code }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
       if (!room || !user || user.role === "Viewer" || !fileName?.trim()) return;
-      if (!roomService.addFile(room, fileName, language)) return;
+      if (!roomService.addFile(room, fileName, language, code)) return;
       roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
       io.to(roomId).emit("files:update", room.files);
     });

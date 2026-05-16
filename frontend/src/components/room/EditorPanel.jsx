@@ -1,8 +1,9 @@
 import Editor from "@monaco-editor/react";
-import { Activity, FileCode2, Plus, X } from "lucide-react";
+import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { socket } from "../../lib/socket";
+import JSZip from "jszip";
 
 const FILE_TYPES = [
   { label: "JavaScript", language: "javascript", extension: ".js" },
@@ -19,8 +20,12 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [isExporting, setIsExporting] = useState(false);
   const [editorInstance, setEditorInstance] = useState(null);
   const [editorTick, setEditorTick] = useState(0);
+  const fileInputRef = useRef(null);
   const { theme } = useTheme();
   const editorDisposables = useRef([]);
   const activeFileNameRef = useRef(activeFile?.name);
@@ -42,6 +47,72 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
     const fileName = cleanName.includes(".") ? cleanName : `${cleanName}${selectedType.extension}`;
     onCreateFile(fileName, selectedType.language);
     setNewFileName("");
+  }
+
+  function handleImport(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const fileName = file.name;
+      // Infer language from extension
+      const ext = `.${fileName.split('.').pop()}`;
+      const typeMatch = FILE_TYPES.find(t => t.extension === ext);
+      onCreateFile(fileName, typeMatch?.language || "javascript", content);
+    };
+    reader.readAsText(file);
+    event.target.value = ""; // Reset
+  }
+
+  async function handleExport() {
+    if (selectedFiles.length === 0) return;
+    setIsExporting(true);
+
+    try {
+      if (selectedFiles.length === 1) {
+        // Single file download
+        const fileName = selectedFiles[0];
+        const file = files.find(f => f.name === fileName);
+        if (file) {
+          const blob = new Blob([file.code || ""], { type: "text/plain" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      } else {
+        // Multi-file ZIP
+        const zip = new JSZip();
+        selectedFiles.forEach(fileName => {
+          const file = files.find(f => f.name === fileName);
+          if (file) {
+            zip.file(fileName, file.code || "");
+          }
+        });
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `codefora_export_${roomId || "room"}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      setShowExportModal(false);
+    } catch (error) {
+      console.error("Export failed", error);
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  function toggleFileSelection(fileName) {
+    setSelectedFiles(prev => 
+      prev.includes(fileName) ? prev.filter(f => f !== fileName) : [...prev, fileName]
+    );
   }
 
   const otherUsers = users.filter((user) => user.socketId !== socket.id);
@@ -203,6 +274,34 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         <button className="button compact secondary create-file-button" disabled={!permissions.canEdit} onClick={createFile}>
           <Plus size={15} /> <span>Create</span>
         </button>
+
+        <div className="file-tools-divider" />
+
+        <button 
+          className="button compact secondary" 
+          disabled={!permissions.canEdit} 
+          onClick={() => fileInputRef.current?.click()}
+          title="Import file from device"
+        >
+          <Upload size={14} /> <span>Import</span>
+        </button>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          onChange={handleImport} 
+        />
+
+        <button 
+          className="button compact secondary" 
+          onClick={() => {
+            setSelectedFiles(files.map(f => f.name));
+            setShowExportModal(true);
+          }}
+          title="Export files"
+        >
+          <Download size={14} /> <span>Export</span>
+        </button>
       </div>
 
       <div className="editor-wrap">
@@ -232,6 +331,57 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
           }}
         />
       </div>
+
+      {showExportModal && (
+        <div className="file-delete-overlay" role="dialog" aria-modal="true" aria-label="Export files modal">
+          <div className="file-delete-card export-modal">
+            <div className="export-modal-header">
+              <h3>Export Files</h3>
+              <button className="button compact ghost" onClick={() => setShowExportModal(false)}><X size={16} /></button>
+            </div>
+            <p className="export-subtitle">Select the files you want to download.</p>
+            
+            <div className="export-file-list">
+              {files.map(file => (
+                <label key={file.name} className="export-file-item">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedFiles.includes(file.name)}
+                    onChange={() => toggleFileSelection(file.name)}
+                  />
+                  <FileCode2 size={14} />
+                  <span>{file.name}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="file-delete-actions">
+              <div className="export-actions-left">
+                <button 
+                  className="button ghost compact" 
+                  onClick={() => setSelectedFiles(files.map(f => f.name))}
+                >
+                  Select All
+                </button>
+                <button 
+                  className="button ghost compact" 
+                  onClick={() => setSelectedFiles([])}
+                >
+                  Clear
+                </button>
+              </div>
+              <button 
+                type="button" 
+                className="button success compact" 
+                disabled={selectedFiles.length === 0 || isExporting}
+                onClick={handleExport}
+              >
+                {isExporting ? "Exporting..." : `Download ${selectedFiles.length > 1 ? `(${selectedFiles.length} files)` : "File"}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {pendingDeleteFile && (
         <div className="file-delete-overlay" role="dialog" aria-modal="true" aria-label="Delete file confirmation">

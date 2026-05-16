@@ -70,10 +70,14 @@ export class RoomService {
     return room.users.find((user) => user.socketId === socketId);
   }
 
-  addFile(room, fileName, language) {
+  addFile(room, fileName, language, code) {
     const cleanName = fileName.trim().replace(/[\\/]/g, "");
     if (!cleanName || room.files.some((file) => file.name === cleanName) || room.files.length >= 8) return false;
-    room.files.push({ name: cleanName, language: String(language || "").trim() || languageFromName(cleanName), code: starterCode(cleanName) });
+    room.files.push({ 
+      name: cleanName, 
+      language: String(language || "").trim() || languageFromName(cleanName), 
+      code: code ?? starterCode(cleanName) 
+    });
     return true;
   }
 

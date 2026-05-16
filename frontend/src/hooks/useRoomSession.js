@@ -359,9 +359,9 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     }
   }
 
-  function createFile(fileName, language) {
+  function createFile(fileName, language, code) {
     if (!fileName.trim() || !canEdit) return;
-    socket.emit("file:create", { roomId: activeRoomId, fileName, language });
+    socket.emit("file:create", { roomId: activeRoomId, fileName, language, code });
   }
 
   function deleteActiveFile(fileName = activeFile?.name) {
