@@ -394,10 +394,12 @@
 .file-tools {
   padding: 4px 12px;
   display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--glass-border);
   align-items: center;
+  overflow-x: auto;
 }
 
 .file-tools-divider {
