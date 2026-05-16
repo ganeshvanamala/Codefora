@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Loader2, Save, Play, Code2, Layout, Terminal, Globe, ChevronRight } from 'lucide-react';
+import { Loader2, Save, Play, Code2, Layout, Terminal, Globe, ChevronRight, Plus, Upload, X, Download } from 'lucide-react';
+import JSZip from "jszip";
 import Editor from "@monaco-editor/react";
 import { Navbar } from "../components/Navbar";
 import { ConsolePanel } from "../components/room/ConsolePanel";
@@ -8,6 +7,24 @@ import { api } from "../api/client";
 import { useAuth } from "../hooks/useAuth";
 import { buildPreview } from "../lib/preview";
 import { useTheme } from "../hooks/useTheme";
+
+const FILE_TYPES = [
+  { label: "JavaScript", language: "javascript", extension: ".js" },
+  { label: "TypeScript", language: "typescript", extension: ".ts" },
+  { label: "Python", language: "python", extension: ".py" },
+  { label: "Java", language: "java", extension: ".java" },
+  { label: "C", language: "c", extension: ".c" },
+  { label: "C++", language: "cpp", extension: ".cpp" },
+  { label: "C#", language: "csharp", extension: ".cs" },
+  { label: "Go", language: "go", extension: ".go" },
+  { label: "Rust", language: "rust", extension: ".rs" },
+  { label: "PHP", language: "php", extension: ".php" },
+  { label: "Ruby", language: "ruby", extension: ".rb" },
+  { label: "Swift", language: "swift", extension: ".swift" },
+  { label: "HTML", language: "html", extension: ".html" },
+  { label: "CSS", language: "css", extension: ".css" },
+  { label: "SQL", language: "sql", extension: ".sql" }
+];
 
 export function PlaygroundPage() {
   const navigate = useNavigate();
@@ -25,9 +42,13 @@ export function PlaygroundPage() {
   const [stdin, setStdin] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
+  const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [consoleHeight, setConsoleHeight] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
   const resizeStart = useRef({ y: 0, height: 300 });
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (location.state?.initialFiles) {
@@ -37,6 +58,79 @@ export function PlaygroundPage() {
       }
     }
   }, [location.state]);
+
+  const handleCreateFile = () => {
+    const selectedType = FILE_TYPES.find((type) => type.language === newFileType) || FILE_TYPES[0];
+    const cleanName = newFileName.trim();
+    if (!cleanName) return;
+    const fileName = cleanName.includes(".") ? cleanName : `${cleanName}${selectedType.extension}`;
+    if (files.some(f => f.name === fileName)) {
+      alert("File already exists");
+      return;
+    }
+    const newFile = { name: fileName, language: selectedType.language, code: "" };
+    setFiles(prev => [...prev, newFile]);
+    setActiveName(fileName);
+    setNewFileName("");
+  };
+
+  const handleImport = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const fileName = file.name;
+      const ext = `.${fileName.split('.').pop()}`;
+      const typeMatch = FILE_TYPES.find(t => t.extension === ext);
+      const newFile = { name: fileName, language: typeMatch?.language || "javascript", code: content };
+      setFiles(prev => {
+        if (prev.some(f => f.name === fileName)) return prev;
+        return [...prev, newFile];
+      });
+      setActiveName(fileName);
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      if (files.length === 1) {
+        const file = files[0];
+        const blob = new Blob([file.code || ""], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const zip = new JSZip();
+        files.forEach(f => zip.file(f.name, f.code || ""));
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `playground_export.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Export failed", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDeleteFile = (name) => {
+    if (files.length <= 1) return;
+    setFiles(prev => prev.filter(f => f.name !== name));
+    if (activeName === name) {
+      setActiveName(files.find(f => f.name !== name).name);
+    }
+  };
 
   const activeFile = files.find(f => f.name === activeName) || files[0];
   const previewDoc = buildPreview(files);
@@ -116,33 +210,72 @@ export function PlaygroundPage() {
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-orange)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-orange)', minWidth: 'fit-content' }}>
             <Layout size={20} />
             <h2 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '700' }}>Playground</h2>
           </div>
-          <div className="file-tabs-mini" style={{ display: 'flex', gap: '4px' }}>
-            {files.map(f => (
-              <button 
-                key={f.name}
-                onClick={() => setActiveName(f.name)}
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  border: '1px solid var(--glass-border)',
-                  background: activeName === f.name ? 'rgba(249, 115, 22, 0.1)' : 'transparent',
-                  color: activeName === f.name ? 'var(--primary-orange)' : 'var(--text-muted)',
-                  cursor: 'pointer'
-                }}
-              >
-                {f.name}
-              </button>
-            ))}
+
+          <div className="file-tools" style={{ 
+            borderBottom: 'none', 
+            background: 'transparent', 
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <input
+              value={newFileName}
+              onChange={(e) => setNewFileName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateFile()}
+              placeholder="new-file"
+              className="playground-input"
+              style={{ width: '100px', height: '30px', fontSize: '12px' }}
+            />
+            <select
+              className="file-type-select"
+              value={newFileType}
+              onChange={(e) => setNewFileType(e.target.value)}
+              style={{ height: '30px', fontSize: '12px' }}
+            >
+              {FILE_TYPES.map((type) => (
+                <option key={type.language} value={type.language}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+            <button className="button compact secondary create-file-button" onClick={handleCreateFile} title="Create File">
+              <Plus size={14} /> <span>Create</span>
+            </button>
+
+            <div className="file-tools-divider" style={{ margin: '0 4px' }} />
+
+            <button 
+              className="button compact secondary create-file-button" 
+              onClick={() => fileInputRef.current?.click()}
+              title="Import"
+            >
+              <Upload size={14} /> <span>Import</span>
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={handleImport} 
+            />
+
+            <button 
+              className="button compact secondary create-file-button" 
+              onClick={handleExport}
+              disabled={isExporting}
+              title="Export"
+            >
+              <Download size={14} /> <span>{isExporting ? '...' : 'Export'}</span>
+            </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button 
             className="button primary compact" 
             onClick={handleRun} 
@@ -162,6 +295,51 @@ export function PlaygroundPage() {
             {isSaving ? "Saving..." : "Save Work"}
           </button>
         </div>
+      </div>
+
+      <div className="playground-tabs-row" style={{ 
+        padding: '0 24px', 
+        background: 'rgba(15, 23, 42, 0.4)', 
+        borderBottom: '1px solid var(--glass-border)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        height: '36px'
+      }}>
+        {files.map(f => (
+          <div 
+            key={f.name}
+            className={`file-tab ${activeName === f.name ? "active" : ""}`}
+            style={{ 
+              height: '30px', 
+              fontSize: '12px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '0 12px',
+              borderRadius: '6px 6px 0 0',
+              cursor: 'pointer',
+              background: activeName === f.name ? 'rgba(249, 115, 22, 0.1)' : 'transparent',
+              color: activeName === f.name ? 'var(--primary-orange)' : 'var(--text-muted)',
+              border: activeName === f.name ? '1px solid var(--glass-border)' : '1px solid transparent',
+              borderBottom: activeName === f.name ? '2px solid var(--primary-orange)' : '1px solid transparent'
+            }}
+            onClick={() => setActiveName(f.name)}
+          >
+            <Code2 size={14} />
+            <span>{f.name}</span>
+            {files.length > 1 && (
+              <X 
+                size={12} 
+                className="hover-danger" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteFile(f.name);
+                }} 
+              />
+            )}
+          </div>
+        ))}
       </div>
 
       <div className="playground-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
