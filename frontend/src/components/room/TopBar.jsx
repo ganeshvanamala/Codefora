@@ -87,13 +87,13 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 {timeLeft}
               </span>
             ) : permissions.isHost ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
                 <input 
                   type="text" 
                   inputMode="numeric"
                   value={customMin} 
                   onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
-                  style={{ width: '28px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
+                  style={{ width: '40px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
                 />
                 <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>:</span>
                 <input 
@@ -101,7 +101,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                   inputMode="numeric"
                   value={customSec.toString().padStart(2, '0')} 
                   onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
-                  style={{ width: '28px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
+                  style={{ width: '40px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
                 />
               </div>
             ) : (
