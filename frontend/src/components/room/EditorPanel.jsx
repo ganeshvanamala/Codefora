@@ -291,7 +291,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         >
           {FILE_TYPES.map((type) => (
             <option key={type.language} value={type.language}>
-              {type.label} ({type.extension})
+              {type.label}
             </option>
           ))}
         </select>
@@ -327,6 +327,8 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
           <Download size={14} /> <span>Export</span>
         </button>
 
+        <div className="file-tools-divider" />
+
         <button 
           className={`button compact ${saveMessage === 'Saved!' ? 'success' : 'secondary'} create-file-button`} 
           onClick={handleSaveWork}
@@ -335,7 +337,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
           style={{ gap: '6px' }}
         >
           <Save size={14} /> 
-          <span>{isSaving ? "Saving..." : saveMessage || "Save Work"}</span>
+          <span>{isSaving ? "Saving..." : saveMessage || "Save"}</span>
         </button>
       </div>
 

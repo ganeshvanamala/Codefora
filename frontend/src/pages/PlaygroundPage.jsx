@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2, Save, Play, Code2, Layout, Terminal, Globe, ChevronRight, Plus, Upload, X, Download } from 'lucide-react';
 import JSZip from "jszip";
 import Editor from "@monaco-editor/react";

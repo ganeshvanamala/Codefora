@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes, timer }) {
   const [timeLeft, setTimeLeft] = useState("");
+  const [customMin, setCustomMin] = useState(25);
+  const [customSec, setCustomSec] = useState(0);
 
   useEffect(() => {
     if (!timer.isRunning || !timer.endTime) {
@@ -80,9 +82,31 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: timer.isRunning ? 'var(--primary-orange)' : 'var(--text-muted)' }}>
             <Timer size={16} className={timer.isRunning ? "animate-pulse" : ""} />
-            <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 'bold', minWidth: '50px' }}>
-              {timer.isRunning ? timeLeft : "25:00"}
-            </span>
+            {timer.isRunning ? (
+              <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 'bold', minWidth: '50px' }}>
+                {timeLeft}
+              </span>
+            ) : permissions.isHost ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(0,0,0,0.2)', padding: '2px 4px', borderRadius: '4px' }}>
+                <input 
+                  type="number" 
+                  value={customMin} 
+                  onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value) || 0))}
+                  style={{ width: '24px', background: 'none', border: 'none', color: 'white', fontSize: '12px', textAlign: 'right', outline: 'none' }}
+                />
+                <span style={{ fontSize: '12px' }}>:</span>
+                <input 
+                  type="number" 
+                  value={customSec} 
+                  onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                  style={{ width: '24px', background: 'none', border: 'none', color: 'white', fontSize: '12px', textAlign: 'left', outline: 'none' }}
+                />
+              </div>
+            ) : (
+              <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 'bold', minWidth: '50px' }}>
+                25:00
+              </span>
+            )}
           </div>
           
           {permissions.isHost && (
@@ -90,8 +114,8 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
               {!timer.isRunning ? (
                 <button 
                   className="button-icon-sm" 
-                  onClick={() => actions.startTimer(25 * 60)}
-                  title="Start Sprint (25m)"
+                  onClick={() => actions.startTimer(customMin * 60 + customSec)}
+                  title={`Start Sprint (${customMin}m ${customSec}s)`}
                   style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer', padding: '4px' }}
                 >
                   <Play size={14} />
