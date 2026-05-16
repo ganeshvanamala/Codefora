@@ -392,9 +392,9 @@
 }
 
 .file-tools {
-  padding: 8px 16px;
+  padding: 4px 12px;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--glass-border);
   align-items: center;
@@ -402,9 +402,9 @@
 
 .file-tools-divider {
   width: 1px;
-  height: 24px;
+  height: 18px;
   background: var(--border-color);
-  margin: 0 4px;
+  margin: 0 2px;
 }
 
 .editor-wrap {
@@ -1763,4 +1763,52 @@
   font-size: 0.8rem;
   color: #64748b;
   text-align: center;
+}
+
+/* Compact File Tools Styles */
+.file-tools input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  width: 110px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.file-tools input:focus {
+  border-color: var(--primary-orange);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.file-type-select {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  max-width: 140px;
+}
+
+.file-type-select:hover {
+  border-color: var(--text-muted);
+}
+
+.create-file-button {
+  padding: 4px 8px !important;
+  font-size: 0.8rem !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.create-file-button span {
+  font-size: 0.75rem !important;
 }

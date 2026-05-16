@@ -12,8 +12,15 @@ const FILE_TYPES = [
   { label: "Java", language: "java", extension: ".java" },
   { label: "C", language: "c", extension: ".c" },
   { label: "C++", language: "cpp", extension: ".cpp" },
+  { label: "C#", language: "csharp", extension: ".cs" },
   { label: "Go", language: "go", extension: ".go" },
-  { label: "Rust", language: "rust", extension: ".rs" }
+  { label: "Rust", language: "rust", extension: ".rs" },
+  { label: "PHP", language: "php", extension: ".php" },
+  { label: "Ruby", language: "ruby", extension: ".rb" },
+  { label: "Swift", language: "swift", extension: ".swift" },
+  { label: "HTML", language: "html", extension: ".html" },
+  { label: "CSS", language: "css", extension: ".css" },
+  { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
 export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile }) {
@@ -271,17 +278,17 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
             </option>
           ))}
         </select>
-        <button className="button compact secondary create-file-button" disabled={!permissions.canEdit} onClick={createFile}>
-          <Plus size={15} /> <span>Create</span>
+        <button className="button compact secondary create-file-button" disabled={!permissions.canEdit} onClick={createFile} title="Create File">
+          <Plus size={14} /> <span>Create</span>
         </button>
 
         <div className="file-tools-divider" />
 
         <button 
-          className="button compact secondary" 
+          className="button compact secondary create-file-button" 
           disabled={!permissions.canEdit} 
           onClick={() => fileInputRef.current?.click()}
-          title="Import file from device"
+          title="Import"
         >
           <Upload size={14} /> <span>Import</span>
         </button>
@@ -293,12 +300,12 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         />
 
         <button 
-          className="button compact secondary" 
+          className="button compact secondary create-file-button" 
           onClick={() => {
             setSelectedFiles(files.map(f => f.name));
             setShowExportModal(true);
           }}
-          title="Export files"
+          title="Export"
         >
           <Download size={14} /> <span>Export</span>
         </button>
