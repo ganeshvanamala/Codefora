@@ -19,6 +19,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const [output, setOutput] = useState("Ready.");
   const [compilerStatus, setCompilerStatus] = useState("ready");
   const [isRunningCode, setIsRunningCode] = useState(false);
+  const [isSubmittingCode, setIsSubmittingCode] = useState(false);
   const [joinError, setJoinError] = useState(null);
   const [typing, setTyping] = useState("");
   const [typingCursors, setTypingCursors] = useState([]);
@@ -412,6 +413,85 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     }
   }
 
+  async function submitCode(problem) {
+    if (!problem || !activeFile || !canEdit) return;
+    const testCases = problem.tests || [];
+    if (testCases.length === 0) {
+      setOutput("No test cases found for this problem.");
+      return;
+    }
+
+    const requestId = runRequestId.current + 1;
+    runRequestId.current = requestId;
+    const language = normalizeCompilerLanguage(activeFile.language || activeFile.name);
+    
+    setIsSubmittingCode(true);
+    setCompilerStatus("running");
+    setOutput("Submitting against all sample test cases...");
+    trackEvent("submission", { room_id: activeRoomId, problem_id: problem.id, language });
+
+    try {
+      const results = [];
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        if (runRequestId.current !== requestId) return;
+        
+        setOutput(`Running test case ${i + 1}/${testCases.length}...`);
+        
+        const result = await api.runCode({
+          language,
+          version: undefined,
+          code: activeFile.code,
+          input: testCase.input
+        });
+
+        const actual = normalizeOutput(result.stdout || result.executionOutput || result.output);
+        const expected = normalizeOutput(testCase.output);
+        
+        results.push({
+          input: testCase.input,
+          expected,
+          actual,
+          passed: actual === expected,
+          raw: result
+        });
+
+        // Break early if one fails? The original code shows all or stops at first failure?
+        // Original ProblemsPage stops and shows the first failure.
+        if (actual !== expected) break;
+      }
+
+      if (runRequestId.current !== requestId) return;
+
+      const failed = results.find((result) => !result.passed);
+      const nextStatus = failed ? "error" : "finished";
+      setCompilerStatus(nextStatus);
+
+      if (!failed) {
+        setOutput("Program is correct. All sample test cases passed. 🎉");
+      } else {
+        const failedIndex = results.indexOf(failed) + 1;
+        setOutput([
+          `Wrong answer on sample test case ${failedIndex}.`,
+          "",
+          `Input:\n${failed.input}`,
+          "",
+          `Expected Output:\n${failed.expected}`,
+          "",
+          `Your Output:\n${failed.actual || "(empty)"}`
+        ].join("\n"));
+      }
+    } catch (error) {
+      if (runRequestId.current !== requestId) return;
+      setCompilerStatus("error");
+      setOutput(error.message || "Submission failed.");
+    } finally {
+      if (runRequestId.current === requestId) {
+        setIsSubmittingCode(false);
+      }
+    }
+  }
+
   async function askAi(prompt) {
     if (!prompt.trim() || !canUseAi) return;
     const question = prompt.trim();
@@ -767,12 +847,16 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     joinError,
     permissions: { me, isHost, canEdit, canSpeak, canChat, canUseAi },
     preview: { showPreview, previewDoc },
-    compiler: { compilerStatus, isRunningCode },
+    compiler: { compilerStatus, isRunningCode, isSubmittingCode },
     actions: {
       updateCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
-      updateRole, kickUser, runCode, askAi, toggleMic, forceJoin, clearOutput
+      updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput
     }
   };
+}
+
+function normalizeOutput(value) {
+  return String(value || "").trim().replace(/\r\n/g, "\n");
 }
 
 function normalizeInvite(inviteCode) {

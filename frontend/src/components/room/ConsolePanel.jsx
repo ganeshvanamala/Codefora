@@ -1,7 +1,7 @@
 import { Globe2, Loader2, Play, Terminal } from "lucide-react";
 import { useState } from "react";
 
-export function ConsolePanel({ output, preview, style, onResizeStart, onClear, files = [], runFile, setRunFile, onRun, isRunningCode }) {
+export function ConsolePanel({ output, preview, style, onResizeStart, onClear, files = [], runFile, setRunFile, onRun, isRunningCode, isSubmittingCode, onSubmit, activeProblem, canSubmit }) {
   const [panelMode, setPanelMode] = useState("output");
 
   return (
@@ -39,10 +39,23 @@ export function ConsolePanel({ output, preview, style, onResizeStart, onClear, f
               </option>
             ))}
           </select>
-          <button className="button primary run-btn console-run-btn" onClick={onRun} disabled={isRunningCode}>
+          <button className="button primary run-btn console-run-btn" onClick={onRun} disabled={isRunningCode || isSubmittingCode}>
             {isRunningCode ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
             <span>{isRunningCode ? "Running..." : "Run Code"}</span>
           </button>
+          
+          {activeProblem && (
+            <button 
+              className="button success run-btn console-run-btn" 
+              onClick={onSubmit} 
+              disabled={isRunningCode || isSubmittingCode || !canSubmit}
+              title={!canSubmit ? "Viewers cannot submit solutions" : "Submit solution against all test cases"}
+            >
+              {isSubmittingCode ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+              <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
+            </button>
+          )}
+
           <button className="button compact" onClick={onClear}>Clear</button>
         </div>
       </div>

@@ -335,7 +335,11 @@ export function RoomPage() {
               runFile={runFile}
               setRunFile={setRunFile}
               isRunningCode={compiler.isRunningCode}
+              isSubmittingCode={compiler.isSubmittingCode}
               onRun={() => actions.runCode(stdin)}
+              onSubmit={() => actions.submitCode(activeProblem)}
+              activeProblem={activeProblem}
+              canSubmit={permissions.canEdit}
             />
           </div>
         </div>
