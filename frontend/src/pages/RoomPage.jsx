@@ -10,6 +10,7 @@ import { UsersPanel } from "../components/room/UsersPanel";
 import { CommsPanel } from "../components/room/CommsPanel";
 import { ConsolePanel } from "../components/room/ConsolePanel";
 import { FloatingProblem } from "../components/room/FloatingProblem";
+import { NotesModal } from "../components/room/NotesModal";
 import { FooterBar } from "../components/room/FooterBar";
 import { problems } from "../data/problems";
 import { getUsername, saveUsername } from "../lib/navigation";
@@ -30,6 +31,7 @@ export function RoomPage() {
   const [activeCommsTab, setActiveCommsTab] = useState("chat");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showFloatingProblem, setShowFloatingProblem] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   const isBypassingBlocker = useRef(false);
 
@@ -45,6 +47,7 @@ export function RoomPage() {
     messages,
     aiMessages,
     output,
+    notes,
     typing,
     typingCursors,
     suggestion,
@@ -274,6 +277,16 @@ export function RoomPage() {
           onLeaveRequest={handleLeaveRequest}
           onToggleProblem={() => setShowFloatingProblem(!showFloatingProblem)}
           onShowInfo={() => setShowInfoModal(true)}
+          onShowNotes={() => setShowNotes(true)}
+        />
+
+        <NotesModal 
+          isOpen={showNotes}
+          onClose={() => setShowNotes(false)}
+          notes={notes}
+          onUpdateText={actions.updateNotes}
+          onDraw={actions.drawNote}
+          permissions={permissions}
         />
 
         {showFloatingProblem && activeProblem && (

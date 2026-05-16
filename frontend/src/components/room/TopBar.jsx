@@ -1,6 +1,6 @@
-import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info } from "lucide-react";
+import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote } from "lucide-react";
 
-export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo }) {
+export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes }) {
 
   return (
     <header className="topbar">
@@ -60,6 +60,10 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         >
           {micOn ? <Mic size={16} style={{ color: "#000" }} /> : <MicOff size={16} />}
           <span style={micOn ? { color: "#000", fontWeight: "800" } : {}}>{micOn ? "Mic Live" : "Mic Off"}</span>
+        </button>
+
+        <button className="button compact secondary" onClick={onShowNotes} title="Rough Notes / Scratchpad">
+          <StickyNote size={16} />
         </button>
 
         <button className="button compact secondary" onClick={onLeaveRequest}>

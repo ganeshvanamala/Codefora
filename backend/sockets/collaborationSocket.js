@@ -275,6 +275,33 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       if (!room || !user) return;
       socket.to(target).emit("voice:signal", { from: socket.id, signal, user: user.name });
     });
+    
+    socket.on("notes:update", ({ roomId, text }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role === "Viewer") return;
+      if (!room.notes) room.notes = { text: "", draws: [] };
+      room.notes.text = text;
+      roomRepository.save(room).catch(e => console.warn(`Room persistence failed: ${e.message}`));
+      socket.to(roomId).emit("notes:update", { text });
+    });
+
+    socket.on("notes:draw", ({ roomId, draw }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role === "Viewer") return;
+      if (!room.notes) room.notes = { text: "", draws: [] };
+      
+      if (draw === "clear") {
+        room.notes.draws = [];
+      } else {
+        room.notes.draws.push(draw);
+        if (room.notes.draws.length > 2000) room.notes.draws = room.notes.draws.slice(-2000);
+      }
+      
+      roomRepository.save(room).catch(e => console.warn(`Room persistence failed: ${e.message}`));
+      socket.to(roomId).emit("notes:draw", draw);
+    });
 
     socket.on("room:end", ({ roomId }) => {
       const room = roomRepository.findById(roomId);

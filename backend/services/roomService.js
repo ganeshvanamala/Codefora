@@ -32,6 +32,7 @@ export class RoomService {
       files: structuredClone(defaultFiles),
       messages: [],
       users: [],
+      notes: { text: "", draws: [] },
       hostName: username?.trim() || "Host",
       ownerUserId: userId?.trim() || null,
       hostToken: cryptoId() + cryptoId(),
@@ -62,7 +63,8 @@ export class RoomService {
       ...this.publicRoom(room),
       files: room.files,
       messages: room.messages.slice(-50),
-      usersList: room.users
+      usersList: room.users,
+      notes: room.notes || { text: "", draws: [] }
     };
   }
 

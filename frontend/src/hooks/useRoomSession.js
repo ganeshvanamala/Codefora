@@ -26,6 +26,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const [suggestion, setSuggestion] = useState("Ask for an explanation, fix, or improvement. Suggestions require Accept or Decline.");
   const [aiThinking, setAiThinking] = useState(false);
   const [micOn, setMicOn] = useState(false);
+  const [notes, setNotes] = useState({ text: "", draws: [] });
   const remoteUpdate = useRef(false);
   const runRequestId = useRef(0);
   const typingTimer = useRef(null);
@@ -219,6 +220,15 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         if (bypassBlockerRef) bypassBlockerRef.current = true;
         navigate("/rooms?message=You have been removed from the room");
       });
+      socket.on("notes:update", ({ text }) => {
+        setNotes((prev) => ({ ...prev, text }));
+      });
+      socket.on("notes:draw", (draw) => {
+        setNotes((prev) => {
+          if (draw === "clear") return { ...prev, draws: [] };
+          return { ...prev, draws: [...prev.draws, draw].slice(-2000) };
+        });
+      });
       socket.on("room:error", (err) => {
         console.error("Room Error:", err);
         setOutput(err);
@@ -295,6 +305,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     handleFilesUpdate(snapshot.files);
     setMessages(snapshot.messages || []);
     setUsers(snapshot.usersList || []);
+    setNotes(snapshot.notes || { text: "", draws: [] });
     setTypingCursors([]);
   }
 
@@ -837,6 +848,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     messages,
     aiMessages,
     output,
+    notes,
     typing,
     typingCursors,
     suggestion,
@@ -850,7 +862,18 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     compiler: { compilerStatus, isRunningCode, isSubmittingCode },
     actions: {
       updateCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
-      updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput
+      updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput,
+      updateNotes: (text) => {
+        setNotes(prev => ({ ...prev, text }));
+        socket.emit("notes:update", { roomId: activeRoomId, text });
+      },
+      drawNote: (draw) => {
+        setNotes(prev => {
+          if (draw === "clear") return { ...prev, draws: [] };
+          return { ...prev, draws: [...prev.draws, draw].slice(-2000) };
+        });
+        socket.emit("notes:draw", { roomId: activeRoomId, draw });
+      }
     }
   };
 }
