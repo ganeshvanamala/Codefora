@@ -283,7 +283,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       if (!room.notes) room.notes = { text: "", draws: [] };
       room.notes.text = text;
       roomRepository.save(room).catch(e => console.warn(`Room persistence failed: ${e.message}`));
-      socket.to(roomId).emit("notes:update", { text });
+      socket.to(roomId).emit("notes:update", room.notes);
     });
 
     socket.on("notes:draw", ({ roomId, draw }) => {

@@ -1,9 +1,10 @@
-import { Eraser, Minus, Square, Type, X, Maximize2, Minimize2 } from "lucide-react";
+import { Eraser, Pencil, Type, Trash2, X, Maximize2, Minimize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permissions }) {
   const canvasRef = useRef(null);
   const [mode, setMode] = useState("draw"); // 'draw' or 'text'
+  const [activeTool, setActiveTool] = useState("pencil"); // 'pencil' or 'eraser'
   const [isDrawing, setIsDrawing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const lastPos = useRef({ x: 0, y: 0 });
@@ -18,12 +19,13 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#000000";
 
-    notes.draws.forEach(path => {
+    const drawsArray = notes.draws || [];
+    drawsArray.forEach(path => {
       if (path.points && path.points.length > 0) {
         ctx.beginPath();
+        ctx.lineWidth = path.width || 3;
+        ctx.strokeStyle = path.color || "#000000";
         ctx.moveTo(path.points[0].x, path.points[0].y);
         path.points.forEach(p => ctx.lineTo(p.x, p.y));
         ctx.stroke();
@@ -35,11 +37,24 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
 
   const startDrawing = (e) => {
     if (mode !== "draw" || !permissions.canEdit) return;
-    const rect = canvasRef.current.getBoundingClientRect();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    
     setIsDrawing(true);
     lastPos.current = { x, y };
+
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    if (activeTool === "pencil") {
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#000000";
+    } else {
+      ctx.lineWidth = 25;
+      ctx.strokeStyle = "#ffffff";
+    }
   };
 
   const draw = (e) => {
@@ -55,20 +70,20 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
     ctx.lineTo(x, y);
     ctx.stroke();
 
-    // We collect points for synchronization
-    // To optimize, we'll emit the path when done drawing
-    // But for a simple implementation, we can just track the current path
     if (!currentPath.current) currentPath.current = [];
     currentPath.current.push({ x, y });
 
     lastPos.current = { x, y };
   };
 
-
   const stopDrawing = () => {
     if (isDrawing && permissions.canEdit) {
       if (currentPath.current.length > 0) {
-        onDraw({ points: currentPath.current });
+        onDraw({ 
+          points: currentPath.current,
+          color: activeTool === "pencil" ? "#000000" : "#ffffff",
+          width: activeTool === "pencil" ? 3 : 25
+        });
         currentPath.current = [];
       }
     }
@@ -80,31 +95,45 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
       <div className={`notes-card ${isExpanded ? 'expanded' : ''}`}>
         <div className="notes-header">
           <div className="notes-title">
-            <Type size={18} />
-            <h3>Rough Notes / Scratchpad</h3>
+            <Pencil size={18} style={{ color: "var(--primary-orange)" }} />
+            <h3>Rough Notes / Shared Scratchpad</h3>
           </div>
           <div className="notes-actions">
             <button 
-              className={`button compact ghost ${mode === 'draw' ? 'active' : ''}`} 
-              onClick={() => setMode('draw')}
-              title="Doodle Mode"
+              className={`button compact ghost ${mode === 'draw' && activeTool === 'pencil' ? 'active' : ''}`} 
+              onClick={() => {
+                setMode('draw');
+                setActiveTool('pencil');
+              }}
+              title="Pencil Tool"
+            >
+              <Pencil size={16} />
+            </button>
+            <button 
+              className={`button compact ghost ${mode === 'draw' && activeTool === 'eraser' ? 'active' : ''}`} 
+              onClick={() => {
+                setMode('draw');
+                setActiveTool('eraser');
+              }}
+              title="Eraser Tool"
             >
               <Eraser size={16} />
             </button>
             <button 
               className={`button compact ghost ${mode === 'text' ? 'active' : ''}`} 
               onClick={() => setMode('text')}
-              title="Type Mode"
+              title="Type Notes"
             >
               <Type size={16} />
             </button>
             <button 
               className="button compact ghost" 
               onClick={() => onDraw('clear')}
-              title="Clear Board"
+              title="Clear Scratchpad"
               disabled={!permissions.canEdit}
+              style={{ color: "#ef4444" }}
             >
-              <Eraser size={16} />
+              <Trash2 size={16} />
             </button>
             <div className="notes-divider" />
             <button 
@@ -128,19 +157,20 @@ export function NotesModal({ isOpen, onClose, notes, onUpdateText, onDraw, permi
               onMouseMove={draw}
               onMouseUp={stopDrawing}
               onMouseLeave={stopDrawing}
+              style={{ cursor: activeTool === 'pencil' ? 'crosshair' : 'cell' }}
             />
           </div>
           <div className={`notes-text-container ${mode === 'text' ? 'active' : ''}`}>
             <textarea
               placeholder="Type your notes here... everyone can see and edit."
-              value={notes.text}
+              value={notes.text || ""}
               onChange={(e) => onUpdateText(e.target.value)}
               disabled={!permissions.canEdit}
             />
           </div>
         </div>
         <div className="notes-footer">
-          <p>This is a shared scratchpad. All members can doodle or type live.</p>
+          <p>This is a shared scratchpad. All members can doodle, erase, or type live.</p>
         </div>
       </div>
     </div>

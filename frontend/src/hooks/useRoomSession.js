@@ -222,13 +222,21 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         if (bypassBlockerRef) bypassBlockerRef.current = true;
         navigate("/rooms?message=You have been removed from the room");
       });
-      socket.on("notes:update", (newNotes) => setNotes(newNotes));
+      socket.on("notes:update", (updatedNotes) => {
+        setNotes((prev) => {
+          if (!updatedNotes) return prev;
+          const text = typeof updatedNotes === "string" ? updatedNotes : updatedNotes.text ?? prev.text;
+          const draws = updatedNotes.draws ?? prev.draws ?? [];
+          return { text, draws };
+        });
+      });
       socket.on("timer:sync", (newTimer) => setTimer(newTimer));
       socket.on("history:update", (newHistory) => setHistory(newHistory));
       socket.on("notes:draw", (draw) => {
         setNotes((prev) => {
+          const draws = prev.draws || [];
           if (draw === "clear") return { ...prev, draws: [] };
-          return { ...prev, draws: [...prev.draws, draw].slice(-2000) };
+          return { ...prev, draws: [...draws, draw].slice(-2000) };
         });
       });
       socket.on("room:error", (err) => {
@@ -853,6 +861,11 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   }
 
   function drawNote(draw) {
+    setNotes((prev) => {
+      const draws = prev.draws || [];
+      if (draw === "clear") return { ...prev, draws: [] };
+      return { ...prev, draws: [...draws, draw].slice(-2000) };
+    });
     socket.emit("notes:draw", { roomId: activeRoomId, draw });
   }
 
