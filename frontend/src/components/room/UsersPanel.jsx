@@ -82,26 +82,28 @@ export function UsersPanel({
               border: "1px solid rgba(255, 255, 255, 0.05)",
               borderRadius: "12px",
               position: "relative",
-              marginBottom: "4px"
+              marginBottom: "4px",
+              padding: "10px"
             }}
           >
             <div
-              className={`user-row-v2 ${user.speaking ? "speaking" : ""}`}
+              className={`user-row ${user.speaking ? "speaking" : ""}`}
               onClick={(e) => {
                 if (e.target.closest('.user-actions')) return;
                 setExpandedUser(current => current === user.socketId ? null : user.socketId);
               }}
               style={{
                 cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 12px"
+                display: "grid",
+                gridTemplateColumns: "30px minmax(0, 1fr)",
+                gap: "8px",
+                alignItems: "center"
               }}
             >
-              <div className="avatar-wrap" style={{ position: "relative" }}>
+              {/* Column 1: Avatar */}
+              <div className="avatar-wrap" style={{ position: "relative", width: "30px", height: "30px" }}>
                 {user.emotionId ? (
-                  <div className="avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", background: user.color || "#ffb000", display: "grid", placeItems: "center", overflow: "hidden" }}>
+                  <div className="avatar" style={{ width: "30px", height: "30px", borderRadius: "9px", background: user.color || "#ffb000", display: "grid", placeItems: "center", overflow: "hidden" }}>
                     <img
                       src={`${API_URL}/api/emotions/${user.emotionId}/image`}
                       alt={`${user.name}'s emotion`}
@@ -112,17 +114,15 @@ export function UsersPanel({
                   <span
                     className="avatar"
                     style={{ 
-                      width: "32px", 
-                      height: "32px", 
-                      borderRadius: "50%", 
+                      width: "30px", 
+                      height: "30px", 
+                      borderRadius: "9px", 
                       background: user.color || (user.role === "Host" ? "#ffb000" : "#8b5cf6"), 
                       display: "grid", 
                       placeItems: "center", 
-                      fontSize: "14px", 
+                      fontSize: "13px", 
                       fontWeight: "bold", 
-                      color: "#fff",
-                      boxShadow: "none",
-                      border: "none"
+                      color: "#fff"
                     }}
                   >
                     {user.name[0]?.toUpperCase()}
@@ -131,29 +131,38 @@ export function UsersPanel({
                 {user.speaking && <div className="speaking-indicator" />}
               </div>
 
-              <div className="user-info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "nowrap" }}>
-                  <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>{user.name}</span>
-                  {user.role === "Host" && <span style={{ fontSize: "12px", flexShrink: 0 }}>👑</span>}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <small style={{ fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.02em" }}>{user.role}</small>
-                  {user.isTyping && user.currentFile && (
-                    <>
-                      <span style={{ width: "2px", height: "2px", borderRadius: "50%", background: "rgba(255,255,255,0.2)" }} />
-                      <small style={{ fontSize: "10px", color: "var(--primary-orange)", fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        Typing...
-                      </small>
-                    </>
-                  )}
-                </div>
+              {/* Column 2: User Info (Name & Role/Typing Status) */}
+              <div className="user-info" style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                <strong style={{ fontSize: "13px", fontWeight: "bold", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {user.name}
+                </strong>
+                <small style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: "600" }}>
+                  {user.role}
+                </small>
+                {user.isTyping && user.currentFile && (
+                  <span style={{ fontSize: "10px", color: "var(--primary-orange)", fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "2px" }}>
+                    typing in {user.currentFile}...
+                  </span>
+                )}
               </div>
 
-              <div className="user-actions" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981" }} />
-                <span className={`mic-status-icon ${user.mic ? "on" : "off"}`}>
-                  {user.mic ? <Mic size={12} style={{ color: "var(--primary-orange)" }} /> : <MicOff size={12} style={{ opacity: 0.3 }} />}
-                </span>
+              {/* Bottom Row (Full Width): User Actions / Status */}
+              <div className="user-actions" style={{ 
+                gridColumn: "1 / -1", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "space-between", 
+                width: "100%",
+                marginTop: "6px",
+                paddingTop: "6px",
+                borderTop: "1px solid rgba(255,255,255,0.03)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981" }} />
+                  <span className={`mic-status-icon ${user.mic ? "on" : "off"}`}>
+                    {user.mic ? <Mic size={12} style={{ color: "var(--primary-orange)" }} /> : <MicOff size={12} style={{ opacity: 0.3 }} />}
+                  </span>
+                </div>
 
                 {permissions.isHost && user.role !== "Host" && (
                   <div className="user-menu-wrap" onClick={e => e.stopPropagation()}>
@@ -173,7 +182,7 @@ export function UsersPanel({
                         style={{
                           position: "absolute",
                           right: "10px",
-                          top: "24px",
+                          bottom: "28px",
                           zIndex: 1000,
                           background: "#111",
                           border: "1px solid #333",
@@ -224,8 +233,9 @@ export function UsersPanel({
             {/* Profile Expansion */}
             {expandedUser === user.socketId && user.bio && (
               <div className="user-profile-expansion" style={{
-                padding: "0 8px 8px 8px",
-                marginTop: "-2px"
+                padding: "8px 0 0 0",
+                marginTop: "4px",
+                borderTop: "1px solid rgba(255,255,255,0.03)"
               }}>
                 <div style={{
                   padding: "6px",

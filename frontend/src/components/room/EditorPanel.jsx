@@ -293,6 +293,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         width: '100%',
         justifyContent: 'space-between',
         position: 'relative',
+        zIndex: 100,
         background: '#0a0e17',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
@@ -436,7 +437,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '8px',
                 padding: '8px',
-                zIndex: 100,
+                zIndex: 1000,
                 width: '220px',
                 boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                 display: 'flex',

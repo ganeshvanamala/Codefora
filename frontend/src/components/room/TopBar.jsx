@@ -163,8 +163,53 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           <span>{micOn ? "Mic On" : "Mic Off"}</span>
         </button>
 
-        {/* Notes Toggle pill (Removed to match screenshot) */}
-        {/* Info Toggle pill (Removed to match screenshot) */}
+        {/* Notes Toggle pill */}
+        <button
+          onClick={onShowNotes}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "30px",
+            padding: "0 12px",
+            borderRadius: "6px",
+            background: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            color: "var(--text-muted)",
+            fontSize: "11px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            outline: "none"
+          }}
+          title="Rough Notes & Scratchpad"
+        >
+          <StickyNote size={14} />
+          <span>Notes</span>
+        </button>
+
+        {/* Info Toggle pill */}
+        <button
+          onClick={onShowInfo}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "30px",
+            padding: "0 12px",
+            borderRadius: "6px",
+            background: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            color: "var(--text-muted)",
+            fontSize: "11px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            outline: "none"
+          }}
+          title="Room Information"
+        >
+          <Info size={14} />
+          <span>Info</span>
+        </button>
 
         {/* Leave Room Pill */}
         <button
