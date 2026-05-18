@@ -260,30 +260,6 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         ))}
       </div>
 
-      {((otherUsers && otherUsers.length > 0) || typing) && (
-        <div className="collab-strip">
-          <div className="typing-indicator" style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center' }}>
-            {typing && (
-              <span className="pulse-text" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--primary-orange)', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                <Activity size={12} style={{ animation: 'pulse 1.2s infinite', flexShrink: 0 }} />
-                <span>{typing}</span>
-              </span>
-            )}
-          </div>
-          <div className="cursor-tags" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-            {otherUsers.slice(0, 3).map((user) => (
-              <span
-                style={{ "--tag": user.color || "#8be9fd" }}
-                key={user.socketId}
-                title={`${user.name} is online`}
-              >
-                {user.name}
-              </span>
-            ))}
-            {otherUsers.length > 3 && <span className="more-users">+{otherUsers.length - 3}</span>}
-          </div>
-        </div>
-      )}
 
       <div className="file-tools" style={{ 
         display: 'flex', 
@@ -294,6 +270,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         justifyContent: 'space-between',
         position: 'relative',
         zIndex: 100,
+        overflow: 'visible',
         background: '#0a0e17',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
