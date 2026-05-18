@@ -338,14 +338,6 @@ export function RoomPage() {
             permissions={permissions}
             onRoleChange={actions.updateRole}
             onKickUser={actions.kickUser}
-            messages={messages}
-            aiMessages={aiMessages}
-            me={permissions.me}
-            aiThinking={aiThinking}
-            onSendChat={actions.sendChat}
-            onSendSticker={actions.sendSticker}
-            onAskAi={actions.askAi}
-            onClearNotifications={() => setFloatingMsgs([])}
           />
           <button
             type="button"
@@ -405,6 +397,32 @@ export function RoomPage() {
             />
           </div>
         </div>
+
+        <CommsPanel
+          messages={messages}
+          aiMessages={aiMessages}
+          me={permissions.me}
+          permissions={permissions}
+          aiThinking={aiThinking}
+          onSendChat={actions.sendChat}
+          onSendSticker={actions.sendSticker}
+          onAskAi={actions.askAi}
+          onClearNotifications={() => setFloatingMsgs([])}
+          activeTab={activeCommsTab}
+          onSelectTab={setActiveCommsTab}
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          participantsCount={users.length}
+        />
+
+        <button
+          type="button"
+          className="floating-chat-button"
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          title="Toggle Chat & AI"
+        >
+          <MessageSquare size={24} />
+        </button>
 
         {showLeavePrompt && (
           <div className="profile-modal-overlay" role="dialog" aria-modal="true" aria-label="Leave Room Confirmation">
