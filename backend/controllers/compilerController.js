@@ -1,5 +1,5 @@
 const DEFAULT_WINDOW_MS = 60_000;
-const DEFAULT_MAX_REQUESTS = 20;
+const DEFAULT_MAX_REQUESTS = 150;
 
 export function createCompilerController(pistonService, options = {}) {
   const windowMs = Number(options.windowMs || DEFAULT_WINDOW_MS);

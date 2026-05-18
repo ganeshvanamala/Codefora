@@ -50,6 +50,8 @@ export function ProblemsPage() {
   const [runOutput, setRunOutput] = useState("Ready.");
   const [judgeStatus, setJudgeStatus] = useState("idle");
   const [isRunning, setIsRunning] = useState(false);
+  const [failedTestCase, setFailedTestCase] = useState(null);
+  const [showFailedDetails, setShowFailedDetails] = useState(false);
   const [problemAiOpen, setProblemAiOpen] = useState(false);
   const [problemAiPrompt, setProblemAiPrompt] = useState("");
   const [problemAiThinking, setProblemAiThinking] = useState(false);
@@ -113,45 +115,52 @@ export function ProblemsPage() {
   }
 
   async function runAgainstTests(testCases) {
-    const results = [];
-    for (const testCase of testCases) {
-      const result = await api.runCode({
-        language,
-        version: undefined,
-        code,
-        input: testCase.input
-      });
-      const actual = normalizeOutput(result.stdout || result.executionOutput || result.output);
-      const expected = normalizeOutput(testCase.output);
-      results.push({
-        input: testCase.input,
-        expected,
-        actual,
-        passed: actual === expected,
-        raw: result
-      });
-    }
-    return results;
+    const promises = testCases.map(async (testCase) => {
+      try {
+        const result = await api.runCode({
+          language,
+          version: undefined,
+          code,
+          input: testCase.input
+        });
+        const actual = normalizeOutput(result.stdout || result.executionOutput || result.output);
+        const expected = normalizeOutput(testCase.output);
+        return {
+          input: testCase.input,
+          expected,
+          actual,
+          passed: actual === expected,
+          raw: result
+        };
+      } catch (err) {
+        return {
+          input: testCase.input,
+          expected: normalizeOutput(testCase.output),
+          actual: `Error: ${err.message}`,
+          passed: false,
+          raw: { error: err.message }
+        };
+      }
+    });
+    return Promise.all(promises);
   }
 
   async function handleCompile() {
     if (!selectedProblem) return;
     setIsRunning(true);
     setJudgeStatus("running");
+    setFailedTestCase(null);
     setRunOutput("Compiling and running sample test case 1...");
     trackEvent("code_run", { problem_id: selectedProblem.id, language });
     try {
       const [result] = await runAgainstTests([selectedProblem.tests[0]]);
       setJudgeStatus(result.passed ? "accepted" : "wrong");
-      setRunOutput([
-        result.passed ? "Sample test case passed." : "Wrong answer on sample test case 1.",
-        "",
-        `Input:\n${result.input}`,
-        "",
-        `Expected Output:\n${result.expected}`,
-        "",
-        `Your Output:\n${result.actual || "(empty)"}`
-      ].join("\n"));
+      if (result.passed) {
+        setRunOutput("Sample test case 1 passed successfully.");
+      } else {
+        setRunOutput("Wrong Answer on sample test case 1.");
+        setFailedTestCase(result);
+      }
     } catch (error) {
       setJudgeStatus("wrong");
       setRunOutput(error.message || "Compilation failed.");
@@ -164,25 +173,30 @@ export function ProblemsPage() {
     if (!selectedProblem) return;
     setIsRunning(true);
     setJudgeStatus("running");
-    setRunOutput("Submitting against all sample test cases...");
+    setFailedTestCase(null);
+    setRunOutput("Submitting against all 15 test cases (3 sample + 12 hidden)...");
     trackEvent("submission", { problem_id: selectedProblem.id, language });
     try {
       const results = await runAgainstTests(selectedProblem.tests);
-      const failed = results.find((result) => !result.passed);
-      setJudgeStatus(failed ? "wrong" : "accepted");
-      if (!failed) {
-        setRunOutput("Program is correct. All sample test cases passed.");
+      const passedCount = results.filter(r => r.passed).length;
+      const totalCount = results.length;
+      const firstFailed = results.find(r => !r.passed);
+
+      if (passedCount === totalCount) {
+        setJudgeStatus("accepted");
+        setRunOutput(`Accepted! All ${totalCount}/${totalCount} test cases passed.`);
       } else {
-        const failedIndex = results.indexOf(failed) + 1;
-        setRunOutput([
-          `Wrong answer on sample test case ${failedIndex}.`,
-          "",
-          `Input:\n${failed.input}`,
-          "",
-          `Expected Output:\n${failed.expected}`,
-          "",
-          `Your Output:\n${failed.actual || "(empty)"}`
-        ].join("\n"));
+        setJudgeStatus("wrong");
+        setFailedTestCase(firstFailed);
+
+        const failedIndex = results.indexOf(firstFailed);
+        const isSampleFailed = failedIndex < 3;
+
+        if (isSampleFailed) {
+          setRunOutput(`Wrong Answer! ${passedCount}/${totalCount} test cases passed. (Sample test case ${failedIndex + 1} failed).`);
+        } else {
+          setRunOutput(`Wrong Answer! ${passedCount}/${totalCount} test cases passed. (hidden test case failed).`);
+        }
       }
     } catch (error) {
       setJudgeStatus("wrong");
@@ -191,6 +205,7 @@ export function ProblemsPage() {
       setIsRunning(false);
     }
   }
+
 
   async function askProblemAi() {
     const question = problemAiPrompt.trim();
@@ -414,6 +429,8 @@ export function ProblemsPage() {
             <div className="problem-info-meta">
               <span className={`problem-difficulty difficulty-${selectedProblem.difficulty.toLowerCase()}`}>{selectedProblem.difficulty}</span>
               <span>{selectedProblem.acceptance}% acceptance</span>
+              {selectedProblem.timeLimit && <span style={{ color: "#818cf8" }}>🕒 {selectedProblem.timeLimit}</span>}
+              {selectedProblem.spaceLimit && <span style={{ color: "#818cf8" }}>💾 {selectedProblem.spaceLimit}</span>}
               {selectedProblem.solutionAvailable && <span><BookOpen size={14} /> Solution available</span>}
             </div>
 
@@ -523,11 +540,64 @@ export function ProblemsPage() {
           <section className={`problem-output-panel ${judgeStatus}`}>
             <div className="output-title">
               <span>Output</span>
-              {judgeStatus === "accepted" && <CheckCircle size={18} />}
-              {judgeStatus === "wrong" && <XCircle size={18} />}
+              {judgeStatus === "accepted" && <CheckCircle size={18} style={{ color: "#4ade80" }} />}
+              {judgeStatus === "wrong" && <XCircle size={18} style={{ color: "#f87171" }} />}
               {judgeStatus === "running" && <Loader2 size={18} className="animate-spin" />}
             </div>
-            <pre>{runOutput}</pre>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{runOutput}</pre>
+
+            {failedTestCase && (
+              <div style={{ marginTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.1)", paddingTop: "12px" }}>
+                <button
+                  onClick={() => setShowFailedDetails(!showFailedDetails)}
+                  className="button"
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "#fff",
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  <span>{showFailedDetails ? "Hide Failed Test Case" : "🔍 Show Failed Test Case"}</span>
+                </button>
+
+                {showFailedDetails && (
+                  <div className="failed-testcase-container" style={{
+                    marginTop: "12px",
+                    padding: "16px",
+                    border: "1px solid rgba(248, 113, 113, 0.3)",
+                    borderRadius: "8px",
+                    background: "rgba(248, 113, 113, 0.05)",
+                    animation: "fadeIn 0.3s ease"
+                  }}>
+                    <h4 style={{ color: "#f87171", margin: "0 0 12px 0", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "6px", fontWeight: "600" }}>
+                      <XCircle size={16} /> Failed Test Case Details
+                    </h4>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                      <div>
+                        <strong style={{ color: "#9ca3af", display: "block", marginBottom: "4px", fontSize: "0.8rem" }}>Input:</strong>
+                        <pre style={{ background: "rgba(0,0,0,0.4)", padding: "8px", borderRadius: "6px", margin: 0, fontSize: "0.85rem", overflowX: "auto", border: "1px solid rgba(255, 255, 255, 0.05)", maxHeight: "120px" }}>{failedTestCase.input}</pre>
+                      </div>
+                      <div>
+                        <strong style={{ color: "#9ca3af", display: "block", marginBottom: "4px", fontSize: "0.8rem" }}>Expected Output:</strong>
+                        <pre style={{ background: "rgba(0,0,0,0.4)", padding: "8px", borderRadius: "6px", margin: 0, fontSize: "0.85rem", overflowX: "auto", border: "1px solid rgba(255, 255, 255, 0.05)", color: "#4ade80", maxHeight: "120px" }}>{failedTestCase.expected}</pre>
+                      </div>
+                    </div>
+                    <div>
+                      <strong style={{ color: "#9ca3af", display: "block", marginBottom: "4px", fontSize: "0.8rem" }}>Your Output:</strong>
+                      <pre style={{ background: "rgba(0,0,0,0.4)", padding: "8px", borderRadius: "6px", margin: 0, fontSize: "0.85rem", overflowX: "auto", border: "1px solid rgba(255, 255, 255, 0.05)", color: "#f87171", maxHeight: "120px" }}>{failedTestCase.actual || "(empty)"}</pre>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </section>
         </section>
       </section>

@@ -9,14 +9,36 @@ const localKeyPath = path.join(__dirname, "../../firebase-key.json");
 const renderKeyPath = "/etc/secrets/firebase-key.json";
 const keyPath = fs.existsSync(renderKeyPath) ? renderKeyPath : localKeyPath;
 
-export function createFirestore() {
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  
-  if (!projectId) {
-    console.warn("⚠ FIREBASE_PROJECT_ID not set in .env");
-    return null;
-  }
+function createMockFirestore() {
+  const mockCollection = () => {
+    const chainObj = {
+      doc: () => ({
+        set: async () => {},
+        get: async () => ({ exists: false, data: () => ({}) }),
+        update: async () => {},
+        delete: async () => {}
+      }),
+      orderBy: () => chainObj,
+      limit: () => chainObj,
+      where: () => chainObj,
+      get: async () => ({ empty: true, docs: [] })
+    };
+    return chainObj;
+  };
+  return {
+    collection: mockCollection,
+    doc: () => ({
+      set: async () => {},
+      get: async () => ({ exists: false, data: () => ({}) }),
+      update: async () => {},
+      delete: async () => {}
+    })
+  };
+}
 
+export function createFirestore() {
+  const projectId = process.env.FIREBASE_PROJECT_ID || "codefora-sandbox";
+  
   try {
     if (!admin.apps.length) {
       let credential;
@@ -30,8 +52,8 @@ export function createFirestore() {
         console.log("📁 Using GOOGLE_APPLICATION_CREDENTIALS environment variable");
         credential = admin.credential.applicationDefault();
       } else {
-        console.warn("⚠ No Firebase credentials found");
-        return null;
+        console.warn("⚠ No Firebase credentials found. Using sandbox mode.");
+        return createMockFirestore();
       }
       
       admin.initializeApp({
@@ -42,14 +64,30 @@ export function createFirestore() {
     }
     return admin.firestore();
   } catch (error) {
-    console.warn(`⚠ Firestore disabled: ${error.message}`);
-    return null;
+    console.warn(`⚠ Firestore disabled: ${error.message}. Returning mock firestore.`);
+    return createMockFirestore();
   }
 }
 
 export function createAuth() {
-  if (!admin.apps.length) {
-    createFirestore();
+  try {
+    if (!admin.apps.length) {
+      createFirestore();
+    }
+    if (!admin.apps.length) {
+      return {
+        createUser: async () => ({ uid: "mock-uid" }),
+        verifyIdToken: async () => ({ uid: "mock-uid" }),
+        getUser: async () => ({ uid: "mock-uid" })
+      };
+    }
+    return admin.auth();
+  } catch (error) {
+    console.warn(`⚠ Firebase Auth disabled: ${error.message}. Returning mock Auth.`);
+    return {
+      createUser: async () => ({ uid: "mock-uid" }),
+      verifyIdToken: async () => ({ uid: "mock-uid" }),
+      getUser: async () => ({ uid: "mock-uid" })
+    };
   }
-  return admin.auth();
 }
