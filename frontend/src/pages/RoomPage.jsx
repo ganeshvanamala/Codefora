@@ -410,6 +410,7 @@ export function RoomPage() {
           onSelectTab={setActiveCommsTab}
           isOpen={isChatOpen}
           onClose={() => setIsChatOpen(false)}
+          participantsCount={users.length}
         />
 
         <FooterBar />

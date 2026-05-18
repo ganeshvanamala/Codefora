@@ -1,4 +1,4 @@
-import { Bot, ImagePlus, MessageSquare, Send, Sparkles, X } from "lucide-react";
+import { Bot, ImagePlus, MessageSquare, Send, Sparkles, X, Paperclip, ChevronsRight, CheckCheck } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import sticker1 from "../../../assets/sticker1.jpeg";
 import sticker2 from "../../../assets/sticker2.jpeg";
@@ -27,7 +27,8 @@ export function CommsPanel({
   activeTab,
   onSelectTab,
   isOpen,
-  onClose
+  onClose,
+  participantsCount
 }) {
   const [chatText, setChatText] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
@@ -77,31 +78,49 @@ export function CommsPanel({
 
   return (
     <aside className={`side-panel comms-panel floating-comms ${isOpen ? "open" : ""}`} aria-hidden={!isOpen}>
-      <button type="button" className="comms-close" onClick={onClose} aria-label="Close chat">
-        <X size={16} />
-      </button>
+      <div className="comms-header-cyber">
+        <div className="comms-header-left">
+          <div className="comms-icon-glowing">
+            <MessageSquare size={20} className="glow-icon-svg" />
+          </div>
+          <div className="comms-title-wrap">
+            <h2>{showChat ? "Room Chat" : "AI Assistant"}</h2>
+            <span className="comms-subtitle">
+              {showChat ? (
+                <>
+                  <span className="green-dot" /> {participantsCount || 1} participants online
+                </>
+              ) : (
+                <>
+                  <span className="sparkle-dot" /> AI powered companion
+                </>
+              )}
+            </span>
+          </div>
+        </div>
 
-      <div className="comms-tabs" role="tablist" aria-label="Chat and AI tabs">
-        <button
-          type="button"
-          className={`comms-tab ${showChat ? "active" : ""}`}
-          onClick={() => onSelectTab("chat")}
-          aria-selected={showChat}
-          role="tab"
-        >
-          <MessageSquare size={15} />
-          <span>Room Chat</span>
-        </button>
-        <button
-          type="button"
-          className={`comms-tab ${showAi ? "active" : ""}`}
-          onClick={() => onSelectTab("ai")}
-          aria-selected={showAi}
-          role="tab"
-        >
-          <Bot size={15} />
-          <span>Chat with AI</span>
-        </button>
+        <div className="comms-header-right">
+          <button
+            type="button"
+            className="ai-toggle-pill"
+            onClick={() => onSelectTab(showChat ? "ai" : "chat")}
+          >
+            {showChat ? (
+              <>
+                <span>Chat with AI</span>
+                <Sparkles size={11} className="orange-sparkle" />
+              </>
+            ) : (
+              <>
+                <span>Room Chat</span>
+                <MessageSquare size={11} />
+              </>
+            )}
+          </button>
+          <button type="button" className="comms-close-cyber" onClick={onClose} aria-label="Close chat">
+            <ChevronsRight size={16} />
+          </button>
+        </div>
       </div>
 
       {showChat && (
@@ -114,26 +133,51 @@ export function CommsPanel({
               const prevMessage = messages[index - 1];
               const isGrouped = prevMessage && prevMessage.user === message.user;
               const senderName = isAi ? "AI Assistant" : message.user;
+              const formattedTime = new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 
+              if (isMe) {
+                return (
+                  <div
+                    className={`chat-message user-message ${isGrouped ? "grouped" : ""} ${message.optimistic ? "optimistic" : ""}`}
+                    key={message.id || `${message.user}-${message.createdAt}`}
+                  >
+                    {!isGrouped && <span className="chat-time-above">{formattedTime}</span>}
+                    <div className="msg-bubble">
+                      <strong className="chat-sender-name-me">{senderName}</strong>
+                      {sticker ? (
+                        <img className="chat-sticker-image" src={sticker.src} alt={sticker.label} />
+                      ) : (
+                        <p>{message.text}</p>
+                      )}
+                      <span className="chat-status-check">
+                        <CheckCheck size={12} />
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Others' messages
+              const initials = (senderName || "").slice(0, 1).toUpperCase();
               return (
                 <div
-                  className={`chat-message ${isMe ? "user-message" : "other-message"} ${isGrouped ? "grouped" : ""} ${isAi ? "ai-msg" : ""} ${message.optimistic ? "optimistic" : ""}`}
+                  className={`chat-message other-message ${isGrouped ? "grouped" : ""} ${isAi ? "ai-msg" : ""} ${message.optimistic ? "optimistic" : ""}`}
                   key={message.id || `${message.user}-${message.createdAt}`}
                 >
+                  {!isGrouped && (
+                    <div className="chat-sender-row">
+                      <div className="chat-avatar">{initials}</div>
+                      <div className="chat-sender-info">
+                        <span className="chat-sender-name-other">{senderName}</span>
+                        <span className="chat-time-other">{formattedTime}</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="msg-bubble">
-                    <strong className="chat-sender-name">{senderName}</strong>
                     {sticker ? (
                       <img className="chat-sticker-image" src={sticker.src} alt={sticker.label} />
                     ) : (
                       <p>{isAi ? String(message.text || "").replace("AI Assistant: ", "") : message.text}</p>
-                    )}
-                  </div>
-                  <div className="chat-meta">
-                    {message.optimistic && <small className="msg-status">Sending...</small>}
-                    {!isGrouped && (
-                      <small className="msg-time">
-                        {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </small>
                     )}
                   </div>
                 </div>
@@ -145,13 +189,13 @@ export function CommsPanel({
             <div className="sticker-picker-wrap">
               <button
                 type="button"
-                className="chat-tool-btn"
+                className="chat-tool-btn-cyber"
                 disabled={!permissions.canChat}
                 onClick={() => setShowStickers((current) => !current)}
                 aria-label="Open stickers"
                 title="Stickers"
               >
-                <ImagePlus size={18} />
+                <Paperclip size={18} />
               </button>
               {showStickers && (
                 <div className="sticker-picker" role="menu" aria-label="Choose sticker">
@@ -179,46 +223,59 @@ export function CommsPanel({
               placeholder={permissions.canChat ? "Type a message..." : "Chat disabled"}
             />
             <button
-              className="chat-send-btn"
+              className="chat-send-btn-cyber"
               disabled={!permissions.canChat}
               onClick={sendChat}
               aria-label="Send message"
             >
-              <Send size={17} />
+              <Send size={16} />
             </button>
           </div>
         </section>
       )}
 
       {showAi && (
-        <section className="ai-box">
-          <div className="messages messages--assistant" ref={aiScrollRef}>
+        <section className="ai-box" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <div className="messages messages--assistant" ref={aiScrollRef} style={{ flex: 1, overflowY: "auto", padding: "8px 4px" }}>
             {aiMessages.length === 0 && (
-              <div className="assistant-empty">
-                <Sparkles size={14} />
-                <p>Ask the assistant anything about your code, logic, or errors.</p>
+              <div className="assistant-empty" style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
+                <Sparkles size={24} style={{ color: "#f97316", marginBottom: "12px" }} />
+                <p style={{ margin: 0, fontSize: "0.85rem" }}>Ask the assistant anything about your code, logic, or errors.</p>
               </div>
             )}
 
             {aiMessages.map((message) => (
-              <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`}>
-                <strong>{message.role === "user" ? "You" : "AI Assistant"}</strong>
-                <div className="msg-bubble">
-                  <p>{message.text}</p>
+              <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`} style={{ marginBottom: "12px" }}>
+                <div className="chat-sender-row" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <div className="chat-avatar" style={{ background: message.role === "user" ? "rgba(249, 115, 22, 0.2)" : "rgba(0, 150, 255, 0.2)", borderColor: message.role === "user" ? "rgba(249, 115, 22, 0.4)" : "rgba(0, 150, 255, 0.4)" }}>
+                    {message.role === "user" ? "U" : "AI"}
+                  </div>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: message.role === "user" ? "#ff9f43" : "#8be9fd", textTransform: "uppercase" }}>
+                    {message.role === "user" ? "You" : "AI Assistant"}
+                  </span>
+                </div>
+                <div className="msg-bubble" style={{ background: message.role === "user" ? "rgba(13, 20, 35, 0.6)" : "rgba(22, 28, 45, 0.8)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "10px 14px" }}>
+                  <p style={{ margin: 0, fontSize: "0.88rem", color: "#ffffff" }}>{message.text}</p>
                 </div>
               </div>
             ))}
 
             {aiThinking && (
-              <div className="ai-message ai-message--assistant">
-                <strong>AI Assistant</strong>
-                <div className="msg-bubble">
-                  <p>Thinking...</p>
+              <div className="ai-message ai-message--assistant" style={{ marginBottom: "12px" }}>
+                <div className="chat-sender-row" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <div className="chat-avatar" style={{ background: "rgba(0, 150, 255, 0.2)", borderColor: "rgba(0, 150, 255, 0.4)" }}>AI</div>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8be9fd", textTransform: "uppercase" }}>AI Assistant</span>
+                </div>
+                <div className="msg-bubble" style={{ background: "rgba(22, 28, 45, 0.8)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "10px 14px" }}>
+                  <p style={{ margin: 0, fontSize: "0.88rem", color: "#ffffff" }}>Thinking...</p>
                 </div>
               </div>
             )}
           </div>
           <div className="send-row">
+            <div className="chat-tool-btn-cyber" style={{ opacity: 0.5 }}>
+              <Sparkles size={16} />
+            </div>
             <input
               disabled={!permissions.canUseAi}
               value={aiPrompt}
@@ -227,7 +284,7 @@ export function CommsPanel({
               placeholder={permissions.canUseAi ? "Ask AI a coding doubt..." : "Chat only"}
             />
             <button
-              className="icon-button orange"
+              className="chat-send-btn-cyber"
               disabled={!permissions.canUseAi}
               onClick={askAi}
               aria-label="Ask AI"
