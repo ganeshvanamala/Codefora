@@ -102,32 +102,92 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
       >
         <Timer size={13} style={{ color: "var(--primary-orange)" }} />
         {timer.isRunning ? (
-          <span style={{ fontSize: "12px", fontWeight: "bold", color: "#fff", minWidth: "36px", textAlign: "center" }}>
-            {timeLeft}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "12px", fontWeight: "bold", color: "#fff", minWidth: "36px", textAlign: "center" }}>
+              {timeLeft}
+            </span>
+            {permissions.isHost && (
+              <button 
+                onClick={() => actions.stopTimer()}
+                style={{ 
+                  background: "rgba(239, 68, 68, 0.15)", 
+                  border: "1px solid rgba(239, 68, 68, 0.3)", 
+                  borderRadius: "4px",
+                  color: "#ef4444", 
+                  cursor: "pointer", 
+                  padding: "4px",
+                  display: "grid", 
+                  placeItems: "center",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(239, 68, 68, 0.3)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(239, 68, 68, 0.15)"}
+                title="Stop Timer"
+              >
+                <Square size={8} fill="#ef4444" style={{ color: "#ef4444" }} />
+              </button>
+            )}
+          </div>
         ) : permissions.isHost ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
             <input 
               type="text" 
               inputMode="numeric"
               value={customMin} 
               onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
-              style={{ width: "20px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
+              style={{ 
+                width: "22px", 
+                background: "rgba(255, 255, 255, 0.05)", 
+                border: "1px solid rgba(255, 255, 255, 0.12)", 
+                borderRadius: "4px",
+                color: "#fff", 
+                fontSize: "11px", 
+                textAlign: "center", 
+                outline: "none", 
+                fontWeight: "bold",
+                padding: "2px 0"
+              }}
+              title="Minutes"
             />
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>:</span>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>:</span>
             <input 
               type="text" 
               inputMode="numeric"
               value={customSec.toString().padStart(2, '0')} 
               onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
-              style={{ width: "20px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
+              style={{ 
+                width: "22px", 
+                background: "rgba(255, 255, 255, 0.05)", 
+                border: "1px solid rgba(255, 255, 255, 0.12)", 
+                borderRadius: "4px",
+                color: "#fff", 
+                fontSize: "11px", 
+                textAlign: "center", 
+                outline: "none", 
+                fontWeight: "bold",
+                padding: "2px 0"
+              }}
+              title="Seconds"
             />
             <button 
               onClick={() => actions.startTimer(customMin * 60 + customSec)}
-              style={{ background: "none", border: "none", color: "var(--success)", cursor: "pointer", padding: "0 0 0 6px" }}
+              style={{ 
+                background: "rgba(16, 185, 129, 0.15)", 
+                border: "1px solid rgba(16, 185, 129, 0.3)", 
+                borderRadius: "4px",
+                color: "var(--success)", 
+                cursor: "pointer", 
+                padding: "4px",
+                display: "grid",
+                placeItems: "center",
+                marginLeft: "3px",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(16, 185, 129, 0.3)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "rgba(16, 185, 129, 0.15)"}
               title="Start Timer"
             >
-              <Play size={10} fill="var(--success)" />
+              <Play size={8} fill="var(--success)" style={{ color: "var(--success)" }} />
             </button>
           </div>
         ) : (
