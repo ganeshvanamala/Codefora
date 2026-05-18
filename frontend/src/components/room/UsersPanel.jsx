@@ -80,7 +80,7 @@ export function UsersPanel({
       <div 
         className="section-title" 
         style={{ 
-          padding: "12px 16px 8px", 
+          padding: "8px 12px 4px", 
           display: "flex", 
           alignItems: "center", 
           gap: "8px", 
@@ -88,7 +88,7 @@ export function UsersPanel({
           flexShrink: 0
         }}
       >
-        <span style={{ fontSize: "11px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
+        <span style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
           : USERS ({users.length})
         </span>
       </div>
@@ -96,11 +96,11 @@ export function UsersPanel({
       <div 
         className="users-list" 
         style={{ 
-          padding: "8px 12px", 
+          padding: "6px 8px", 
           display: "flex", 
           flexDirection: "column", 
-          gap: "8px", 
-          maxHeight: "180px", 
+          gap: "4px", 
+          maxHeight: "150px", 
           overflowY: "auto",
           flexShrink: 0
         }}
@@ -112,7 +112,7 @@ export function UsersPanel({
             style={{
               background: "rgba(255, 255, 255, 0.02)",
               border: "1px solid rgba(255, 255, 255, 0.04)",
-              borderRadius: "10px",
+              borderRadius: "8px",
               position: "relative"
             }}
           >
@@ -126,13 +126,13 @@ export function UsersPanel({
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                padding: "8px 10px"
+                gap: "8px",
+                padding: "6px 8px"
               }}
             >
               <div className="avatar-wrap" style={{ position: "relative" }}>
                 {user.emotionId ? (
-                  <div className="avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", background: user.color || "#ff7a18", display: "grid", placeItems: "center", overflow: "hidden" }}>
+                  <div className="avatar" style={{ width: "24px", height: "24px", borderRadius: "50%", background: user.color || "#ff7a18", display: "grid", placeItems: "center", overflow: "hidden" }}>
                     <img
                       src={`${API_URL}/api/emotions/${user.emotionId}/image`}
                       alt={`${user.name}'s emotion`}
@@ -143,13 +143,13 @@ export function UsersPanel({
                   <span
                     className="avatar"
                     style={{ 
-                      width: "32px", 
-                      height: "32px", 
+                      width: "24px", 
+                      height: "24px", 
                       borderRadius: "50%", 
                       background: user.color || "#ff7a18", 
                       display: "grid", 
                       placeItems: "center", 
-                      fontSize: "12px", 
+                      fontSize: "11px", 
                       fontWeight: "bold", 
                       color: "#fff",
                       boxShadow: "none",
@@ -164,7 +164,7 @@ export function UsersPanel({
 
               <div className="user-info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "1px", minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <strong style={{ fontSize: "13px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</strong>
+                  <strong style={{ fontSize: "11px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</strong>
                   {user.role === "Host" && <Shield size={10} style={{ color: "var(--primary-orange)" }} />}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -204,13 +204,13 @@ export function UsersPanel({
                         style={{
                           position: "absolute",
                           right: "10px",
-                          top: "32px",
+                          top: "24px",
                           zIndex: 1000,
                           background: "#111",
                           border: "1px solid #333",
-                          borderRadius: "8px",
+                          borderRadius: "6px",
                           padding: "4px",
-                          minWidth: "120px",
+                          minWidth: "100px",
                           boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
                         }}
                       >
@@ -226,7 +226,7 @@ export function UsersPanel({
                                 onRoleChange(user.socketId, nextRole);
                                 setOpenMenuFor(null);
                               }}
-                              style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "6px 8px", background: isActive ? "rgba(249,115,22,0.1)" : "none", border: "none", color: isActive ? "#f97316" : "#ccc", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
+                              style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "4px 8px", background: isActive ? "rgba(249,115,22,0.1)" : "none", border: "none", color: isActive ? "#f97316" : "#ccc", borderRadius: "4px", fontSize: "10px", cursor: "pointer" }}
                             >
                               <span>{nextRole}</span>
                               {isActive && <Check size={10} />}
@@ -240,7 +240,7 @@ export function UsersPanel({
                             onKickUser?.(user.socketId);
                             setOpenMenuFor(null);
                           }}
-                          style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "6px 8px", background: "none", border: "none", color: "#ef4444", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
+                          style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "4px 8px", background: "none", border: "none", color: "#ef4444", borderRadius: "4px", fontSize: "10px", cursor: "pointer" }}
                         >
                           <span>Kick</span>
                           <UserX size={10} />
@@ -253,23 +253,18 @@ export function UsersPanel({
             </div>
 
             {/* Profile Expansion */}
-            {expandedUser === user.socketId && (
+            {expandedUser === user.socketId && user.bio && (
               <div className="user-profile-expansion" style={{
-                padding: "0 10px 10px 10px",
+                padding: "0 8px 8px 8px",
                 marginTop: "-2px"
               }}>
                 <div style={{
-                  padding: "8px",
+                  padding: "6px",
                   background: "rgba(0,0,0,0.2)",
-                  borderRadius: "6px",
+                  borderRadius: "4px",
                   border: "1px solid rgba(255,255,255,0.05)"
                 }}>
-                  <div style={{ fontSize: "8px", color: "rgba(255,255,255,0.3)", marginBottom: "2px", textTransform: "uppercase" }}>Bio</div>
-                  {user.bio ? (
-                    <p style={{ margin: 0, fontSize: "11px", color: "#ddd", lineHeight: "1.3" }}>{user.bio}</p>
-                  ) : (
-                    <p style={{ margin: 0, fontSize: "11px", color: "#555", fontStyle: "italic" }}>No bio provided</p>
-                  )}
+                  <p style={{ margin: 0, fontSize: "10px", color: "#ddd", lineHeight: "1.3" }}>{user.bio}</p>
                 </div>
               </div>
             )}
@@ -280,14 +275,14 @@ export function UsersPanel({
       {/* --- PUBLIC ROOM PERMISSIONS CARD --- */}
       <div 
         style={{ 
-          margin: "8px 12px", 
-          padding: "12px", 
+          margin: "4px 8px", 
+          padding: "8px", 
           border: "1px solid rgba(249, 115, 22, 0.3)", 
           background: "rgba(249, 115, 22, 0.03)", 
-          borderRadius: "12px", 
+          borderRadius: "8px", 
           display: "flex", 
           flexDirection: "column", 
-          gap: "4px",
+          gap: "2px",
           flexShrink: 0
         }}
       >
@@ -325,18 +320,18 @@ export function UsersPanel({
         <button 
           style={{ 
             flex: 1, 
-            padding: "8px 0", 
+            padding: "6px 0", 
             background: "none", 
             border: "none", 
             color: activeTab === "chat" ? "var(--primary-orange)" : "var(--text-muted)", 
-            fontSize: "11px", 
+            fontSize: "10px", 
             fontWeight: "bold", 
-            borderBottom: activeTab === "chat" ? "2px solid var(--primary-orange)" : "2px solid transparent", 
+            borderBottom: activeTab === "chat" ? "1px solid var(--primary-orange)" : "1px solid transparent", 
             cursor: "pointer", 
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center", 
-            gap: "6px", 
+            gap: "4px", 
             outline: "none" 
           }}
           onClick={() => setActiveTab("chat")}
@@ -347,18 +342,18 @@ export function UsersPanel({
         <button 
           style={{ 
             flex: 1, 
-            padding: "8px 0", 
+            padding: "6px 0", 
             background: "none", 
             border: "none", 
             color: activeTab === "ai" ? "var(--primary-orange)" : "var(--text-muted)", 
-            fontSize: "11px", 
+            fontSize: "10px", 
             fontWeight: "bold", 
-            borderBottom: activeTab === "ai" ? "2px solid var(--primary-orange)" : "2px solid transparent", 
+            borderBottom: activeTab === "ai" ? "1px solid var(--primary-orange)" : "1px solid transparent", 
             cursor: "pointer", 
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center", 
-            gap: "6px", 
+            gap: "4px", 
             outline: "none" 
           }}
           onClick={() => {

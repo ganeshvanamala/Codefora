@@ -31,26 +31,26 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   }, [timer.isRunning, timer.endTime]);
 
   return (
-    <header className="topbar" style={{ height: "64px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <header className="topbar" style={{ height: "52px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
       {/* Brand logo & Problem Info */}
-      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
         <div 
           onClick={onLeaveRequest} 
-          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }}
+          style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
         >
-          <Code2 size={24} style={{ color: "var(--primary-orange)" }} />
-          <span style={{ fontSize: "18px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>
+          <Code2 size={20} style={{ color: "var(--primary-orange)" }} />
+          <span style={{ fontSize: "16px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>
             Codefora
           </span>
         </div>
 
         {/* Separator Line */}
-        <div style={{ width: "1px", height: "24px", background: "var(--glass-border)" }} />
+        <div style={{ width: "1px", height: "20px", background: "var(--glass-border)", flexShrink: 0 }} />
 
         {/* Room details */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <h1 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#fff" }}>
+        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <h1 style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "250px" }}>
               {room?.name || "Room"}
             </h1>
             {(room?.problemId || (room?.name && room.name.includes("Problem Room:"))) && (
@@ -62,21 +62,22 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                   border: "1px solid rgba(249, 115, 22, 0.3)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  padding: "4px 10px",
+                  gap: "4px",
+                  padding: "2px 8px",
                   borderRadius: "6px",
-                  fontSize: "11px",
+                  fontSize: "10px",
                   fontWeight: "bold",
                   cursor: "pointer",
-                  transition: "all 0.2s"
+                  transition: "all 0.2s",
+                  flexShrink: 0
                 }}
               >
-                <BookOpen size={12} /> 
+                <BookOpen size={10} /> 
                 <span>View Problem</span>
               </button>
             )}
           </div>
-          <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
+          <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {users.length} online • Host: {room?.hostName || "N/A"}
           </span>
         </div>
@@ -87,17 +88,19 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         style={{ 
           display: "flex", 
           alignItems: "center", 
-          gap: "8px",
+          gap: "6px",
           background: "rgba(0, 0, 0, 0.25)",
-          padding: "6px 16px",
-          borderRadius: "8px",
+          padding: "4px 12px",
+          borderRadius: "6px",
           border: "1px solid var(--glass-border)",
-          fontFamily: '"Cascadia Code", "Fira Code", monospace'
+          fontFamily: '"Cascadia Code", "Fira Code", monospace',
+          flexShrink: 0,
+          margin: "0 12px"
         }}
       >
-        <Timer size={14} style={{ color: "var(--primary-orange)" }} />
+        <Timer size={13} style={{ color: "var(--primary-orange)" }} />
         {timer.isRunning ? (
-          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#fff", minWidth: "42px", textAlign: "center" }}>
+          <span style={{ fontSize: "12px", fontWeight: "bold", color: "#fff", minWidth: "36px", textAlign: "center" }}>
             {timeLeft}
           </span>
         ) : permissions.isHost ? (
@@ -107,7 +110,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
               inputMode="numeric"
               value={customMin} 
               onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
-              style={{ width: "24px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
+              style={{ width: "20px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
             />
             <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>:</span>
             <input 
@@ -115,7 +118,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
               inputMode="numeric"
               value={customSec.toString().padStart(2, '0')} 
               onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
-              style={{ width: "24px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
+              style={{ width: "20px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
             />
             <button 
               onClick={() => actions.startTimer(customMin * 60 + customSec)}
@@ -126,14 +129,14 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
             </button>
           </div>
         ) : (
-          <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--text-muted)" }}>
+          <span style={{ fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)" }}>
             00:00
           </span>
         )}
       </div>
 
       {/* Right side Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
         {/* Mic Toggle pill */}
         <button
           onClick={onMic}
@@ -141,14 +144,14 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            height: "36px",
-            padding: "0 14px",
-            borderRadius: "18px",
+            gap: "6px",
+            height: "30px",
+            padding: "0 12px",
+            borderRadius: "15px",
             background: micOn ? "rgba(16, 185, 129, 0.1)" : "rgba(255, 255, 255, 0.04)",
             border: micOn ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(255, 255, 255, 0.06)",
             color: micOn ? "#10b981" : "var(--text-muted)",
-            fontSize: "12px",
+            fontSize: "11px",
             fontWeight: "bold",
             cursor: permissions.canSpeak ? "pointer" : "not-allowed",
             outline: "none"
@@ -164,21 +167,21 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            height: "36px",
-            padding: "0 14px",
-            borderRadius: "18px",
+            gap: "6px",
+            height: "30px",
+            padding: "0 12px",
+            borderRadius: "15px",
             background: "rgba(255, 255, 255, 0.04)",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             color: "var(--text-muted)",
-            fontSize: "12px",
+            fontSize: "11px",
             fontWeight: "bold",
             cursor: "pointer",
             outline: "none"
           }}
           title="Scratchpad Notes"
         >
-          <StickyNote size={14} />
+          <StickyNote size={12} />
           <span>Notes</span>
         </button>
 
@@ -188,20 +191,20 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            height: "36px",
-            padding: "0 14px",
-            borderRadius: "18px",
+            gap: "6px",
+            height: "30px",
+            padding: "0 12px",
+            borderRadius: "15px",
             background: "rgba(255, 255, 255, 0.04)",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             color: "var(--text-muted)",
-            fontSize: "12px",
+            fontSize: "11px",
             fontWeight: "bold",
             cursor: "pointer",
             outline: "none"
           }}
         >
-          <Info size={14} />
+          <Info size={12} />
           <span>Guide</span>
         </button>
 
@@ -211,20 +214,20 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            height: "36px",
-            padding: "0 14px",
-            borderRadius: "18px",
+            gap: "6px",
+            height: "30px",
+            padding: "0 12px",
+            borderRadius: "15px",
             background: "transparent",
             border: "1px solid rgba(255, 255, 255, 0.15)",
             color: "#fff",
-            fontSize: "12px",
+            fontSize: "11px",
             fontWeight: "bold",
             cursor: "pointer",
             outline: "none"
           }}
         >
-          <LogOut size={14} />
+          <LogOut size={12} />
           <span>Leave Room</span>
         </button>
 
@@ -235,20 +238,20 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              height: "36px",
-              padding: "0 14px",
-              borderRadius: "18px",
+              gap: "6px",
+              height: "30px",
+              padding: "0 12px",
+              borderRadius: "15px",
               background: "rgba(239, 68, 68, 0.1)",
               border: "1px solid rgba(239, 68, 68, 0.3)",
               color: "#ef4444",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: "pointer",
               outline: "none"
             }}
           >
-            <X size={14} />
+            <X size={12} />
             <span>End Room</span>
           </button>
         )}

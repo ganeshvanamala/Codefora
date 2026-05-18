@@ -60,7 +60,7 @@ export function ConsolePanel({
 
           {panelMode === "output" && (
             <button 
-              className={`button compact ${showInput ? "active" : ""}`} 
+              className={`button compact console-run-btn ${showInput ? "active" : ""}`} 
               onClick={() => setShowInput(!showInput)}
               title="Toggle Custom Input (stdin)"
               style={{ 
@@ -78,7 +78,7 @@ export function ConsolePanel({
           )}
 
           <button className="button primary run-btn console-run-btn" onClick={onRun} disabled={isRunningCode || isSubmittingCode}>
-            {isRunningCode ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+            {isRunningCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
             <span>{isRunningCode ? "Running..." : "Run Code"}</span>
           </button>
           
@@ -89,12 +89,12 @@ export function ConsolePanel({
               disabled={isRunningCode || isSubmittingCode || !canSubmit}
               title={!canSubmit ? "Viewers cannot submit solutions" : "Submit solution against all test cases"}
             >
-              {isSubmittingCode ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+              {isSubmittingCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
               <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
             </button>
           )}
 
-          <button className="button compact" onClick={onClear}>Clear</button>
+          <button className="button compact console-run-btn" onClick={onClear}>Clear</button>
         </div>
       </div>
       
