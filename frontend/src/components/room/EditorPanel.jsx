@@ -259,21 +259,23 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         ))}
       </div>
 
-      <div className="collab-strip">
-        <div className="typing-indicator" />
-        <div className="cursor-tags">
-          {otherUsers.slice(0, 3).map((user) => (
-            <span
-              style={{ "--tag": user.color || "#8be9fd" }}
-              key={user.socketId}
-              title={`${user.name} is online`}
-            >
-              {user.name}
-            </span>
-          ))}
-          {otherUsers.length > 3 && <span className="more-users">+{otherUsers.length - 3}</span>}
+      {otherUsers && otherUsers.length > 0 && (
+        <div className="collab-strip">
+          <div className="typing-indicator" />
+          <div className="cursor-tags">
+            {otherUsers.slice(0, 3).map((user) => (
+              <span
+                style={{ "--tag": user.color || "#8be9fd" }}
+                key={user.socketId}
+                title={`${user.name} is online`}
+              >
+                {user.name}
+              </span>
+            ))}
+            {otherUsers.length > 3 && <span className="more-users">+{otherUsers.length - 3}</span>}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="file-tools" style={{ 
         display: 'flex', 

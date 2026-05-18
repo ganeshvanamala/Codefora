@@ -1316,10 +1316,14 @@
   }
 
   .workspace.layout-v2 .topbar {
-    background: transparent;
-    border-bottom: none;
-    height: 60px;
-    padding: 0 24px;
+    background: #000000 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 0 24px !important;
   }
 
   .workspace.layout-v2 .topbar-left {
