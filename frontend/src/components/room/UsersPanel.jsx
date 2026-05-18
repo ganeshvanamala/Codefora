@@ -86,10 +86,89 @@ export function UsersPanel({
               padding: "10px"
             }}
           >
+            {/* Absolute positioned User Role Menu Toggle Button for Host */}
+            {permissions.isHost && user.role !== "Host" && (
+              <div 
+                className="user-menu-wrap" 
+                onClick={e => e.stopPropagation()}
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  zIndex: 50
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenMenuFor((current) => current === user.socketId ? null : user.socketId)}
+                  style={{ 
+                    padding: "4px", 
+                    background: "none", 
+                    border: "none", 
+                    color: "rgba(255,255,255,0.4)", 
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "4px"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = "#fff"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}
+                  title="Manage user role"
+                >
+                  <MoreVertical size={14} />
+                </button>
+
+                {openMenuFor === user.socketId && (
+                  <div
+                    className="user-action-menu"
+                    role="menu"
+                    style={{
+                      position: "absolute",
+                      right: "0",
+                      top: "24px",
+                      zIndex: 1000
+                    }}
+                  >
+                    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.4)", padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: "bold" }}>Role</div>
+                    {(["Host", "Member", "Viewer"]).map((nextRole) => {
+                      const isActive = user.role === nextRole;
+                      return (
+                        <button
+                          key={nextRole}
+                          type="button"
+                          className={`user-action-item ${isActive ? "active" : ""}`}
+                          onClick={() => {
+                            onRoleChange(user.socketId, nextRole);
+                            setOpenMenuFor(null);
+                          }}
+                        >
+                          <span>{nextRole}</span>
+                          {isActive && <Check size={12} style={{ color: "var(--primary-orange)" }} />}
+                        </button>
+                      );
+                    })}
+                    <div className="user-action-divider" />
+                    <button
+                      type="button"
+                      className="user-action-item danger"
+                      onClick={() => {
+                        onKickUser?.(user.socketId);
+                        setOpenMenuFor(null);
+                      }}
+                    >
+                      <span>Kick</span>
+                      <UserX size={12} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div
               className={`user-row ${user.speaking ? "speaking" : ""}`}
               onClick={(e) => {
-                if (e.target.closest('.user-actions')) return;
+                if (e.target.closest('.user-menu-wrap')) return;
                 setExpandedUser(current => current === user.socketId ? null : user.socketId);
               }}
               style={{
@@ -132,7 +211,7 @@ export function UsersPanel({
               </div>
 
               {/* Column 2: User Info (Name & Role/Typing Status) */}
-              <div className="user-info" style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+              <div className="user-info" style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0, paddingRight: "18px" }}>
                 <strong style={{ fontSize: "13px", fontWeight: "bold", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {user.name}
                 </strong>
@@ -163,70 +242,6 @@ export function UsersPanel({
                     {user.mic ? <Mic size={12} style={{ color: "var(--primary-orange)" }} /> : <MicOff size={12} style={{ opacity: 0.3 }} />}
                   </span>
                 </div>
-
-                {permissions.isHost && user.role !== "Host" && (
-                  <div className="user-menu-wrap" onClick={e => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      className="mini-icon"
-                      onClick={() => setOpenMenuFor((current) => current === user.socketId ? null : user.socketId)}
-                      style={{ padding: "4px", background: "none", border: "none", color: "#666", cursor: "pointer" }}
-                    >
-                      <MoreVertical size={12} />
-                    </button>
-
-                    {openMenuFor === user.socketId && (
-                      <div
-                        className="user-action-menu"
-                        role="menu"
-                        style={{
-                          position: "absolute",
-                          right: "10px",
-                          bottom: "28px",
-                          zIndex: 1000,
-                          background: "#111",
-                          border: "1px solid #333",
-                          borderRadius: "6px",
-                          padding: "4px",
-                          minWidth: "100px",
-                          boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
-                        }}
-                      >
-                        <div style={{ fontSize: "8px", color: "#555", padding: "4px 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Role</div>
-                        {(["Host", "Member", "Viewer"]).map((nextRole) => {
-                          const isActive = user.role === nextRole;
-                          return (
-                            <button
-                              key={nextRole}
-                              type="button"
-                              className={`user-action-item ${isActive ? "active" : ""}`}
-                              onClick={() => {
-                                onRoleChange(user.socketId, nextRole);
-                                setOpenMenuFor(null);
-                              }}
-                              style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "4px 8px", background: isActive ? "rgba(249,115,22,0.1)" : "none", border: "none", color: isActive ? "#f97316" : "#ccc", borderRadius: "4px", fontSize: "10px", cursor: "pointer" }}
-                            >
-                              <span>{nextRole}</span>
-                              {isActive && <Check size={10} />}
-                            </button>
-                          );
-                        })}
-                        <div style={{ height: "1px", background: "#333", margin: "4px 0" }} />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onKickUser?.(user.socketId);
-                            setOpenMenuFor(null);
-                          }}
-                          style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "4px 8px", background: "none", border: "none", color: "#ef4444", borderRadius: "4px", fontSize: "10px", cursor: "pointer" }}
-                        >
-                          <span>Kick</span>
-                          <UserX size={10} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 

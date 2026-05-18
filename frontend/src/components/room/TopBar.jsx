@@ -36,10 +36,14 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
       <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
         <div 
           onClick={onLeaveRequest} 
-          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
+          style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
         >
-          <span style={{ color: "var(--primary-orange)", fontSize: "20px", fontWeight: "900", fontFamily: "monospace" }}>{`{ }`}</span>
-          <span style={{ fontSize: "18px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>
+          <img 
+            src="/codefora.png" 
+            alt="Codefora Logo" 
+            style={{ height: "24px", width: "auto", objectFit: "contain", borderRadius: "4px" }} 
+          />
+          <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary-orange)", letterSpacing: "-0.02em" }}>
             Codefora
           </span>
         </div>
