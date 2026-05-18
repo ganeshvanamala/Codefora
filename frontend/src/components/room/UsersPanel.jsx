@@ -110,10 +110,11 @@ export function UsersPanel({
             className="user-item-card"
             key={user.socketId}
             style={{
-              background: "rgba(255, 255, 255, 0.02)",
-              border: "1px solid rgba(255, 255, 255, 0.04)",
-              borderRadius: "8px",
-              position: "relative"
+              background: "#121822",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+              borderRadius: "12px",
+              position: "relative",
+              marginBottom: "4px"
             }}
           >
             <div
@@ -126,13 +127,13 @@ export function UsersPanel({
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "6px 8px"
+                gap: "12px",
+                padding: "10px 12px"
               }}
             >
               <div className="avatar-wrap" style={{ position: "relative" }}>
                 {user.emotionId ? (
-                  <div className="avatar" style={{ width: "24px", height: "24px", borderRadius: "50%", background: user.color || "#ff7a18", display: "grid", placeItems: "center", overflow: "hidden" }}>
+                  <div className="avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", background: user.color || "#ffb000", display: "grid", placeItems: "center", overflow: "hidden" }}>
                     <img
                       src={`${API_URL}/api/emotions/${user.emotionId}/image`}
                       alt={`${user.name}'s emotion`}
@@ -143,13 +144,13 @@ export function UsersPanel({
                   <span
                     className="avatar"
                     style={{ 
-                      width: "24px", 
-                      height: "24px", 
+                      width: "32px", 
+                      height: "32px", 
                       borderRadius: "50%", 
-                      background: user.color || "#ff7a18", 
+                      background: user.color || (user.role === "Host" ? "#ffb000" : "#8b5cf6"), 
                       display: "grid", 
                       placeItems: "center", 
-                      fontSize: "11px", 
+                      fontSize: "14px", 
                       fontWeight: "bold", 
                       color: "#fff",
                       boxShadow: "none",
@@ -162,17 +163,17 @@ export function UsersPanel({
                 {user.speaking && <div className="speaking-indicator" />}
               </div>
 
-              <div className="user-info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "1px", minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <strong style={{ fontSize: "11px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</strong>
-                  {user.role === "Host" && <Shield size={10} style={{ color: "var(--primary-orange)" }} />}
+              <div className="user-info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <strong style={{ fontSize: "14px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</strong>
+                  {user.role === "Host" && <span style={{ fontSize: "12px" }}>👑</span>}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <small style={{ fontSize: "9px", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", fontWeight: "600" }}>{user.role}</small>
+                  <small style={{ fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.02em" }}>{user.role}</small>
                   {user.isTyping && user.currentFile && (
                     <>
                       <span style={{ width: "2px", height: "2px", borderRadius: "50%", background: "rgba(255,255,255,0.2)" }} />
-                      <small style={{ fontSize: "9px", color: "var(--primary-orange)", fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <small style={{ fontSize: "10px", color: "var(--primary-orange)", fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         Typing...
                       </small>
                     </>
@@ -275,95 +276,60 @@ export function UsersPanel({
       {/* --- PUBLIC ROOM PERMISSIONS CARD --- */}
       <div 
         style={{ 
-          margin: "4px 8px", 
-          padding: "8px", 
-          border: "1px solid rgba(249, 115, 22, 0.3)", 
-          background: "rgba(249, 115, 22, 0.03)", 
-          borderRadius: "8px", 
+          margin: "0 16px 16px", 
+          padding: "16px", 
+          border: "1px solid rgba(249, 115, 22, 0.4)", 
+          background: "transparent", 
+          borderRadius: "12px", 
           display: "flex", 
           flexDirection: "column", 
-          gap: "2px",
+          gap: "8px",
           flexShrink: 0
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#fff" }}>
-          <MessageSquare size={14} style={{ color: "var(--primary-orange)" }} />
-          <strong style={{ fontSize: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--primary-orange)" }}>
+          <MessageSquare size={16} />
+          <strong style={{ fontSize: "13px", fontWeight: "600" }}>
             {room?.visibility === "private" ? "Private Room" : "Public Room"}
           </strong>
         </div>
-        <p style={{ margin: 0, fontSize: "10px", color: "rgba(255,255,255,0.6)", lineHeight: "1.4" }}>
+        <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)", fontWeight: "500" }}>
           {permissions.canEdit ? "Full Access: Edit, Chat & Speak" : "View Only: Read-only Workspace"}
         </p>
 
         {permissions.isHost && room?.visibility === "private" && (
-          <div style={{ marginTop: "4px", paddingTop: "4px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.4)" }}>Invite Code:</span>
-            <code style={{ fontSize: "10px", color: "var(--primary-orange)", fontFamily: "monospace", fontWeight: "bold" }}>
+          <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>Invite Code:</span>
+            <code style={{ fontSize: "11px", color: "var(--primary-orange)", fontFamily: "monospace", fontWeight: "bold" }}>
               {getInviteCode(roomId) || "N/A"}
             </code>
           </div>
         )}
       </div>
 
-      {/* --- TABS --- */}
+      {/* --- TABS REPLACE WITH STATIC HEADER --- */}
       <div 
         style={{ 
           display: "flex", 
-          padding: "2px 12px 0", 
-          borderTop: "1px solid rgba(255,255,255,0.03)", 
+          padding: "8px 16px 12px", 
           borderBottom: "1px solid rgba(255,255,255,0.03)", 
-          background: "rgba(0,0,0,0.1)",
           flexShrink: 0
         }}
       >
-        <button 
+        <div 
           style={{ 
-            flex: 1, 
-            padding: "6px 0", 
-            background: "none", 
-            border: "none", 
-            color: activeTab === "chat" ? "var(--primary-orange)" : "var(--text-muted)", 
-            fontSize: "10px", 
-            fontWeight: "bold", 
-            borderBottom: activeTab === "chat" ? "1px solid var(--primary-orange)" : "1px solid transparent", 
-            cursor: "pointer", 
             display: "flex", 
             alignItems: "center", 
-            justifyContent: "center", 
-            gap: "4px", 
-            outline: "none" 
-          }}
-          onClick={() => setActiveTab("chat")}
-        >
-          <MessageSquare size={12} />
-          <span>Public Chat</span>
-        </button>
-        <button 
-          style={{ 
-            flex: 1, 
-            padding: "6px 0", 
-            background: "none", 
-            border: "none", 
-            color: activeTab === "ai" ? "var(--primary-orange)" : "var(--text-muted)", 
-            fontSize: "10px", 
-            fontWeight: "bold", 
-            borderBottom: activeTab === "ai" ? "1px solid var(--primary-orange)" : "1px solid transparent", 
-            cursor: "pointer", 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            gap: "4px", 
-            outline: "none" 
-          }}
-          onClick={() => {
-            setActiveTab("ai");
-            onClearNotifications?.();
+            gap: "8px",
+            color: "rgba(255,255,255,0.5)",
+            fontSize: "11px",
+            fontWeight: "600",
+            letterSpacing: "0.05em"
           }}
         >
-          <Sparkles size={12} />
-          <span>AI Assistant</span>
-        </button>
+          <MessageSquare size={14} />
+          <span>PUBLIC CHAT</span>
+        </div>
       </div>
 
       {/* --- SCROLL MESSAGE CONTENT PANEL --- */}

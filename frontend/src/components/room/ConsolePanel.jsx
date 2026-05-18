@@ -67,34 +67,90 @@ export function ConsolePanel({
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '6px',
-                borderColor: showInput ? 'var(--primary)' : 'var(--line)',
-                background: showInput ? 'rgba(255, 122, 24, 0.1)' : 'transparent',
-                color: showInput ? 'var(--primary)' : 'var(--text)'
+                height: '30px',
+                borderRadius: '6px',
+                border: '1px solid var(--primary-orange)',
+                background: 'transparent',
+                color: 'var(--primary-orange)',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                cursor: 'pointer',
+                padding: '0 12px'
               }}
             >
-              <Keyboard size={14} />
+              <Keyboard size={14} style={{ color: 'var(--primary-orange)' }} />
               <span>Input</span>
             </button>
           )}
 
-          <button className="button primary run-btn console-run-btn" onClick={onRun} disabled={isRunningCode || isSubmittingCode}>
-            {isRunningCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+          <button 
+            className="button primary console-run-btn" 
+            onClick={onRun} 
+            disabled={isRunningCode || isSubmittingCode}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              height: '30px',
+              borderRadius: '6px',
+              background: 'var(--primary-orange)',
+              color: '#000',
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: '12px',
+              cursor: (isRunningCode || isSubmittingCode) ? 'not-allowed' : 'pointer',
+              padding: '0 12px',
+              opacity: (isRunningCode || isSubmittingCode) ? 0.6 : 1
+            }}
+          >
+            {isRunningCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} style={{ color: '#000' }} />}
             <span>{isRunningCode ? "Running..." : "Run Code"}</span>
           </button>
           
           {activeProblem && (
             <button 
-              className="button success run-btn console-run-btn" 
+              className="button secondary console-run-btn" 
               onClick={onSubmit} 
               disabled={isRunningCode || isSubmittingCode || !canSubmit}
               title={!canSubmit ? "Viewers cannot submit solutions" : "Submit solution against all test cases"}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                height: '30px',
+                borderRadius: '6px',
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                fontWeight: '500',
+                fontSize: '12px',
+                cursor: (isRunningCode || isSubmittingCode || !canSubmit) ? 'not-allowed' : 'pointer',
+                padding: '0 12px',
+                opacity: (isRunningCode || isSubmittingCode || !canSubmit) ? 0.6 : 1
+              }}
             >
               {isSubmittingCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
               <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
             </button>
           )}
 
-          <button className="button compact console-run-btn" onClick={onClear}>Clear</button>
+          <button 
+            className="button secondary console-run-btn" 
+            onClick={onClear}
+            style={{
+              height: '30px',
+              borderRadius: '6px',
+              background: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              fontWeight: '500',
+              fontSize: '12px',
+              cursor: 'pointer',
+              padding: '0 12px'
+            }}
+          >
+            Clear
+          </button>
         </div>
       </div>
       

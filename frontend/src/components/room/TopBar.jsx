@@ -1,4 +1,4 @@
-import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw } from "lucide-react";
+import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes, timer }) {
@@ -36,48 +36,48 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
       <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
         <div 
           onClick={onLeaveRequest} 
-          style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
+          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
         >
-          <Code2 size={20} style={{ color: "var(--primary-orange)" }} />
-          <span style={{ fontSize: "16px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>
+          <span style={{ color: "var(--primary-orange)", fontSize: "20px", fontWeight: "900", fontFamily: "monospace" }}>{`{ }`}</span>
+          <span style={{ fontSize: "18px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>
             Codefora
           </span>
         </div>
 
         {/* Separator Line */}
-        <div style={{ width: "1px", height: "20px", background: "var(--glass-border)", flexShrink: 0 }} />
+        <div style={{ width: "1px", height: "24px", background: "var(--glass-border)", flexShrink: 0 }} />
 
         {/* Room details */}
-        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <h1 style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "250px" }}>
+        <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h1 style={{ margin: 0, fontSize: "14px", fontWeight: "600", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "250px" }}>
               {room?.name || "Room"}
             </h1>
             {(room?.problemId || (room?.name && room.name.includes("Problem Room:"))) && (
               <button 
                 onClick={onToggleProblem}
                 style={{ 
-                  background: "rgba(249, 115, 22, 0.15)", 
-                  color: "var(--primary-orange)",
-                  border: "1px solid rgba(249, 115, 22, 0.3)",
+                  background: "var(--primary-orange)", 
+                  color: "#fff",
+                  border: "none",
                   display: "flex",
                   alignItems: "center",
-                  gap: "4px",
-                  padding: "2px 8px",
+                  gap: "6px",
+                  padding: "4px 8px",
                   borderRadius: "6px",
-                  fontSize: "10px",
+                  fontSize: "11px",
                   fontWeight: "bold",
                   cursor: "pointer",
                   transition: "all 0.2s",
                   flexShrink: 0
                 }}
               >
-                <BookOpen size={10} /> 
+                <ExternalLink size={12} /> 
                 <span>View Problem</span>
               </button>
             )}
           </div>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {users.length} online • Host: {room?.hostName || "N/A"}
           </span>
         </div>
@@ -147,7 +147,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
             gap: "6px",
             height: "30px",
             padding: "0 12px",
-            borderRadius: "15px",
+            borderRadius: "6px",
             background: micOn ? "rgba(16, 185, 129, 0.1)" : "rgba(255, 255, 255, 0.04)",
             border: micOn ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(255, 255, 255, 0.06)",
             color: micOn ? "#10b981" : "var(--text-muted)",
@@ -161,52 +161,8 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           <span>{micOn ? "Mic On" : "Mic Off"}</span>
         </button>
 
-        {/* Notes Toggle pill */}
-        <button
-          onClick={onShowNotes}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            height: "30px",
-            padding: "0 12px",
-            borderRadius: "15px",
-            background: "rgba(255, 255, 255, 0.04)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            color: "var(--text-muted)",
-            fontSize: "11px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            outline: "none"
-          }}
-          title="Scratchpad Notes"
-        >
-          <StickyNote size={12} />
-          <span>Notes</span>
-        </button>
-
-        {/* Info Toggle pill */}
-        <button
-          onClick={onShowInfo}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            height: "30px",
-            padding: "0 12px",
-            borderRadius: "15px",
-            background: "rgba(255, 255, 255, 0.04)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            color: "var(--text-muted)",
-            fontSize: "11px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            outline: "none"
-          }}
-        >
-          <Info size={12} />
-          <span>Guide</span>
-        </button>
+        {/* Notes Toggle pill (Removed to match screenshot) */}
+        {/* Info Toggle pill (Removed to match screenshot) */}
 
         {/* Leave Room Pill */}
         <button
@@ -217,7 +173,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
             gap: "6px",
             height: "30px",
             padding: "0 12px",
-            borderRadius: "15px",
+            borderRadius: "6px",
             background: "transparent",
             border: "1px solid rgba(255, 255, 255, 0.15)",
             color: "#fff",
@@ -241,17 +197,17 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
               gap: "6px",
               height: "30px",
               padding: "0 12px",
-              borderRadius: "15px",
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              color: "#ef4444",
+              borderRadius: "6px",
+              background: "#ef4444",
+              border: "none",
+              color: "#fff",
               fontSize: "11px",
               fontWeight: "bold",
               cursor: "pointer",
               outline: "none"
             }}
           >
-            <X size={12} />
+            <LogOut size={12} style={{ transform: "rotate(180deg)" }} />
             <span>End Room</span>
           </button>
         )}

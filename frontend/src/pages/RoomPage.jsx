@@ -371,6 +371,14 @@ export function RoomPage() {
               onCreateFile={actions.createFile}
               onDeleteFile={actions.deleteActiveFile}
               onSaveWork={actions.saveWork}
+              onRun={() => actions.runCode(stdin)}
+              onSubmit={() => {
+                actions.submitCode(activeProblem);
+                setShowTimeTravel(true);
+              }}
+              isRunningCode={compiler.isRunningCode}
+              isSubmittingCode={compiler.isSubmittingCode}
+              canSubmit={permissions.canEdit}
             />
             <ConsolePanel
               output={output}

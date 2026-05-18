@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2, Save } from "lucide-react";
+import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2, Save, AlignLeft, MoreHorizontal, Play, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { socket } from "../../lib/socket";
@@ -23,11 +23,12 @@ const FILE_TYPES = [
   { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
-export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile, onSaveWork }) {
+export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -278,77 +279,292 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         display: 'flex', 
         flexDirection: 'row', 
         alignItems: 'center', 
-        gap: '8px', 
         padding: '6px 12px',
-        overflowX: 'auto',
-        flexWrap: 'nowrap',
         width: '100%',
-        justifyContent: 'flex-start'
+        justifyContent: 'space-between',
+        position: 'relative',
+        background: '#0a0e17',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
-        <input
-          disabled={!permissions.canEdit}
-          value={newFileName}
-          onChange={(event) => setNewFileName(event.target.value)}
-          onKeyDown={(event) => event.key === "Enter" && createFile()}
-          placeholder="new-file"
-        />
-        <select
-          className="file-type-select"
-          disabled={!permissions.canEdit}
-          value={newFileType}
-          onChange={(event) => setNewFileType(event.target.value)}
-          aria-label="File language"
-        >
-          {FILE_TYPES.map((type) => (
-            <option key={type.language} value={type.language}>
-              {type.label}
-            </option>
-          ))}
-        </select>
-        <button className="button compact secondary create-file-button" disabled={!permissions.canEdit} onClick={createFile} title="Create File">
-          <Plus size={14} /> <span>Create</span>
-        </button>
+        {/* Left Side: Language Indicator Dropdown */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <select
+            className="file-type-select"
+            disabled={!permissions.canEdit}
+            value={activeFile?.language || "javascript"}
+            onChange={(event) => {
+              // Map language selection
+            }}
+            style={{
+              background: '#121822',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '6px',
+              color: '#fff',
+              fontSize: '12px',
+              padding: '4px 10px',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            {FILE_TYPES.map((type) => (
+              <option key={type.language} value={type.language}>
+                {type.label === "Java" ? "Java (17)" : type.label === "Python" ? "Python (3)" : type.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <div className="file-tools-divider" />
+        {/* Right Side: Format, More, Run Code, Submit */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Format Button */}
+          <button 
+            className="button compact secondary"
+            style={{
+              height: '30px',
+              borderRadius: '6px',
+              background: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              padding: '0 12px'
+            }}
+            onClick={() => {
+              if (editorInstance) {
+                editorInstance.trigger('editor', 'editor.action.formatDocument');
+              }
+            }}
+            title="Format Code"
+          >
+            <AlignLeft size={13} />
+            <span>Format</span>
+          </button>
 
-        <button 
-          className="button compact secondary create-file-button" 
-          disabled={!permissions.canEdit} 
-          onClick={() => fileInputRef.current?.click()}
-          title="Import"
-        >
-          <Upload size={14} /> <span>Import</span>
-        </button>
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          style={{ display: 'none' }} 
-          onChange={handleImport} 
-        />
+          {/* More Menu Trigger */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              className="button compact secondary"
+              style={{
+                height: '30px',
+                borderRadius: '6px',
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                padding: '0 12px'
+              }}
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              title="More Actions"
+            >
+              <MoreHorizontal size={13} />
+              <span>More</span>
+            </button>
 
-        <button 
-          className="button compact secondary create-file-button" 
-          onClick={() => {
-            setSelectedFiles(files.map(f => f.name));
-            setShowExportModal(true);
-          }}
-          title="Export"
-        >
-          <Download size={14} /> <span>Export</span>
-        </button>
+            {showMoreMenu && (
+              <div style={{
+                position: 'absolute',
+                right: 0,
+                top: '36px',
+                background: '#121822',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '8px',
+                zIndex: 100,
+                width: '220px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px'
+              }}>
+                <div style={{ padding: '2px 6px', fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontWeight: 'bold' }}>File Operations</div>
+                
+                {/* Create File Section */}
+                <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                  <input
+                    disabled={!permissions.canEdit}
+                    value={newFileName}
+                    onChange={(event) => setNewFileName(event.target.value)}
+                    onKeyDown={(event) => event.key === "Enter" && createFile()}
+                    placeholder="new-file.py"
+                    style={{
+                      flex: 1,
+                      background: '#0a0e17',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '4px',
+                      color: '#fff',
+                      fontSize: '10px',
+                      padding: '4px 6px',
+                      outline: 'none'
+                    }}
+                  />
+                  <button 
+                    disabled={!permissions.canEdit}
+                    onClick={() => {
+                      createFile();
+                      setShowMoreMenu(false);
+                    }}
+                    style={{
+                      background: 'var(--primary-orange)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: '#000',
+                      padding: '0 8px',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
 
-        <div className="file-tools-divider" />
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />
 
-        <button 
-          className={`button compact ${saveMessage === 'Saved!' ? 'success' : 'secondary'} create-file-button`} 
-          onClick={handleSaveWork}
-          disabled={isSaving}
-          title="Save to My Works"
-          style={{ gap: '6px' }}
-        >
-          <Save size={14} /> 
-          <span>{isSaving ? "Saving..." : saveMessage || "Save"}</span>
-        </button>
+                <button 
+                  onClick={() => {
+                    fileInputRef.current?.click();
+                    setShowMoreMenu(false);
+                  }}
+                  disabled={!permissions.canEdit}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '11px',
+                    padding: '6px 8px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    width: '100%'
+                  }}
+                >
+                  <Upload size={12} />
+                  <span>Import File</span>
+                </button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  style={{ display: 'none' }} 
+                  onChange={handleImport} 
+                />
+
+                <button 
+                  onClick={() => {
+                    setSelectedFiles(files.map(f => f.name));
+                    setShowExportModal(true);
+                    setShowMoreMenu(false);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '11px',
+                    padding: '6px 8px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    width: '100%'
+                  }}
+                >
+                  <Download size={12} />
+                  <span>Export Files</span>
+                </button>
+
+                <button 
+                  onClick={() => {
+                    handleSaveWork();
+                    setShowMoreMenu(false);
+                  }}
+                  disabled={isSaving}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '11px',
+                    padding: '6px 8px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    width: '100%'
+                  }}
+                >
+                  <Save size={12} />
+                  <span>{isSaving ? "Saving Workspace..." : saveMessage || "Save Workspace"}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Run Code Button */}
+          <button 
+            className="button compact secondary"
+            style={{
+              height: '30px',
+              borderRadius: '6px',
+              background: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: isRunningCode ? 'not-allowed' : 'pointer',
+              padding: '0 12px',
+              opacity: isRunningCode ? 0.6 : 1
+            }}
+            onClick={onRun}
+            disabled={isRunningCode}
+            title="Run Code"
+          >
+            <Play size={13} />
+            <span>{isRunningCode ? "Running..." : "Run Code"}</span>
+          </button>
+
+          {/* Submit Button */}
+          <button 
+            className="button compact"
+            style={{
+              height: '30px',
+              borderRadius: '6px',
+              background: 'var(--primary-orange)',
+              border: 'none',
+              color: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              cursor: (!canSubmit || isSubmittingCode) ? 'not-allowed' : 'pointer',
+              padding: '0 14px',
+              opacity: isSubmittingCode ? 0.6 : 1
+            }}
+            onClick={onSubmit}
+            disabled={!canSubmit || isSubmittingCode}
+            title="Submit Code"
+          >
+            <Send size={13} style={{ color: '#000' }} />
+            <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
+          </button>
+        </div>
       </div>
 
       <div className="editor-wrap">
