@@ -5723,7 +5723,8 @@ label {
 
 /* Room workspace refinements */
 .workspace.layout-v2 .workspace-main {
-  grid-template-columns: var(--users-panel-width, 222px) 8px minmax(0, 1fr) !important;
+  grid-template-columns: var(--users-panel-width, 222px) minmax(0, 1fr) !important;
+  position: relative;
 }
 
 
@@ -5917,7 +5918,10 @@ label {
 }
 
 .workspace.layout-v2 .users-resize-handle {
-  align-self: stretch;
+  position: absolute;
+  left: calc(var(--users-panel-width, 222px) + 4px);
+  top: 0;
+  bottom: 16px;
   width: 8px;
   min-width: 8px;
   padding: 0;
@@ -5925,11 +5929,12 @@ label {
   background: transparent;
   border: 0;
   border-radius: 999px;
+  z-index: 10;
 }
 
 .workspace.layout-v2 .users-resize-handle:hover,
 .workspace.layout-v2 .workspace-main.is-resizing-users .users-resize-handle {
-  background: linear-gradient(180deg, transparent, rgba(255, 122, 24, 0.55), transparent);
+  background: linear-gradient(180deg, transparent, rgba(255, 122, 24, 0.4), transparent);
 }
 
 .workspace.layout-v2 .console-panel {
@@ -5958,12 +5963,12 @@ label {
   transform: translateX(-50%);
   background: rgba(255, 122, 24, 0.42);
   border-radius: 999px;
-  opacity: 0.7;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 .workspace.layout-v2 .console-panel .resize-handle:hover::after {
   opacity: 1;
-  background: rgba(255, 122, 24, 0.82);
 }
 
 .workspace.layout-v2 .users-panel .section-title {

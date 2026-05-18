@@ -406,8 +406,6 @@ export function RoomPage() {
           </div>
         </div>
 
-        <FooterBar />
-
         {showLeavePrompt && (
           <div className="profile-modal-overlay" role="dialog" aria-modal="true" aria-label="Leave Room Confirmation">
             <div className="profile-modal-card">

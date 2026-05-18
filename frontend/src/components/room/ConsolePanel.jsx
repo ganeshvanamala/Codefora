@@ -22,6 +22,37 @@ export function ConsolePanel({
   const [panelMode, setPanelMode] = useState("output");
   const [showInput, setShowInput] = useState(true); // Default to showing input side-by-side for better onboarding
 
+  const renderFormattedOutput = (rawOutput) => {
+    if (!rawOutput) return <span style={{ color: 'var(--text-muted)' }}>Ready.</span>;
+    const lines = rawOutput.split('\n');
+    return lines.map((line, idx) => {
+      const isStatus = line.toLowerCase().includes('status:');
+      const isExecTime = line.toLowerCase().includes('execution time:');
+      const isSuccessVal = !isStatus && !isExecTime && line.trim() !== "";
+      
+      if (isStatus) {
+        return (
+          <div key={idx} style={{ color: '#10b981', fontWeight: 'bold', marginTop: '8px', fontSize: '12px' }}>
+            {line}
+          </div>
+        );
+      }
+      if (isExecTime) {
+        return (
+          <div key={idx} style={{ color: '#64748b', fontSize: '11px', marginTop: '4px' }}>
+            {line}
+          </div>
+        );
+      }
+      return (
+        <div key={idx} style={{ color: isSuccessVal ? '#10b981' : '#fff', fontSize: isSuccessVal ? '18px' : '13px', fontWeight: isSuccessVal ? 'bold' : 'normal', fontFamily: 'monospace' }}>
+          {line}
+        </div>
+      );
+    });
+  };
+
+
   return (
     <section className="console-panel" style={style}>
       <div className="resize-handle" onMouseDown={onResizeStart} onDoubleClick={(event) => event.preventDefault()} aria-hidden="true" />
@@ -157,39 +188,43 @@ export function ConsolePanel({
       <div className="console-panel-content">
         {panelMode === "output" ? (
           showInput ? (
-            <div className="console-split-container" style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden' }}>
-              <div className="console-input-half" style={{ width: '40%', borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', background: 'var(--console-bg)' }}>
-                <div style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--text-muted)', borderBottom: '1px solid var(--line)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="console-split-container" style={{ display: 'flex', height: '100%', width: '100%', gap: '16px', padding: '16px', boxSizing: 'border-box' }}>
+              <div className="console-input-half" style={{ flex: '1 1 40%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <div style={{ fontSize: '11px', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Custom Input (stdin)
                 </div>
-                <textarea 
-                  style={{ 
-                    flex: 1, 
-                    background: 'transparent', 
-                    color: 'var(--text)', 
-                    border: 'none', 
-                    resize: 'none', 
-                    padding: '12px', 
-                    fontFamily: '"Cascadia Code", "Fira Code", monospace',
-                    fontSize: '12px',
-                    lineHeight: '1.5',
-                    outline: 'none'
-                  }}
-                  value={stdin || ""}
-                  onChange={(e) => setStdin?.(e.target.value)}
-                  placeholder="Type or paste sample inputs here..."
-                />
+                <div style={{ flex: 1, background: '#070c14', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', display: 'flex' }}>
+                  <textarea 
+                    style={{ 
+                      flex: 1, 
+                      background: 'transparent', 
+                      color: '#fff', 
+                      border: 'none', 
+                      resize: 'none', 
+                      padding: '12px', 
+                      fontFamily: '"Cascadia Code", "Fira Code", monospace',
+                      fontSize: '12px',
+                      lineHeight: '1.5',
+                      outline: 'none'
+                    }}
+                    value={stdin || ""}
+                    onChange={(e) => setStdin?.(e.target.value)}
+                    placeholder="Type or paste sample inputs here..."
+                  />
+                </div>
               </div>
-              <div className="console-output-half" style={{ width: '60%', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--text-muted)', borderBottom: '1px solid var(--line)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div className="console-output-half" style={{ flex: '1 1 60%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Output
                 </div>
-                <pre className="console-output" style={{ flex: 1, margin: 0, overflow: 'auto', border: 'none', height: 'auto', background: 'var(--console-bg)' }}>{output}</pre>
+                <div style={{ flex: 1, background: '#070c14', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '16px', overflowY: 'auto', boxSizing: 'border-box' }}>
+                  {renderFormattedOutput(output)}
+                </div>
               </div>
             </div>
           ) : (
-            <div className="console-container">
-              <pre className="console-output">{output}</pre>
+            <div className="console-container" style={{ padding: '16px', height: '100%', boxSizing: 'border-box', overflowY: 'auto' }}>
+              {renderFormattedOutput(output)}
             </div>
           )
         ) : preview.showPreview ? (

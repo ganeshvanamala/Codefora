@@ -1310,10 +1310,9 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: #09090b;
-    /* Very dark background */
+    background: #040b14;
     color: #fff;
-    padding-bottom: 0;
+    padding-bottom: 16px;
   }
 
   .workspace.layout-v2 .topbar {
@@ -1371,8 +1370,8 @@
   .workspace.layout-v2 .console-panel,
   .workspace.layout-v2 .comms-panel,
   .workspace.layout-v2 .run-panel {
-    background: #121212;
-    border: 1px solid #2a2a2a;
+    background: #0a0e17;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     overflow: hidden;
     display: flex;
