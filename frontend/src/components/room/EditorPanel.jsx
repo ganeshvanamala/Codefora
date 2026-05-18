@@ -51,7 +51,8 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
   }, [activeFile?.name]);
 
   function createFile() {
-    const selectedType = FILE_TYPES.find((type) => type.language === newFileType) || FILE_TYPES[0];
+    const activeLanguage = activeFile?.language || newFileType || "javascript";
+    const selectedType = FILE_TYPES.find((type) => type.language === activeLanguage) || FILE_TYPES[0];
     const cleanName = newFileName.trim();
     if (!cleanName) return;
     const fileName = cleanName.includes(".") ? cleanName : `${cleanName}${selectedType.extension}`;
@@ -259,10 +260,17 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         ))}
       </div>
 
-      {otherUsers && otherUsers.length > 0 && (
+      {((otherUsers && otherUsers.length > 0) || typing) && (
         <div className="collab-strip">
-          <div className="typing-indicator" />
-          <div className="cursor-tags">
+          <div className="typing-indicator" style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center' }}>
+            {typing && (
+              <span className="pulse-text" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--primary-orange)', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Activity size={12} style={{ animation: 'pulse 1.2s infinite', flexShrink: 0 }} />
+                <span>{typing}</span>
+              </span>
+            )}
+          </div>
+          <div className="cursor-tags" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             {otherUsers.slice(0, 3).map((user) => (
               <span
                 style={{ "--tag": user.color || "#8be9fd" }}
@@ -288,8 +296,56 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
         background: '#0a0e17',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
-        {/* Left Side: Language Indicator Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Left Side: New File Creator & Language Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Inline New File Textbox & button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', borderRight: '1px solid rgba(255,255,255,0.08)', paddingRight: '8px' }}>
+            <input
+              type="text"
+              placeholder="New file name..."
+              value={newFileName}
+              onChange={(e) => setNewFileName(e.target.value)}
+              disabled={!permissions.canEdit}
+              style={{
+                background: '#121822',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '12px',
+                padding: '4px 8px',
+                width: '120px',
+                outline: 'none'
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  createFile();
+                }
+              }}
+            />
+            <button
+              onClick={createFile}
+              disabled={!permissions.canEdit || !newFileName.trim()}
+              title="Create new file"
+              style={{
+                background: 'var(--primary-orange)',
+                border: 'none',
+                borderRadius: '6px',
+                color: '#000',
+                width: '24px',
+                height: '24px',
+                display: 'grid',
+                placeItems: 'center',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                transition: 'all 0.2s',
+                opacity: newFileName.trim() ? 1 : 0.5
+              }}
+            >
+              +
+            </button>
+          </div>
+
           <select
             className="file-type-select"
             disabled={!permissions.canEdit}
@@ -389,47 +445,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
               }}>
                 <div style={{ padding: '2px 6px', fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontWeight: 'bold' }}>File Operations</div>
                 
-                {/* Create File Section */}
-                <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                  <input
-                    disabled={!permissions.canEdit}
-                    value={newFileName}
-                    onChange={(event) => setNewFileName(event.target.value)}
-                    onKeyDown={(event) => event.key === "Enter" && createFile()}
-                    placeholder="new-file.py"
-                    style={{
-                      flex: 1,
-                      background: '#0a0e17',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '4px',
-                      color: '#fff',
-                      fontSize: '10px',
-                      padding: '4px 6px',
-                      outline: 'none'
-                    }}
-                  />
-                  <button 
-                    disabled={!permissions.canEdit}
-                    onClick={() => {
-                      createFile();
-                      setShowMoreMenu(false);
-                    }}
-                    style={{
-                      background: 'var(--primary-orange)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      color: '#000',
-                      padding: '0 8px',
-                      cursor: 'pointer',
-                      fontSize: '10px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
 
-                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />
 
                 <button 
                   onClick={() => {

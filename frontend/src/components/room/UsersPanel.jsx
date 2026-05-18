@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
-import { Check, Headphones, Mic, MicOff, MoreVertical, Shield, UserX, Send, Sparkles, MessageSquare, Bot } from "lucide-react";
+import { Check, Headphones, Mic, MicOff, MoreVertical, Shield, UserX, Send, Sparkles, MessageSquare, Bot, CheckCheck, Paperclip, X } from "lucide-react";
 import { getInviteCode } from "../../lib/navigation";
 import { API_URL } from "../../config";
+import sticker1 from "../../../assets/sticker1.jpeg";
+import sticker2 from "../../../assets/sticker2.jpeg";
+import bonfire from "../../../assets/bonfire.jpeg";
+
+const STICKERS = [
+  { id: "sticker1", label: "Sticker 1", src: sticker1 },
+  { id: "sticker2", label: "Sticker 2", src: sticker2 },
+  { id: "bonfire", label: "Bonfire", src: bonfire }
+];
+
+function stickerFor(id) {
+  return STICKERS.find((sticker) => sticker.id === id);
+}
 
 export function UsersPanel({ 
   room, 
@@ -164,9 +177,9 @@ export function UsersPanel({
               </div>
 
               <div className="user-info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <strong style={{ fontSize: "14px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</strong>
-                  {user.role === "Host" && <span style={{ fontSize: "12px" }}>👑</span>}
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "nowrap" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>{user.name}</span>
+                  {user.role === "Host" && <span style={{ fontSize: "12px", flexShrink: 0 }}>👑</span>}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <small style={{ fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.02em" }}>{user.role}</small>
@@ -307,29 +320,68 @@ export function UsersPanel({
         )}
       </div>
 
-      {/* --- TABS REPLACE WITH STATIC HEADER --- */}
+      {/* --- PREMIUM DYNAMIC TAB HEADER --- */}
       <div 
         style={{ 
-          display: "flex", 
-          padding: "8px 16px 12px", 
-          borderBottom: "1px solid rgba(255,255,255,0.03)", 
+          padding: "12px 16px", 
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           flexShrink: 0
         }}
       >
-        <div 
-          style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "8px",
-            color: "rgba(255,255,255,0.5)",
-            fontSize: "11px",
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <MessageSquare size={16} style={{ color: "var(--primary-orange)" }} />
+            <span style={{ fontSize: "13px", fontWeight: "bold", color: "#fff" }}>
+              {activeTab === "chat" ? "Room Chat" : "AI Assistant"}
+            </span>
+          </div>
+          <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: "4px" }}>
+            {activeTab === "chat" ? (
+              <>
+                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
+                {users.length} {users.length === 1 ? "participant" : "participants"}
+              </>
+            ) : (
+              <>
+                <Sparkles size={9} style={{ color: "var(--primary-orange)" }} />
+                Powered by Gemini
+              </>
+            )}
+          </span>
+        </div>
+
+        <button
+          onClick={() => setActiveTab(activeTab === "chat" ? "ai" : "chat")}
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            padding: "5px 10px",
+            borderRadius: "14px",
+            color: "var(--primary-orange)",
+            fontSize: "10px",
             fontWeight: "600",
-            letterSpacing: "0.05em"
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            transition: "all 0.2s"
           }}
         >
-          <MessageSquare size={14} />
-          <span>PUBLIC CHAT</span>
-        </div>
+          {activeTab === "chat" ? (
+            <>
+              <span>Chat with AI</span>
+              <Sparkles size={10} />
+            </>
+          ) : (
+            <>
+              <span>Room Chat</span>
+              <MessageSquare size={10} />
+            </>
+          )}
+        </button>
       </div>
 
       {/* --- SCROLL MESSAGE CONTENT PANEL --- */}
@@ -343,50 +395,68 @@ export function UsersPanel({
         }}
       >
         {activeTab === "chat" ? (
-          <div 
-            ref={chatScrollRef} 
-            style={{ 
-              flex: 1, 
-              overflowY: "auto", 
-              padding: "12px", 
-              display: "flex", 
-              flexDirection: "column", 
-              gap: "10px" 
-            }}
-          >
-            {messages.map((message) => {
-              const formattedTime = new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
-              const initials = (message.user || "U").slice(0, 1).toUpperCase();
-              
-              return (
-                <div key={message.id || `${message.user}-${message.createdAt}`} style={{ display: "flex", gap: "8px", padding: "2px 0" }}>
-                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "grid", placeItems: "center", fontSize: "11px", fontWeight: "bold", color: "#fff", flexShrink: 0 }}>
-                    {initials}
-                  </div>
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "1px", minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <span style={{ fontSize: "11px", fontWeight: "bold", color: "rgba(255,255,255,0.85)" }}>
-                          {message.user}
-                        </span>
-                        {message.user === room?.hostName && (
-                          <span style={{ fontSize: "7px", background: "rgba(249,115,22,0.15)", color: "var(--primary-orange)", padding: "0 3px", borderRadius: "3px", fontWeight: "bold" }}>
-                            HOST
-                          </span>
+          <section className="room-chat" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+            <div className="chat-messages" ref={chatScrollRef} style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+              {messages.map((message, index) => {
+                const isMe = message.user === me?.name;
+                const isAi = String(message.text || "").startsWith("AI Assistant:");
+                const sticker = stickerFor(message.stickerId);
+                const prevMessage = messages[index - 1];
+                const isGrouped = prevMessage && prevMessage.user === message.user;
+                const senderName = isAi ? "AI Assistant" : message.user;
+                const formattedTime = new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+
+                if (isMe) {
+                  return (
+                    <div
+                      className={`chat-message user-message ${isGrouped ? "grouped" : ""} ${message.optimistic ? "optimistic" : ""}`}
+                      key={message.id || `${message.user}-${message.createdAt}`}
+                    >
+                      {!isGrouped && <span className="chat-time-above" style={{ fontSize: "9px", opacity: 0.4, alignSelf: "flex-end", marginBottom: "2px" }}>{formattedTime}</span>}
+                      <div className="msg-bubble" style={{ background: "var(--primary-orange)", borderRadius: "14px 14px 2px 14px", padding: "8px 12px", maxWidth: "85%", alignSelf: "flex-end", position: "relative" }}>
+                        <strong className="chat-sender-name-me" style={{ display: "none" }}>{senderName}</strong>
+                        {sticker ? (
+                          <img className="chat-sticker-image" src={sticker.src} alt={sticker.label} style={{ maxWidth: "80px", borderRadius: "4px" }} />
+                        ) : (
+                          <p style={{ margin: 0, fontSize: "12px", color: "#000", fontWeight: "500", lineHeight: "1.4", wordBreak: "break-word" }}>{message.text}</p>
                         )}
+                        <span className="chat-status-check" style={{ display: "flex", justifyContent: "flex-end", marginTop: "2px", opacity: 0.6 }}>
+                          <CheckCheck size={10} style={{ color: "#000" }} />
+                        </span>
                       </div>
-                      <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.25)" }}>
-                        {formattedTime}
-                      </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: "1.35", wordBreak: "break-word" }}>
-                      {message.text}
-                    </p>
+                  );
+                }
+
+                // Others' messages
+                const initials = (senderName || "").slice(0, 1).toUpperCase();
+                return (
+                  <div
+                    className={`chat-message other-message ${isGrouped ? "grouped" : ""} ${isAi ? "ai-msg" : ""} ${message.optimistic ? "optimistic" : ""}`}
+                    key={message.id || `${message.user}-${message.createdAt}`}
+                    style={{ alignSelf: "flex-start", width: "100%" }}
+                  >
+                    {!isGrouped && (
+                      <div className="chat-sender-row" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                        <div className="chat-avatar" style={{ width: "20px", height: "20px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "grid", placeItems: "center", fontSize: "10px", fontWeight: "bold", color: "#8be9fd" }}>{initials}</div>
+                        <div className="chat-sender-info" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span className="chat-sender-name-other" style={{ fontSize: "10px", fontWeight: "bold", color: "#8be9fd" }}>{senderName}</span>
+                          <span className="chat-time-other" style={{ fontSize: "8px", opacity: 0.4 }}>{formattedTime}</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="msg-bubble" style={{ background: "#1b2b45", borderRadius: "14px 14px 14px 2px", padding: "8px 12px", maxWidth: "85%", marginLeft: isGrouped ? "0px" : "26px" }}>
+                      {sticker ? (
+                        <img className="chat-sticker-image" src={sticker.src} alt={sticker.label} style={{ maxWidth: "80px", borderRadius: "4px" }} />
+                      ) : (
+                        <p style={{ margin: 0, fontSize: "12px", color: "#fff", lineHeight: "1.4", wordBreak: "break-word" }}>{isAi ? String(message.text || "").replace("AI Assistant: ", "") : message.text}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </section>
         ) : (
           <div 
             ref={aiScrollRef} 
@@ -444,9 +514,34 @@ export function UsersPanel({
           display: "flex", 
           gap: "8px", 
           alignItems: "center",
-          flexShrink: 0
+          flexShrink: 0,
+          position: "relative"
         }}
       >
+        {activeTab === "chat" && (
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <button 
+              type="button" 
+              onClick={() => onSendSticker ? onSendSticker("bonfire") : onSendChat("🔥")}
+              title="Send Bonfire sticker"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255,255,255,0.4)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'grid',
+                placeItems: 'center',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-orange)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+            >
+              <Paperclip size={16} />
+            </button>
+          </div>
+        )}
+
         <input 
           type="text"
           style={{ 
@@ -482,7 +577,7 @@ export function UsersPanel({
           style={{ 
             width: "36px", 
             height: "36px", 
-            borderRadius: "10px", 
+            borderRadius: "18px", 
             background: "var(--primary-orange)", 
             border: "none", 
             display: "grid", 
