@@ -31,143 +31,225 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   }, [timer.isRunning, timer.endTime]);
 
   return (
-    <header className="topbar">
-      <div className="room-heading">
-        <button className="icon-button orange" onClick={onLeaveRequest} aria-label="Back to rooms" style={{ padding: 0, overflow: 'hidden' }}>
-          <img src="/codefora.png" alt="Codefora" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-        </button>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <h1 style={{ margin: 0 }}>{room?.name || "Room"}</h1>
-            {(room?.problemId || (room?.name && room.name.includes("Problem Room:"))) && (
-              <button 
-                className="button-pill-sm" 
-                onClick={onToggleProblem}
-                title="View Problem Description"
-                style={{ 
-                  background: '#f97316', 
-                  color: 'white',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 12px',
-                  borderRadius: '100px',
-                  fontSize: '12px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <BookOpen size={14} /> <span>View Problem</span>
-              </button>
-            )}
-          </div>
-          <span style={{ marginTop: '4px' }}>
-            <Users size={14} /> {users.length} online — {permissions.me?.role || "Member"}
+    <header className="topbar" style={{ height: "64px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      {/* Brand logo & Problem Info */}
+      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+        <div 
+          onClick={onLeaveRequest} 
+          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }}
+        >
+          <Code2 size={24} style={{ color: "var(--primary-orange)" }} />
+          <span style={{ fontSize: "18px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>
+            Codefora
           </span>
         </div>
 
-        {/* Pomodoro Timer */}
-        <div className="pomodoro-timer" style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '10px',
-          background: 'rgba(255,255,255,0.03)',
-          padding: '4px 12px',
-          borderRadius: '12px',
-          border: '1px solid var(--glass-border)',
-          marginLeft: '20px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: timer.isRunning ? 'var(--primary-orange)' : 'var(--text-muted)' }}>
-            <Timer size={16} className={timer.isRunning ? "animate-pulse" : ""} />
-            {timer.isRunning ? (
-              <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 'bold', minWidth: '50px' }}>
-                {timeLeft}
-              </span>
-            ) : permissions.isHost ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
-                <input 
-                  type="text" 
-                  inputMode="numeric"
-                  value={customMin} 
-                  onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
-                  style={{ width: '40px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
-                />
-                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>:</span>
-                <input 
-                  type="text" 
-                  inputMode="numeric"
-                  value={customSec.toString().padStart(2, '0')} 
-                  onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
-                  style={{ width: '40px', background: 'none', border: 'none', color: 'white', fontSize: '14px', textAlign: 'center', outline: 'none', fontWeight: 'bold' }}
-                />
-              </div>
-            ) : (
-              <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 'bold', minWidth: '50px' }}>
-                25:00
-              </span>
+        {/* Separator Line */}
+        <div style={{ width: "1px", height: "24px", background: "var(--glass-border)" }} />
+
+        {/* Room details */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h1 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#fff" }}>
+              {room?.name || "Room"}
+            </h1>
+            {(room?.problemId || (room?.name && room.name.includes("Problem Room:"))) && (
+              <button 
+                onClick={onToggleProblem}
+                style={{ 
+                  background: "rgba(249, 115, 22, 0.15)", 
+                  color: "var(--primary-orange)",
+                  border: "1px solid rgba(249, 115, 22, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+              >
+                <BookOpen size={12} /> 
+                <span>View Problem</span>
+              </button>
             )}
           </div>
-          
-          {permissions.isHost && (
-            <div style={{ display: 'flex', gap: '4px' }}>
-              {!timer.isRunning ? (
-                <button 
-                  className="button-icon-sm" 
-                  onClick={() => actions.startTimer(customMin * 60 + customSec)}
-                  title={`Start Sprint (${customMin}m ${customSec}s)`}
-                  style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer', padding: '4px' }}
-                >
-                  <Play size={14} />
-                </button>
-              ) : (
-                <button 
-                  className="button-icon-sm" 
-                  onClick={actions.stopTimer}
-                  title="Stop Timer"
-                  style={{ background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer', padding: '4px' }}
-                >
-                  <Square size={14} />
-                </button>
-              )}
-            </div>
-          )}
+          <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
+            {users.length} online • Host: {room?.hostName || "N/A"}
+          </span>
         </div>
       </div>
 
-      <div className="top-actions">
-        <button
-          className="button compact secondary"
-          onClick={onShowInfo}
-          title="Room Information & Guide"
-          style={{ width: '40px', padding: '0', justifyContent: 'center' }}
-        >
-          <Info size={18} />
-        </button>
+      {/* Center Pomodoro Timer Badge */}
+      <div 
+        style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "8px",
+          background: "rgba(0, 0, 0, 0.25)",
+          padding: "6px 16px",
+          borderRadius: "8px",
+          border: "1px solid var(--glass-border)",
+          fontFamily: '"Cascadia Code", "Fira Code", monospace'
+        }}
+      >
+        <Timer size={14} style={{ color: "var(--primary-orange)" }} />
+        {timer.isRunning ? (
+          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#fff", minWidth: "42px", textAlign: "center" }}>
+            {timeLeft}
+          </span>
+        ) : permissions.isHost ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+            <input 
+              type="text" 
+              inputMode="numeric"
+              value={customMin} 
+              onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
+              style={{ width: "24px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
+            />
+            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>:</span>
+            <input 
+              type="text" 
+              inputMode="numeric"
+              value={customSec.toString().padStart(2, '0')} 
+              onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
+              style={{ width: "24px", background: "none", border: "none", color: "#fff", fontSize: "12px", textAlign: "center", outline: "none", fontWeight: "bold" }}
+            />
+            <button 
+              onClick={() => actions.startTimer(customMin * 60 + customSec)}
+              style={{ background: "none", border: "none", color: "var(--success)", cursor: "pointer", padding: "0 0 0 6px" }}
+              title="Start Timer"
+            >
+              <Play size={10} fill="var(--success)" />
+            </button>
+          </div>
+        ) : (
+          <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--text-muted)" }}>
+            00:00
+          </span>
+        )}
+      </div>
 
+      {/* Right side Actions */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        {/* Mic Toggle pill */}
         <button
-          className={`button compact ${micOn ? "primary mic-live" : "secondary"}`}
-          disabled={!permissions.canSpeak}
           onClick={onMic}
-          style={micOn ? { background: "#f97316", border: "none" } : {}}
+          disabled={!permissions.canSpeak}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            height: "36px",
+            padding: "0 14px",
+            borderRadius: "18px",
+            background: micOn ? "rgba(16, 185, 129, 0.1)" : "rgba(255, 255, 255, 0.04)",
+            border: micOn ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(255, 255, 255, 0.06)",
+            color: micOn ? "#10b981" : "var(--text-muted)",
+            fontSize: "12px",
+            fontWeight: "bold",
+            cursor: permissions.canSpeak ? "pointer" : "not-allowed",
+            outline: "none"
+          }}
         >
-          {micOn ? <Mic size={16} style={{ color: "#000" }} /> : <MicOff size={16} />}
-          <span style={micOn ? { color: "#000", fontWeight: "800" } : {}}>{micOn ? "Mic Live" : "Mic Off"}</span>
+          {micOn ? <Mic size={14} /> : <MicOff size={14} />}
+          <span>{micOn ? "Mic On" : "Mic Off"}</span>
         </button>
 
-        <button className="button compact secondary" onClick={onShowNotes} title="Rough Notes / Scratchpad">
-          <StickyNote size={16} />
+        {/* Notes Toggle pill */}
+        <button
+          onClick={onShowNotes}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            height: "36px",
+            padding: "0 14px",
+            borderRadius: "18px",
+            background: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            color: "var(--text-muted)",
+            fontSize: "12px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            outline: "none"
+          }}
+          title="Scratchpad Notes"
+        >
+          <StickyNote size={14} />
+          <span>Notes</span>
         </button>
 
-        <button className="button compact secondary" onClick={onLeaveRequest}>
-          <LogOut size={16} /> Leave
+        {/* Info Toggle pill */}
+        <button
+          onClick={onShowInfo}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            height: "36px",
+            padding: "0 14px",
+            borderRadius: "18px",
+            background: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            color: "var(--text-muted)",
+            fontSize: "12px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            outline: "none"
+          }}
+        >
+          <Info size={14} />
+          <span>Guide</span>
         </button>
 
+        {/* Leave Room Pill */}
+        <button
+          onClick={onLeaveRequest}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            height: "36px",
+            padding: "0 14px",
+            borderRadius: "18px",
+            background: "transparent",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            color: "#fff",
+            fontSize: "12px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            outline: "none"
+          }}
+        >
+          <LogOut size={14} />
+          <span>Leave Room</span>
+        </button>
+
+        {/* End Room Pill */}
         {permissions.isHost && (
-          <button className="button compact danger" onClick={actions.endRoom}>
-            <X size={16} /> End Lab
+          <button
+            onClick={actions.endRoom}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              height: "36px",
+              padding: "0 14px",
+              borderRadius: "18px",
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              color: "#ef4444",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              outline: "none"
+            }}
+          >
+            <X size={14} />
+            <span>End Room</span>
           </button>
         )}
       </div>

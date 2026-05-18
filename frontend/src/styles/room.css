@@ -1346,7 +1346,7 @@
     gap: 16px;
     padding: 0 16px;
     min-height: 0;
-    grid-template-columns: 178px minmax(0, 1fr) !important;
+    grid-template-columns: var(--users-panel-width, 280px) minmax(0, 1fr) !important;
   }
 
   .workspace.layout-v2 .left-column {

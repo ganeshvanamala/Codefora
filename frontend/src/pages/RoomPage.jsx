@@ -338,6 +338,14 @@ export function RoomPage() {
             permissions={permissions}
             onRoleChange={actions.updateRole}
             onKickUser={actions.kickUser}
+            messages={messages}
+            aiMessages={aiMessages}
+            me={permissions.me}
+            aiThinking={aiThinking}
+            onSendChat={actions.sendChat}
+            onSendSticker={actions.sendSticker}
+            onAskAi={actions.askAi}
+            onClearNotifications={() => setFloatingMsgs([])}
           />
           <button
             type="button"
@@ -389,36 +397,6 @@ export function RoomPage() {
             />
           </div>
         </div>
-
-        <button
-          type="button"
-          className="floating-chat-button"
-          onClick={() => {
-            setIsChatOpen(!isChatOpen);
-            if (!isChatOpen) setFloatingMsgs([]);
-          }}
-          aria-label={isChatOpen ? "Close chat" : "Open room chat and AI chat"}
-        >
-          {isChatOpen ? <X size={22} /> : <MessageSquare size={22} />}
-        </button>
-
-        <CommsPanel
-          messages={messages}
-          aiMessages={aiMessages}
-          me={permissions.me}
-          suggestion={suggestion}
-          aiThinking={aiThinking}
-          permissions={permissions}
-          onSendChat={actions.sendChat}
-          onSendSticker={actions.sendSticker}
-          onAskAi={actions.askAi}
-          onClearNotifications={() => setFloatingMsgs([])}
-          activeTab={activeCommsTab}
-          onSelectTab={setActiveCommsTab}
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          participantsCount={users.length}
-        />
 
         <FooterBar />
 
