@@ -919,7 +919,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 }
 
 function normalizeOutput(value) {
-  return String(value || "").trim().replace(/\r\n/g, "\n");
+  return String(value || "").trim().replace(/\r/g, "").split(/\n+/).map((line) => line.trim().replace(/\s+/g, " ")).join("\n");
 }
 
 function normalizeInvite(inviteCode) {
@@ -927,8 +927,12 @@ function normalizeInvite(inviteCode) {
 }
 
 function normalizeCompilerLanguage(languageOrName) {
-  const value = String(languageOrName || "").trim().toLowerCase();
+  let value = String(languageOrName || "").trim().toLowerCase();
   if (!value) return "javascript";
+  if (value.includes(".")) {
+    const ext = value.split(".").pop();
+    value = ext;
+  }
   const aliases = {
     js: "javascript",
     ts: "typescript",
@@ -936,7 +940,10 @@ function normalizeCompilerLanguage(languageOrName) {
     rs: "rust",
     "c++": "cpp",
     cplusplus: "cpp",
-    node: "javascript"
+    node: "javascript",
+    java: "java",
+    go: "go",
+    c: "c"
   };
   return aliases[value] || value;
 }

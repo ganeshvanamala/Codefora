@@ -128,6 +128,13 @@ export function RoomPage() {
 
   const activeProblem = getActiveProblem();
 
+  // Auto-populate stdin with the first sample testcase's input when problem is loaded
+  useEffect(() => {
+    if (activeProblem && activeProblem.tests && activeProblem.tests[0]) {
+      setStdin(activeProblem.tests[0].input);
+    }
+  }, [activeProblem]);
+
   // --- Tab Close Protection ---
   useEffect(() => {
     const handleBeforeUnload = (e) => {

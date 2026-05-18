@@ -1,8 +1,26 @@
-import { Globe2, Loader2, Play, Terminal } from "lucide-react";
+import { Globe2, Loader2, Play, Terminal, Keyboard } from "lucide-react";
 import { useState } from "react";
 
-export function ConsolePanel({ output, preview, style, onResizeStart, onClear, files = [], runFile, setRunFile, onRun, isRunningCode, isSubmittingCode, onSubmit, activeProblem, canSubmit }) {
+export function ConsolePanel({ 
+  output, 
+  preview, 
+  style, 
+  onResizeStart, 
+  onClear, 
+  files = [], 
+  runFile, 
+  setRunFile, 
+  onRun, 
+  isRunningCode, 
+  isSubmittingCode, 
+  onSubmit, 
+  activeProblem, 
+  canSubmit,
+  stdin,
+  setStdin 
+}) {
   const [panelMode, setPanelMode] = useState("output");
+  const [showInput, setShowInput] = useState(true); // Default to showing input side-by-side for better onboarding
 
   return (
     <section className="console-panel" style={style}>
@@ -39,6 +57,26 @@ export function ConsolePanel({ output, preview, style, onResizeStart, onClear, f
               </option>
             ))}
           </select>
+
+          {panelMode === "output" && (
+            <button 
+              className={`button compact ${showInput ? "active" : ""}`} 
+              onClick={() => setShowInput(!showInput)}
+              title="Toggle Custom Input (stdin)"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                borderColor: showInput ? 'var(--primary)' : 'var(--line)',
+                background: showInput ? 'rgba(255, 122, 24, 0.1)' : 'transparent',
+                color: showInput ? 'var(--primary)' : 'var(--text)'
+              }}
+            >
+              <Keyboard size={14} />
+              <span>Input</span>
+            </button>
+          )}
+
           <button className="button primary run-btn console-run-btn" onClick={onRun} disabled={isRunningCode || isSubmittingCode}>
             {isRunningCode ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
             <span>{isRunningCode ? "Running..." : "Run Code"}</span>
@@ -62,9 +100,42 @@ export function ConsolePanel({ output, preview, style, onResizeStart, onClear, f
       
       <div className="console-panel-content">
         {panelMode === "output" ? (
-          <div className="console-container">
-            <pre className="console-output">{output}</pre>
-          </div>
+          showInput ? (
+            <div className="console-split-container" style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden' }}>
+              <div className="console-input-half" style={{ width: '40%', borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', background: 'var(--console-bg)' }}>
+                <div style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--text-muted)', borderBottom: '1px solid var(--line)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Custom Input (stdin)
+                </div>
+                <textarea 
+                  style={{ 
+                    flex: 1, 
+                    background: 'transparent', 
+                    color: 'var(--text)', 
+                    border: 'none', 
+                    resize: 'none', 
+                    padding: '12px', 
+                    fontFamily: '"Cascadia Code", "Fira Code", monospace',
+                    fontSize: '12px',
+                    lineHeight: '1.5',
+                    outline: 'none'
+                  }}
+                  value={stdin || ""}
+                  onChange={(e) => setStdin?.(e.target.value)}
+                  placeholder="Type or paste sample inputs here..."
+                />
+              </div>
+              <div className="console-output-half" style={{ width: '60%', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--text-muted)', borderBottom: '1px solid var(--line)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Output
+                </div>
+                <pre className="console-output" style={{ flex: 1, margin: 0, overflow: 'auto', border: 'none', height: 'auto', background: 'var(--console-bg)' }}>{output}</pre>
+              </div>
+            </div>
+          ) : (
+            <div className="console-container">
+              <pre className="console-output">{output}</pre>
+            </div>
+          )
         ) : preview.showPreview ? (
           <div className="preview-container">
             <iframe 
