@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, GripHorizontal, BookOpen } from 'lucide-react';
 
-export function FloatingProblem({ problem, onClose, onSolve }) {
+export function FloatingProblem({ problem, onClose, onSubmit }) {
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -113,23 +113,41 @@ export function FloatingProblem({ problem, onClose, onSolve }) {
           <button 
             className="button primary full-width" 
             style={{ width: '100%', justifyContent: 'center' }}
-            onClick={() => {
-              // Simulate check then show feedback
+            onClick={async (e) => {
               if (window.confirm("Submit your current code for this problem?")) {
-                const btn = document.activeElement;
+                const btn = e.currentTarget;
                 const originalText = btn.innerHTML;
                 btn.innerHTML = "Checking...";
                 btn.disabled = true;
-                setTimeout(() => {
-                  btn.innerHTML = "Accepted!";
-                  btn.style.background = "#10b981";
+                btn.style.background = "";
+                
+                try {
+                  const passed = await onSubmit?.();
+                  if (passed) {
+                    btn.innerHTML = "Accepted! 🎉";
+                    btn.style.background = "#10b981";
+                    setTimeout(() => {
+                      btn.innerHTML = "Accepted! 🎉";
+                      btn.disabled = true;
+                    }, 1000);
+                  } else {
+                    btn.innerHTML = "Failed (Check Console)";
+                    btn.style.background = "#ef4444";
+                    setTimeout(() => {
+                      btn.innerHTML = originalText;
+                      btn.disabled = false;
+                      btn.style.background = "";
+                    }, 2500);
+                  }
+                } catch (err) {
+                  btn.innerHTML = "Error Submitting";
+                  btn.style.background = "#ef4444";
                   setTimeout(() => {
-                    onSolve?.();
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     btn.style.background = "";
-                  }, 1000);
-                }, 1500);
+                  }, 2500);
+                }
               }
             }}
           >

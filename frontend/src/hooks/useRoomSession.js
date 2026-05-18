@@ -404,7 +404,6 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     setIsRunningCode(true);
     setCompilerStatus("running");
     setOutput("Running...");
-    pushHistory();
     trackEvent("code_run", { room_id: activeRoomId, language });
     try {
       const result = await api.runCode({
@@ -433,11 +432,11 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   }
 
   async function submitCode(problem) {
-    if (!problem || !activeFile || !canEdit) return;
+    if (!problem || !activeFile || !canEdit) return false;
     const testCases = problem.tests || [];
     if (testCases.length === 0) {
       setOutput("No test cases found for this problem.");
-      return;
+      return false;
     }
 
     const requestId = runRequestId.current + 1;
@@ -454,7 +453,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
       const results = [];
       for (let i = 0; i < testCases.length; i++) {
         const testCase = testCases[i];
-        if (runRequestId.current !== requestId) return;
+        if (runRequestId.current !== requestId) return false;
         
         setOutput(`Running test case ${i + 1}/${testCases.length}...`);
         
@@ -481,7 +480,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         if (actual !== expected) break;
       }
 
-      if (runRequestId.current !== requestId) return;
+      if (runRequestId.current !== requestId) return false;
 
       const failed = results.find((result) => !result.passed);
       const nextStatus = failed ? "error" : "finished";
@@ -489,6 +488,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
       if (!failed) {
         setOutput("Program is correct. All sample test cases passed. 🎉");
+        return true;
       } else {
         const failedIndex = results.indexOf(failed) + 1;
         setOutput([
@@ -500,11 +500,13 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
           "",
           `Your Output:\n${failed.actual || "(empty)"}`
         ].join("\n"));
+        return false;
       }
     } catch (error) {
-      if (runRequestId.current !== requestId) return;
+      if (runRequestId.current !== requestId) return false;
       setCompilerStatus("error");
       setOutput(error.message || "Submission failed.");
+      return false;
     } finally {
       if (runRequestId.current === requestId) {
         setIsSubmittingCode(false);

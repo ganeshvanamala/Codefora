@@ -312,9 +312,10 @@ export function RoomPage() {
           <FloatingProblem 
             problem={activeProblem} 
             onClose={() => setShowFloatingProblem(false)} 
-            onSolve={() => {
-              isBypassingBlocker.current = true;
-              navigate(`/rooms?feedback=true&type=problem_solve&username=${encodeURIComponent(joinName)}`);
+            onSubmit={async () => {
+              const success = await actions.submitCode(activeProblem);
+              setShowTimeTravel(true); // Open the Time Travel modal on submission success/failure!
+              return success;
             }}
           />
         )}
@@ -371,7 +372,6 @@ export function RoomPage() {
               isSubmittingCode={compiler.isSubmittingCode}
               onRun={() => {
                 actions.runCode(stdin);
-                setShowTimeTravel(true);
               }}
               onSubmit={() => {
                 actions.submitCode(activeProblem);
