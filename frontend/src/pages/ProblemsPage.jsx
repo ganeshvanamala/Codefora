@@ -9,7 +9,7 @@ import { trackEvent } from "../lib/analytics";
 import { saveUsername, saveHostToken, saveInviteCode } from "../lib/navigation";
 import { useAuth } from "../hooks/useAuth";
 
-const allTags = ["Arrays", "Graphs", "DP", "Trees", "Strings", "Greedy", "Binary Search", "Math"];
+const allTags = ["Arrays", "Graphs", "DP", "Trees", "Strings", "Patterns", "Greedy", "Binary Search", "Math"];
 const difficulties = ["Easy", "Medium", "Hard"];
 const sortOptions = ["Difficulty", "Most Solved", "Newest", "Trending"];
 const difficultyWeights = { Easy: 1, Medium: 2, Hard: 3 };
