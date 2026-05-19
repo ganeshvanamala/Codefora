@@ -6226,6 +6226,9 @@ label {
 .workspace.layout-v2 .floating-comms .room-chat,
 .workspace.layout-v2 .floating-comms .ai-box {
   min-height: 0;
+  height: auto !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 .sticker-picker-wrap {
