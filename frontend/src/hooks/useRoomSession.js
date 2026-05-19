@@ -31,6 +31,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const [history, setHistory] = useState([]);
   const remoteUpdate = useRef(false);
   const runRequestId = useRef(0);
+  const expectedActiveNameRef = useRef(null);
   const typingTimer = useRef(null);
   const localStream = useRef(null);
   const peers = useRef(new Map());
@@ -326,7 +327,14 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
   function handleFilesUpdate(nextFiles) {
     setFiles(nextFiles);
-    setActiveName((current) => nextFiles.some((file) => file.name === current) ? current : nextFiles[0]?.name || "");
+    setActiveName((current) => {
+      if (expectedActiveNameRef.current && nextFiles.some((f) => f.name === expectedActiveNameRef.current)) {
+        const target = expectedActiveNameRef.current;
+        expectedActiveNameRef.current = null;
+        return target;
+      }
+      return nextFiles.some((file) => file.name === current) ? current : nextFiles[0]?.name || "";
+    });
     setRunFile((current) => nextFiles.some((file) => file.name === current) ? current : nextFiles.find((file) => file.name.endsWith(".js"))?.name || nextFiles[0]?.name || "");
   }
 
@@ -404,7 +412,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   }
 
   async function runCode(stdin) {
-    const file = files.find((item) => item.name === runFile);
+    const file = activeFile;
     if (!file) return;
     const requestId = runRequestId.current + 1;
     runRequestId.current = requestId;
@@ -437,6 +445,32 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         setIsRunningCode(false);
       }
     }
+  }
+
+  function changeFileLanguage(oldFileName, newLanguage) {
+    const extensions = {
+      javascript: ".js",
+      typescript: ".ts",
+      python: ".py",
+      java: ".java",
+      c: ".c",
+      cpp: ".cpp",
+      csharp: ".cs",
+      go: ".go",
+      rust: ".rs",
+      php: ".php",
+      ruby: ".rb",
+      swift: ".swift",
+      html: ".html",
+      css: ".css",
+      sql: ".sql"
+    };
+    const ext = extensions[newLanguage] || ".js";
+    const baseName = oldFileName.includes(".") ? oldFileName.substring(0, oldFileName.lastIndexOf(".")) : oldFileName;
+    const newFileName = `${baseName}${ext}`;
+
+    expectedActiveNameRef.current = newFileName;
+    socket.emit("file:rename", { roomId: activeRoomId, oldFileName, newFileName, language: newLanguage });
   }
 
   async function submitCode(problem) {
@@ -926,7 +960,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     actions: {
       updateCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
       updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput,
-      updateNotes, drawNote, startTimer, stopTimer, pushHistory, saveWork
+      updateNotes, drawNote, startTimer, stopTimer, pushHistory, saveWork, changeFileLanguage
     }
   };
 }

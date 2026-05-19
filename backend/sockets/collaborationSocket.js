@@ -227,6 +227,21 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       io.to(roomId).emit("files:update", room.files);
     });
 
+    socket.on("file:rename", ({ roomId, oldFileName, newFileName, language }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role === "Viewer" || !oldFileName || !newFileName?.trim()) return;
+
+      const file = room.files.find((f) => f.name === oldFileName);
+      if (!file) return;
+
+      file.name = newFileName.trim().replace(/[\\/]/g, "");
+      if (language) file.language = language;
+
+      roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
+      io.to(roomId).emit("files:update", room.files);
+    });
+
     socket.on("typing", ({ roomId, fileName, position, isTyping }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);

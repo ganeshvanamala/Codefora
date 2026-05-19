@@ -6176,7 +6176,7 @@ label {
   position: fixed;
   right: 22px;
   bottom: 92px;
-  z-index: 60;
+  z-index: 999;
   width: min(380px, calc(100vw - 40px));
   height: min(520px, calc(100vh - 180px));
   padding: 12px;

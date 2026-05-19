@@ -76,19 +76,6 @@ export function ConsolePanel({
         </div>
         
         <div className="console-actions">
-          <select
-            className="run-file-select console-run-file"
-            value={runFile}
-            onChange={(event) => setRunFile(event.target.value)}
-            aria-label="File to run"
-          >
-            {files.map((file) => (
-              <option key={file.name} value={file.name}>
-                {file.name}
-              </option>
-            ))}
-          </select>
-
           {panelMode === "output" && (
             <button 
               className={`button compact console-run-btn ${showInput ? "active" : ""}`} 
@@ -113,30 +100,6 @@ export function ConsolePanel({
               <span>Input</span>
             </button>
           )}
-
-          <button 
-            className="button primary console-run-btn" 
-            onClick={onRun} 
-            disabled={isRunningCode || isSubmittingCode}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              height: '30px',
-              borderRadius: '6px',
-              background: 'var(--primary-orange)',
-              color: '#000',
-              border: 'none',
-              fontWeight: 'bold',
-              fontSize: '12px',
-              cursor: (isRunningCode || isSubmittingCode) ? 'not-allowed' : 'pointer',
-              padding: '0 12px',
-              opacity: (isRunningCode || isSubmittingCode) ? 0.6 : 1
-            }}
-          >
-            {isRunningCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} style={{ color: '#000' }} />}
-            <span>{isRunningCode ? "Running..." : "Run Code"}</span>
-          </button>
           
           {activeProblem && (
             <button 

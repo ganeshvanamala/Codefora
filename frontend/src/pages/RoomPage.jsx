@@ -362,6 +362,7 @@ export function RoomPage() {
               onChange={actions.updateCode}
               onCreateFile={actions.createFile}
               onDeleteFile={actions.deleteActiveFile}
+              onChangeLanguage={actions.changeFileLanguage}
               onSaveWork={actions.saveWork}
               onRun={() => actions.runCode(stdin)}
               onSubmit={() => {

@@ -23,7 +23,7 @@ const FILE_TYPES = [
   { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
-export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
+export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
@@ -329,7 +329,9 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
             disabled={!permissions.canEdit}
             value={activeFile?.language || "javascript"}
             onChange={(event) => {
-              // Map language selection
+              if (onChangeLanguage && activeFile) {
+                onChangeLanguage(activeFile.name, event.target.value);
+              }
             }}
             style={{
               background: '#121822',
@@ -350,35 +352,8 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
           </select>
         </div>
 
-        {/* Right Side: Format, More, Run Code, Submit */}
+        {/* Right Side: More, Run Code, Submit */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Format Button */}
-          <button 
-            className="button compact secondary"
-            style={{
-              height: '30px',
-              borderRadius: '6px',
-              background: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              padding: '0 12px'
-            }}
-            onClick={() => {
-              if (editorInstance) {
-                editorInstance.trigger('editor', 'editor.action.formatDocument');
-              }
-            }}
-            title="Format Code"
-          >
-            <AlignLeft size={13} />
-            <span>Format</span>
-          </button>
 
           {/* More Menu Trigger */}
           <div style={{ position: 'relative' }}>
