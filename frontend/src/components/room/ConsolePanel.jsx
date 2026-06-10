@@ -200,7 +200,7 @@ export function ConsolePanel({
             <iframe 
               className="preview-iframe" 
               title="Web preview" 
-              sandbox="allow-scripts" 
+              sandbox="allow-scripts allow-modals" 
               srcDoc={preview.previewDoc} 
             />
           </div>

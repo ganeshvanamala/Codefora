@@ -28,7 +28,7 @@ export function buildPreview(files, preferredHtmlFile = null) {
   files.filter(f => f.name.endsWith(".js")).forEach(file => {
     const regex = new RegExp(`<script[^>]*src=["'](?:\\.\\/)?${escapeRegExp(file.name)}["'][^>]*>\\s*<\\/script>`, 'gi');
     if (regex.test(html)) {
-      html = html.replace(regex, `<script>${file.code}<\\/script>`);
+      html = html.replace(regex, `<script>${file.code}</script>`);
     } else {
       unlinkedJs.push(file.code);
     }
@@ -47,13 +47,13 @@ export function buildPreview(files, preferredHtmlFile = null) {
      }
      if (js) {
        if (html.toLowerCase().includes("</body>")) {
-         html = html.replace(/<\/body>/i, `<script>${js}<\\/script></body>`);
+         html = html.replace(/<\/body>/i, `<script>${js}</script></body>`);
        } else {
-         html += `<script>${js}<\\/script>`;
+         html += `<script>${js}</script>`;
        }
      }
      return html;
   }
 
-  return `<!doctype html><html><head><style>${css}</style></head><body>${html}<script>${js}<\\/script></body></html>`;
+  return `<!doctype html><html><head><style>${css}</style></head><body>${html}<script>${js}</script></body></html>`;
 }

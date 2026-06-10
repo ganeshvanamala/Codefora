@@ -37,10 +37,28 @@
       "emotionId": "sider:icon_27.png",
       "preferredTheme": "dark",
       "stats": {
-        "roomsJoined": 15,
+        "roomsJoined": 16,
         "problemsSolved": 2
       },
       "activities": [
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781117998985
+        },
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781117766980
+        },
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781117581883
+        },
         {
           "type": "room_join",
           "text": "Joined user1's Room",
@@ -82,24 +100,6 @@
           "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
           "subtext": "Problem Solving",
           "timestamp": 1781116503857
-        },
-        {
-          "type": "room_join",
-          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
-          "subtext": "Problem Solving",
-          "timestamp": 1781116304657
-        },
-        {
-          "type": "room_join",
-          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
-          "subtext": "Problem Solving",
-          "timestamp": 1781116249887
-        },
-        {
-          "type": "room_join",
-          "text": "Joined user1's Room",
-          "subtext": "Collaboration",
-          "timestamp": 1781115917424
         }
       ],
       "solvedProblems": [
@@ -108,7 +108,7 @@
       ],
       "community": "sider"
     },
-    "updatedAt": 1781117067745,
+    "updatedAt": 1781117998985,
     "works": [
       {
         "name": "Project in CF-TN8M",
