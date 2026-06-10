@@ -1,6 +1,7 @@
 import Editor from "@monaco-editor/react";
 import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2, Save, AlignLeft, MoreHorizontal, Play, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { socket } from "../../lib/socket";
 import JSZip from "jszip";
@@ -23,7 +24,7 @@ const FILE_TYPES = [
   { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
-export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
+export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
@@ -57,6 +58,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
     if (!cleanName) return;
     const fileName = cleanName.includes(".") ? cleanName : `${cleanName}${selectedType.extension}`;
     onCreateFile(fileName, selectedType.language);
+    if (onExpectActiveName) onExpectActiveName(fileName);
     setNewFileName("");
   }
 
@@ -66,15 +68,32 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const content = e.target.result;
-      const fileName = file.name;
-      // Infer language from extension
-      const ext = `.${fileName.split('.').pop()}`;
-      const typeMatch = FILE_TYPES.find(t => t.extension === ext);
-      onCreateFile(fileName, typeMatch?.language || "javascript", content);
+      try {
+        const content = e.target.result;
+        let fileName = file.name || "imported-file";
+        // Infer language from extension
+        const ext = fileName.includes('.') ? `.${fileName.split('.').pop()}` : '';
+        const typeMatch = FILE_TYPES.find(t => t.extension === ext);
+        
+        // Ensure unique filename
+        let attempt = 1;
+        let baseName = ext ? fileName.replace(ext, "") : fileName;
+        while (files.some(f => f.name === fileName)) {
+          fileName = `${baseName}-${attempt}${ext}`;
+          attempt++;
+        }
+
+        onCreateFile(fileName, typeMatch?.language || "javascript", content);
+        if (onExpectActiveName) onExpectActiveName(fileName);
+        alert(`Debug: Uploaded ${fileName} (${content.length} bytes) to Room/Playground! If you don't see it, the backend didn't save it.`);
+      } catch (err) {
+        console.error("Failed to parse or create imported file", err);
+      }
+    };
+    reader.onloadend = () => {
+      event.target.value = ""; // Safely reset after reading finishes
     };
     reader.readAsText(file);
-    event.target.value = ""; // Reset
   }
 
   async function handleExport() {
@@ -193,7 +212,9 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
     };
   }, [editorInstance, activeFile?.name, roomId]);
 
-  const visibleTypingCursors = typingCursors;
+  const visibleTypingCursors = typingCursors.filter(
+    (cursor) => !cursor.fileName || cursor.fileName === activeFile?.name
+  );
   
   // Watch for remote code updates and preserve cursor/scroll
   useEffect(() => {
@@ -424,12 +445,6 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
                   <Upload size={12} />
                   <span>Import File</span>
                 </button>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  style={{ display: 'none' }} 
-                  onChange={handleImport} 
-                />
 
                 <button 
                   onClick={() => {
@@ -482,6 +497,14 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
                 </button>
               </div>
             )}
+            
+            {/* Hidden file input must be outside the conditionally rendered dropdown */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={handleImport} 
+            />
           </div>
 
           {/* Run Code Button */}
@@ -567,7 +590,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
       </div>
 
       {showExportModal && (
-        <div className="file-delete-overlay" role="dialog" aria-modal="true" aria-label="Export files modal">
+        <div className="file-delete-overlay" style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'grid', placeItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }} role="dialog" aria-modal="true" aria-label="Export files modal">
           <div className="file-delete-card export-modal">
             <div className="export-modal-header">
               <h3>Export Files</h3>
@@ -618,7 +641,7 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
       )}
 
       {pendingDeleteFile && (
-        <div className="file-delete-overlay" role="dialog" aria-modal="true" aria-label="Delete file confirmation">
+        <div className="file-delete-overlay" style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'grid', placeItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }} role="dialog" aria-modal="true" aria-label="Delete file confirmation">
           <div className="file-delete-card">
             <h3>Delete file?</h3>
             <p>Do you want to delete <strong>{pendingDeleteFile}</strong>?</p>

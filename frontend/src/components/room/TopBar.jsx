@@ -1,10 +1,22 @@
-import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw, ExternalLink } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw, ExternalLink, Settings, Lock, Unlock } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 
 export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes, timer }) {
   const [timeLeft, setTimeLeft] = useState("");
   const [customMin, setCustomMin] = useState(25);
   const [customSec, setCustomSec] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const settingsRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setShowSettings(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!timer.isRunning || !timer.endTime) {
@@ -31,7 +43,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   }, [timer.isRunning, timer.endTime]);
 
   return (
-    <header className="topbar" style={{ height: "52px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+    <header className="topbar" style={{ height: "52px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1000 }}>
       {/* Brand logo & Problem Info */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
         <div 
@@ -285,6 +297,97 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           <span>Info</span>
         </button>
 
+        {/* Room Settings Pill */}
+        <div style={{ position: "relative" }} ref={settingsRef}>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "30px",
+              padding: "0 12px",
+              borderRadius: "6px",
+              background: showSettings ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.04)",
+              border: showSettings ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid rgba(255, 255, 255, 0.06)",
+              color: "var(--text-muted)",
+              fontSize: "11px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              outline: "none"
+            }}
+            title="Room Settings"
+          >
+            <Settings size={14} />
+            <span>Settings</span>
+          </button>
+          
+          {showSettings && (
+            <div style={{
+              position: "absolute",
+              top: "100%",
+              right: 0,
+              marginTop: "8px",
+              width: "220px",
+              background: "#0f172a",
+              border: "1px solid var(--glass-border)",
+              borderRadius: "8px",
+              boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
+              padding: "16px",
+              zIndex: 100,
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px"
+            }}>
+              <h3 style={{ margin: 0, fontSize: "14px", color: "#fff" }}>Room Settings</h3>
+              
+              {!permissions.isHost ? (
+                <p style={{ margin: 0, fontSize: "12px", color: "var(--primary-orange)" }}>
+                  Only the host can change these settings.
+                </p>
+              ) : null}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Visibility</label>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button 
+                    disabled={!permissions.isHost}
+                    onClick={() => actions.updateRoomSettings({ visibility: "public" })}
+                    style={{ flex: 1, padding: "6px", background: room?.visibility === "public" ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.05)", border: room?.visibility === "public" ? "1px solid #10b981" : "1px solid rgba(255,255,255,0.1)", color: room?.visibility === "public" ? "#10b981" : "#fff", borderRadius: "4px", fontSize: "11px", cursor: permissions.isHost ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                  >
+                    <Unlock size={12} /> Public
+                  </button>
+                  <button 
+                    disabled={!permissions.isHost}
+                    onClick={() => actions.updateRoomSettings({ visibility: "private" })}
+                    style={{ flex: 1, padding: "6px", background: room?.visibility === "private" ? "rgba(239, 68, 68, 0.2)" : "rgba(255,255,255,0.05)", border: room?.visibility === "private" ? "1px solid #ef4444" : "1px solid rgba(255,255,255,0.1)", color: room?.visibility === "private" ? "#ef4444" : "#fff", borderRadius: "4px", fontSize: "11px", cursor: permissions.isHost ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                  >
+                    <Lock size={12} /> Private
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Max Capacity</label>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <input 
+                    type="range" 
+                    min={users.length} 
+                    max="7" 
+                    step="1"
+                    value={room?.max || 7}
+                    onChange={(e) => actions.updateRoomSettings({ max: parseInt(e.target.value) })}
+                    disabled={!permissions.isHost}
+                    style={{ flex: 1 }}
+                  />
+                  <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", minWidth: "20px" }}>{room?.max || 7}</span>
+                </div>
+                <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Current members: {users.length}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Leave Room Pill */}
         <button
           onClick={onLeaveRequest}
@@ -311,7 +414,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         {/* End Room Pill */}
         {permissions.isHost && (
           <button
-            onClick={actions.endRoom}
+            onClick={() => actions.endRoom()}
             style={{
               display: "flex",
               alignItems: "center",

@@ -41,6 +41,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         return;
       }
 
+      const isExistingUser = room.users.some(u => (requestUserId && u.userId === requestUserId) || (requestSessionId && u.sessionId === requestSessionId));
+      if (!isExistingUser && room.users.length >= (room.max || 7)) {
+        socket.emit("room:error", "Room is full");
+        socket.emit("room:join:failed", { reason: "full", roomId });
+        return;
+      }
+
+
       // 2. Check for existing active session
       if (requestUserId && userIdToRoomId.has(requestUserId)) {
         const existingRoomId = userIdToRoomId.get(requestUserId);
@@ -132,6 +140,26 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
     socket.on("room:join", (data) => handleJoin(data));
     socket.on("room:join:force", (data) => handleJoin({ ...data, force: true }));
 
+    socket.on("room:settings", ({ roomId, max, visibility }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      const authorized = Boolean(room && ((user && user.role === "Host") || (user?.userId && room.ownerUserId && user.userId === room.ownerUserId)));
+      if (!room || !authorized) return;
+
+      if (max !== undefined) {
+        const newMax = Math.max(room.users.length, Math.min(Number(max) || 7, 7));
+        room.max = newMax;
+      }
+      
+      if (visibility === "public" || visibility === "private") {
+        room.visibility = visibility;
+      }
+
+      roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
+      io.to(roomId).emit("room:state", roomService.snapshot(room));
+      broadcastRooms();
+    });
+
 
     socket.on("role:update", ({ roomId, targetSocketId, role }) => {
       const room = roomRepository.findById(roomId);
@@ -210,9 +238,13 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
     });
 
     socket.on("file:create", ({ roomId, fileName, language, code }) => {
+      console.log(`[Socket] file:create requested by ${socket.id} for file ${fileName}`);
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
-      if (!room || !user || user.role === "Viewer" || !fileName?.trim()) return;
+      if (!room || !user || user.role === "Viewer" || !fileName?.trim()) {
+        console.log(`[Socket] file:create REJECTED. Room: ${!!room}, User: ${!!user}, Role: ${user?.role}`);
+        return;
+      }
       if (!roomService.addFile(room, fileName, language, code)) return;
       roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
       io.to(roomId).emit("files:update", room.files);

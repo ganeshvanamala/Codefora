@@ -361,6 +361,7 @@ export function RoomPage() {
               permissions={permissions}
               onChange={actions.updateCode}
               onCreateFile={actions.createFile}
+              onExpectActiveName={actions.setExpectedActiveName}
               onDeleteFile={actions.deleteActiveFile}
               onChangeLanguage={actions.changeFileLanguage}
               onSaveWork={actions.saveWork}

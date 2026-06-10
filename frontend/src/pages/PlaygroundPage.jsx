@@ -379,25 +379,18 @@ export function PlaygroundPage() {
         </div>
 
         {/* Console Section */}
-        <div className="playground-console" style={{ height: `${consoleHeight}px`, borderTop: '2px solid var(--primary-orange)', background: '#010409', display: 'flex', flexDirection: 'column' }}>
-          <div 
-            className="console-resize-handle" 
-            onMouseDown={(e) => {
-              resizeStart.current = { y: e.clientY, height: consoleHeight };
-              setIsResizing(true);
-            }}
-            style={{ height: '4px', cursor: 'row-resize', background: 'transparent' }}
-          />
-          <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b949e', marginBottom: '12px', fontSize: '12px' }}>
-               <Terminal size={14} />
-               <span style={{ fontWeight: '700', textTransform: 'uppercase' }}>Output Console</span>
-             </div>
-             <pre style={{ margin: 0, color: '#e6edf3', fontSize: '13px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
-               {output}
-             </pre>
-          </div>
-        </div>
+        <ConsolePanel
+          output={output}
+          preview={{ showPreview: false }}
+          style={{ height: `${consoleHeight}px`, borderTop: '2px solid var(--primary-orange)' }}
+          onResizeStart={(e) => {
+            resizeStart.current = { y: e.clientY, height: consoleHeight };
+            setIsResizing(true);
+          }}
+          onClear={() => setOutput("Ready.")}
+          stdin={stdin}
+          setStdin={setStdin}
+        />
       </div>
     </div>
   );

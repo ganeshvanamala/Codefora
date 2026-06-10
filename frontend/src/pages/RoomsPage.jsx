@@ -373,6 +373,8 @@ export function RoomsPage() {
                 <option value="3">3 Members</option>
                 <option value="4">4 Members</option>
                 <option value="5">5 Members</option>
+                <option value="6">6 Members</option>
+                <option value="7">7 Members</option>
               </select>
             </label>
 
