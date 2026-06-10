@@ -19,28 +19,34 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   }, []);
 
   useEffect(() => {
-    if (!timer.isRunning || !timer.endTime) {
+    if (!timer.isRunning || (!timer.endTime && !timer.startTime)) {
       setTimeLeft("");
       return;
     }
 
     const interval = setInterval(() => {
       const now = Date.now();
-      const diff = timer.endTime - now;
-
-      if (diff <= 0) {
-        setTimeLeft("00:00");
-        clearInterval(interval);
-        return;
+      let diff = 0;
+      
+      if (timer.mode === "stopwatch") {
+        diff = now - timer.startTime;
+      } else {
+        diff = timer.endTime - now;
+        if (diff <= 0) {
+          setTimeLeft("00:00");
+          clearInterval(interval);
+          return;
+        }
       }
 
-      const mins = Math.floor(diff / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
+      const totalSeconds = Math.floor(diff / 1000);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
       setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timer.isRunning, timer.endTime]);
+  }, [timer.isRunning, timer.endTime, timer.startTime, timer.mode]);
 
   return (
     <header className="topbar" style={{ height: "52px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1000 }}>
@@ -140,49 +146,57 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
           </div>
         ) : permissions.isHost ? (
           <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-            <input 
-              type="text" 
-              inputMode="numeric"
-              value={customMin} 
-              onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
-              style={{ 
-                width: "22px", 
-                height: "18px",
-                boxSizing: "border-box",
-                background: "rgba(255, 255, 255, 0.05)", 
-                border: "1px solid rgba(255, 255, 255, 0.12)", 
-                borderRadius: "4px",
-                color: "#fff", 
-                fontSize: "11px", 
-                textAlign: "center", 
-                outline: "none", 
-                fontWeight: "bold",
-                padding: 0
-              }}
-              title="Minutes"
-            />
-            <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>:</span>
-            <input 
-              type="text" 
-              inputMode="numeric"
-              value={customSec.toString().padStart(2, '0')} 
-              onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
-              style={{ 
-                width: "22px", 
-                height: "18px",
-                boxSizing: "border-box",
-                background: "rgba(255, 255, 255, 0.05)", 
-                border: "1px solid rgba(255, 255, 255, 0.12)", 
-                borderRadius: "4px",
-                color: "#fff", 
-                fontSize: "11px", 
-                textAlign: "center", 
-                outline: "none", 
-                fontWeight: "bold",
-                padding: 0
-              }}
-              title="Seconds"
-            />
+            {timer.mode === "stopwatch" ? (
+              <span style={{ fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)", minWidth: "36px", textAlign: "center", margin: "0 4px" }}>
+                00:00
+              </span>
+            ) : (
+              <>
+                <input 
+                  type="text" 
+                  inputMode="numeric"
+                  value={customMin} 
+                  onChange={(e) => setCustomMin(Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0))}
+                  style={{ 
+                    width: "22px", 
+                    height: "18px",
+                    boxSizing: "border-box",
+                    background: "rgba(255, 255, 255, 0.05)", 
+                    border: "1px solid rgba(255, 255, 255, 0.12)", 
+                    borderRadius: "4px",
+                    color: "#fff", 
+                    fontSize: "11px", 
+                    textAlign: "center", 
+                    outline: "none", 
+                    fontWeight: "bold",
+                    padding: 0
+                  }}
+                  title="Minutes"
+                />
+                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>:</span>
+                <input 
+                  type="text" 
+                  inputMode="numeric"
+                  value={customSec.toString().padStart(2, '0')} 
+                  onChange={(e) => setCustomSec(Math.max(0, Math.min(59, parseInt(e.target.value.replace(/\D/g, '')) || 0)))}
+                  style={{ 
+                    width: "22px", 
+                    height: "18px",
+                    boxSizing: "border-box",
+                    background: "rgba(255, 255, 255, 0.05)", 
+                    border: "1px solid rgba(255, 255, 255, 0.12)", 
+                    borderRadius: "4px",
+                    color: "#fff", 
+                    fontSize: "11px", 
+                    textAlign: "center", 
+                    outline: "none", 
+                    fontWeight: "bold",
+                    padding: 0
+                  }}
+                  title="Seconds"
+                />
+              </>
+            )}
             <button 
               onClick={() => actions.startTimer(customMin * 60 + customSec)}
               style={{ 
@@ -338,8 +352,28 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 </p>
               ) : null}
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Visibility</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Clock Mode</label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button 
+                      disabled={!permissions.isHost}
+                      onClick={() => actions.setTimerMode("timer")}
+                      style={{ flex: 1, padding: "6px", background: (!timer.mode || timer.mode === "timer") ? "rgba(255, 145, 0, 0.2)" : "rgba(255,255,255,0.05)", border: (!timer.mode || timer.mode === "timer") ? "1px solid var(--primary-orange)" : "1px solid rgba(255,255,255,0.1)", color: (!timer.mode || timer.mode === "timer") ? "var(--primary-orange)" : "#fff", borderRadius: "4px", fontSize: "11px", cursor: permissions.isHost ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                    >
+                      Timer
+                    </button>
+                    <button 
+                      disabled={!permissions.isHost}
+                      onClick={() => actions.setTimerMode("stopwatch")}
+                      style={{ flex: 1, padding: "6px", background: timer.mode === "stopwatch" ? "rgba(59, 130, 246, 0.2)" : "rgba(255,255,255,0.05)", border: timer.mode === "stopwatch" ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.1)", color: timer.mode === "stopwatch" ? "#3b82f6" : "#fff", borderRadius: "4px", fontSize: "11px", cursor: permissions.isHost ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                    >
+                      Stop Watch
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Visibility</label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button 
                     disabled={!permissions.isHost}

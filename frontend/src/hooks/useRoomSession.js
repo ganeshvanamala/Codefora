@@ -912,12 +912,16 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     socket.emit("notes:draw", { roomId: activeRoomId, draw });
   }
 
-  function startTimer(duration = 25 * 60) {
-    socket.emit("timer:start", { roomId: activeRoomId, duration });
+  function startTimer(duration = 25 * 60, mode = timer.mode) {
+    socket.emit("timer:start", { roomId: activeRoomId, duration, mode });
   }
 
   function stopTimer() {
     socket.emit("timer:stop", { roomId: activeRoomId });
+  }
+
+  function setTimerMode(mode) {
+    socket.emit("timer:mode", { roomId: activeRoomId, mode });
   }
 
   function pushHistory() {
@@ -969,7 +973,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     actions: {
       updateCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
       updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput,
-      updateNotes, drawNote, startTimer, stopTimer, pushHistory, saveWork, changeFileLanguage,
+      updateNotes, drawNote, startTimer, stopTimer, setTimerMode, pushHistory, saveWork, changeFileLanguage,
       updateRoomSettings,
       setExpectedActiveName: (name) => {
         expectedActiveNameRef.current = name;

@@ -29,7 +29,7 @@
       "passwordHash": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
       "provider": "manual",
       "createdAt": 1778272950308,
-      "lastLoginAt": 1778328111496
+      "lastLoginAt": 1781109494426
     },
     "profile": {
       "displayName": "user1",
@@ -37,10 +37,34 @@
       "emotionId": "sider:icon_27.png",
       "preferredTheme": "dark",
       "stats": {
-        "roomsJoined": 2,
+        "roomsJoined": 4,
         "problemsSolved": 2
       },
       "activities": [
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781109547657
+        },
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781109330567
+        },
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781109190997
+        },
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781108951418
+        },
         {
           "type": "problem_solve",
           "text": "Solved pattern square grid",
@@ -84,6 +108,6 @@
       ],
       "community": "sider"
     },
-    "updatedAt": 1781107885153
+    "updatedAt": 1781109547657
   }
 }

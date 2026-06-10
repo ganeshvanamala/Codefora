@@ -366,13 +366,19 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       socket.to(roomId).emit("notes:draw", draw);
     });
 
-    socket.on("timer:start", ({ roomId, duration }) => {
+    socket.on("timer:start", ({ roomId, duration, mode }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
       if (!room || !user || user.role !== "Host") return;
       
-      const endTime = Date.now() + (duration * 1000);
-      room.timer = { endTime, duration, isRunning: true };
+      const isStopwatch = mode === "stopwatch" || room.timer?.mode === "stopwatch";
+      
+      if (isStopwatch) {
+        room.timer = { startTime: Date.now(), mode: "stopwatch", isRunning: true };
+      } else {
+        const endTime = Date.now() + (duration * 1000);
+        room.timer = { endTime, duration, mode: "timer", isRunning: true };
+      }
       io.to(roomId).emit("timer:sync", room.timer);
     });
 
@@ -381,7 +387,28 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       const user = room && roomService.findUser(room, socket.id);
       if (!room || !user || user.role !== "Host") return;
       
-      room.timer = { endTime: null, duration: room.timer?.duration || 25 * 60, isRunning: false };
+      room.timer = { 
+        ...room.timer,
+        endTime: null, 
+        startTime: null,
+        duration: room.timer?.duration || 25 * 60, 
+        isRunning: false 
+      };
+      io.to(roomId).emit("timer:sync", room.timer);
+    });
+
+    socket.on("timer:mode", ({ roomId, mode }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      if (!room || !user || user.role !== "Host") return;
+      
+      room.timer = { 
+        mode,
+        endTime: null,
+        startTime: null,
+        duration: room.timer?.duration || 25 * 60,
+        isRunning: false 
+      };
       io.to(roomId).emit("timer:sync", room.timer);
     });
 
