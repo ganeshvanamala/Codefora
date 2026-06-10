@@ -163,9 +163,10 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll; /* Force vertical scrollbar to prevent layout shifts */
   color: var(--text);
   background: var(--bg);
+  scrollbar-gutter: stable;
 }
 
 html {
@@ -1008,7 +1009,6 @@ label {
   height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-gutter: stable;
 }
 
 .problems-particles {
@@ -1829,7 +1829,6 @@ label {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   height: 100vh;
-  padding: 18px 16px 16px;
   overflow: hidden;
 }
 
@@ -1839,6 +1838,7 @@ label {
   gap: 14px;
   min-height: 0;
   margin-top: 14px;
+  padding: 0 16px 16px;
 }
 
 .problem-code-layout.no-sidebar {
@@ -1851,6 +1851,7 @@ label {
   gap: 14px;
   min-height: 0;
   margin-top: 14px;
+  padding: 0 16px 16px;
 }
 
 .problems-overview-panel {
@@ -3491,6 +3492,11 @@ label {
   background-position: center;
   background-repeat: no-repeat;
   z-index: 0;
+}
+
+.file-type-select option {
+  background: #fff;
+  color: #000;
 }
 
 .hero-copy {
@@ -5937,11 +5943,13 @@ label {
   background: linear-gradient(180deg, transparent, rgba(255, 122, 24, 0.4), transparent);
 }
 
-.workspace.layout-v2 .console-panel {
+.workspace.layout-v2 .console-panel,
+.playground-container .console-panel {
   position: relative;
 }
 
-.workspace.layout-v2 .console-panel .resize-handle {
+.workspace.layout-v2 .console-panel .resize-handle,
+.playground-container .console-panel .resize-handle {
   display: block;
   position: absolute;
   top: -7px;
@@ -5953,7 +5961,8 @@ label {
   border-radius: 999px;
 }
 
-.workspace.layout-v2 .console-panel .resize-handle::after {
+.workspace.layout-v2 .console-panel .resize-handle::after,
+.playground-container .console-panel .resize-handle::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -5967,7 +5976,8 @@ label {
   transition: opacity 0.2s;
 }
 
-.workspace.layout-v2 .console-panel .resize-handle:hover::after {
+.workspace.layout-v2 .console-panel .resize-handle:hover::after,
+.playground-container .console-panel .resize-handle:hover::after {
   opacity: 1;
 }
 
@@ -6029,7 +6039,8 @@ label {
   min-height: 38px;
 }
 
-.workspace.layout-v2 .file-type-select {
+.workspace.layout-v2 .file-type-select,
+.playground-container .file-type-select {
   width: 210px;
   min-height: 38px;
   color: var(--text);
@@ -6402,7 +6413,6 @@ label {
   .problem-code-shell {
     height: auto;
     min-height: 100vh;
-    padding: 12px;
   }
 
   .problems-overview-head,

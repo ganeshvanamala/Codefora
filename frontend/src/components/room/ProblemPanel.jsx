@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BookOpen, CheckCircle, HelpCircle } from 'lucide-react';
 
 export function ProblemPanel({ problem }) {
@@ -29,7 +29,7 @@ export function ProblemPanel({ problem }) {
 
         <div className="problem-section">
           <h3>Sample Test Cases</h3>
-          {problem.tests.map((test, i) => (
+          {problem.tests.slice(0, 4).map((test, i) => (
             <div key={i} className="sample-case-mini">
               <strong>Sample {i + 1}</strong>
               <div className="sample-io">

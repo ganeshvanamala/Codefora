@@ -24,7 +24,7 @@ const FILE_TYPES = [
   { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
-export function EditorPanel({ roomId, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
+export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
@@ -42,6 +42,11 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
   const activeFileNameRef = useRef(activeFile?.name);
   const typingCursorsRef = useRef(typingCursors);
   const isRemoteUpdate = useRef(false);
+  const allowCopyPasteRef = useRef(allowCopyPaste);
+
+  useEffect(() => {
+    allowCopyPasteRef.current = allowCopyPaste;
+  }, [allowCopyPaste]);
 
   useEffect(() => {
     typingCursorsRef.current = typingCursors;
@@ -568,6 +573,15 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
           path={activeFile?.name || "main.js"}
           onMount={(editor) => {
             setEditorInstance(editor);
+            editor.onKeyDown((e) => {
+              if (allowCopyPasteRef.current === false) {
+                const key = e.browserEvent.key.toLowerCase();
+                if ((e.ctrlKey || e.metaKey) && (key === "c" || key === "v" || key === "x")) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }
+            });
           }}
           onChange={(value) => {
             if (isRemoteUpdate.current) return;

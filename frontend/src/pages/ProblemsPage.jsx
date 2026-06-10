@@ -58,6 +58,7 @@ export function ProblemsPage() {
   const [problemAiMessages, setProblemAiMessages] = useState([]);
 
   const [problems, setProblems] = useState([]);
+  const [solvedProblems, setSolvedProblems] = useState([]);
   const [loadingProblems, setLoadingProblems] = useState(true);
   const [error, setError] = useState(null);
 
@@ -84,8 +85,22 @@ export function ProblemsPage() {
         setLoadingProblems(false);
       }
     }
+    
+    async function loadProfileStats() {
+      if (!user?.uid) return;
+      try {
+        const profile = await api.getProfile(user.uid);
+        if (profile?.solvedProblems) {
+          setSolvedProblems(profile.solvedProblems);
+        }
+      } catch (e) {
+        console.warn("Failed to load user stats", e);
+      }
+    }
+    
     loadProblems();
-  }, []);
+    loadProfileStats();
+  }, [user?.uid]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -103,7 +118,7 @@ export function ProblemsPage() {
       .sort((a, b) => {
         if (sortBy === "Difficulty") return difficultyWeights[a.difficulty] - difficultyWeights[b.difficulty];
         if (sortBy === "Most Solved") return b.acceptance - a.acceptance;
-        if (sortBy === "Newest") return b.id.localeCompare(a.id);
+        if (sortBy === "Newest") return 0;
         return b.acceptance - a.acceptance;
       });
   }, [problems, search, selectedDifficulty, selectedTags, sortBy]);
@@ -185,18 +200,18 @@ export function ProblemsPage() {
       if (passedCount === totalCount) {
         setJudgeStatus("accepted");
         setRunOutput(`Accepted! All ${totalCount}/${totalCount} test cases passed.`);
+        if (user?.uid && !solvedProblems.includes(selectedProblem.id)) {
+          api.solveProblem(user.uid, selectedProblem.id).then(() => {
+            setSolvedProblems(prev => [...prev, selectedProblem.id]);
+          }).catch(console.warn);
+        }
       } else {
         setJudgeStatus("wrong");
         setFailedTestCase(firstFailed);
 
         const failedIndex = results.indexOf(firstFailed);
-        const isSampleFailed = failedIndex < 3;
-
-        if (isSampleFailed) {
-          setRunOutput(`Wrong Answer! ${passedCount}/${totalCount} test cases passed. (Sample test case ${failedIndex + 1} failed).`);
-        } else {
-          setRunOutput(`Wrong Answer! ${passedCount}/${totalCount} test cases passed. (hidden test case failed).`);
-        }
+        
+        setRunOutput(`Wrong Answer! ${passedCount}/${totalCount} test cases passed. (Test case ${failedIndex + 1} failed).`);
       }
     } catch (error) {
       setJudgeStatus("wrong");
@@ -303,7 +318,7 @@ export function ProblemsPage() {
   }
 
   return (
-    <main className="page-shell problems-shell problem-code-shell">
+    <main className="problems-shell problem-code-shell" style={{ width: "100%" }}>
       <Navbar />
 
       {!selectedProblem ? (
@@ -395,7 +410,10 @@ export function ProblemsPage() {
                   >
                     <div className="problem-overview-card__top">
                       <span>#{String(index + 1).padStart(2, "0")}</span>
-                      <small className={`difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</small>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {solvedProblems.includes(problem.id) && <CheckCircle size={14} color="#4ade80" title="Solved" />}
+                        <small className={`difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</small>
+                      </div>
                     </div>
                     <h2>{problem.title}</h2>
                     <p>{problem.statement}</p>
@@ -465,7 +483,7 @@ export function ProblemsPage() {
 
             <section>
               <h2>Sample Test Cases</h2>
-              {selectedProblem.tests.map((test, index) => (
+              {selectedProblem.tests.slice(0, 4).map((test, index) => (
                 <article className="sample-case" key={`${selectedProblem.id}-${index}`}>
                   <h3>Sample {index + 1}</h3>
                   <div>
@@ -565,7 +583,7 @@ export function ProblemsPage() {
                     transition: "all 0.2s"
                   }}
                 >
-                  <span>{showFailedDetails ? "Hide Failed Test Case" : "🔍 Show Failed Test Case"}</span>
+                  <span>{showFailedDetails ? "Hide failed testcase" : "Show failed testcase"}</span>
                 </button>
 
                 {showFailedDetails && (
@@ -683,6 +701,8 @@ export function ProblemsPage() {
                 <option value="3">3 Members</option>
                 <option value="4">4 Members</option>
                 <option value="5">5 Members</option>
+                <option value="6">6 Members</option>
+                <option value="7">7 Members</option>
               </select>
             </label>
 

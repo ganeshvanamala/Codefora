@@ -234,20 +234,62 @@ export function UsersPanel({
             </div>
 
             {/* Profile Expansion */}
-            {expandedUser === user.socketId && user.bio && (
+            {expandedUser === user.socketId && (
               <div className="user-profile-expansion" style={{
                 padding: "8px 0 0 0",
-                marginTop: "4px",
-                borderTop: "1px solid rgba(255,255,255,0.03)"
+                marginTop: "8px",
+                borderTop: "1px solid rgba(255,255,255,0.05)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px"
               }}>
                 <div style={{
-                  padding: "6px",
-                  background: "rgba(0,0,0,0.2)",
-                  borderRadius: "4px",
+                  padding: "8px",
+                  background: "rgba(0,0,0,0.3)",
+                  borderRadius: "6px",
                   border: "1px solid rgba(255,255,255,0.05)"
                 }}>
-                  <p style={{ margin: 0, fontSize: "10px", color: "#ddd", lineHeight: "1.3" }}>{user.bio}</p>
+                  {user.userId && (
+                    <div style={{ fontSize: "9px", fontFamily: "monospace", color: "var(--primary-orange)", marginBottom: "4px" }}>
+                      ID: {(() => {
+                        let hash = 0;
+                        for (let i = 0; i < user.userId.length; i++) hash = Math.imul(31, hash) + user.userId.charCodeAt(i) | 0;
+                        return Math.abs(hash).toString().padStart(8, '0').slice(0, 8);
+                      })()}
+                    </div>
+                  )}
+                  <p style={{ margin: 0, fontSize: "11px", color: "#ccc", lineHeight: "1.4" }}>
+                    {user.bio || "No bio provided."}
+                  </p>
                 </div>
+                {user.userId && user.socketId !== permissions.me?.socketId && (
+                  <button 
+                    style={{
+                      background: "rgba(239, 68, 68, 0.1)",
+                      border: "1px solid rgba(239, 68, 68, 0.2)",
+                      color: "#ef4444",
+                      padding: "6px",
+                      borderRadius: "6px",
+                      fontSize: "10px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "4px"
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fetch(API_URL + "/api/feedback", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ type: "report", username: user.name, text: `Reported User ID: ${user.userId}` })
+                      }).then(() => alert("User reported to admin.")).catch(console.error);
+                    }}
+                  >
+                    <Shield size={12} /> Report User
+                  </button>
+                )}
               </div>
             )}
           </div>

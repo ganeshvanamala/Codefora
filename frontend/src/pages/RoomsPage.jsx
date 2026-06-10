@@ -29,6 +29,7 @@ export function RoomsPage() {
   const [status, setStatus] = useState("");
   const [creating, setCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("Newest First");
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -212,10 +213,10 @@ export function RoomsPage() {
                 <SearchIcon size={16} />
                 <input placeholder="Search by room name or ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </label>
-              <select className="rooms-sort-select">
-                <option>Newest First</option>
-                <option>Most Popular</option>
-                <option>Least Full</option>
+              <select className="rooms-sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <option value="Newest First">Newest First</option>
+                <option value="Most Popular">Most Popular</option>
+                <option value="Least Full">Least Full</option>
               </select>
               <button className="button button-primary" onClick={() => setShowCreateModal(true)} style={{ backgroundColor: '#FF7F3F', borderColor: '#FF7F3F', color: '#fff' }}>
                 <Plus size={18} /> Create Room
@@ -229,6 +230,17 @@ export function RoomsPage() {
                 const term = searchTerm.trim().toLowerCase();
                 if (!term) return true;
                 return room.name.toLowerCase().includes(term) || String(room.id || "").toLowerCase().includes(term);
+              });
+              
+              filtered.sort((a, b) => {
+                if (sortBy === "Most Popular") {
+                  return (b.users || 0) - (a.users || 0);
+                } else if (sortBy === "Least Full") {
+                  return (a.users || 0) - (b.users || 0);
+                } else {
+                  // Newest First
+                  return (b.createdAt || 0) - (a.createdAt || 0); 
+                }
               });
 
               if (filtered.length === 0) {

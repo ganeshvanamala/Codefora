@@ -120,8 +120,20 @@ export function createProfileController() {
     },
 
     incrementStat: async (userId, statName, amount = 1) => {
-      if (!userId || !db) return;
+      if (!userId) return;
       try {
+        if (!db) {
+          const users = await readLocalUsers();
+          if (!users[userId]) users[userId] = { profile: { stats: {} } };
+          if (!users[userId].profile) users[userId].profile = { stats: {} };
+          if (!users[userId].profile.stats) users[userId].profile.stats = {};
+          
+          users[userId].profile.stats[statName] = (Number(users[userId].profile.stats[statName]) || 0) + amount;
+          users[userId].updatedAt = Date.now();
+          await writeLocalUsers(users);
+          return;
+        }
+
         const docRef = db.collection("users").doc(userId);
         const doc = await docRef.get();
         const data = doc.exists ? doc.data() : { profile: { stats: {} } };
@@ -134,6 +146,107 @@ export function createProfileController() {
         }, { merge: true });
       } catch (error) {
         console.warn(`Stat increment failed for ${userId}: ${error.message}`);
+      }
+    },
+
+    addActivity: async (userId, activity) => {
+      if (!userId) return;
+      try {
+        if (!db) {
+          const users = await readLocalUsers();
+          if (!users[userId]) users[userId] = { profile: { activities: [] } };
+          if (!users[userId].profile) users[userId].profile = { activities: [] };
+          if (!users[userId].profile.activities) users[userId].profile.activities = [];
+          
+          users[userId].profile.activities.unshift({ ...activity, timestamp: Date.now() });
+          users[userId].profile.activities = users[userId].profile.activities.slice(0, 10);
+          users[userId].updatedAt = Date.now();
+          await writeLocalUsers(users);
+          return;
+        }
+
+        const docRef = db.collection("users").doc(userId);
+        const doc = await docRef.get();
+        const data = doc.exists ? doc.data() : { profile: { activities: [] } };
+        const activities = data.profile?.activities || [];
+        activities.unshift({ ...activity, timestamp: Date.now() });
+        const cappedActivities = activities.slice(0, 10);
+        
+        await docRef.set({ 
+          profile: { ...data.profile, activities: cappedActivities },
+          updatedAt: Date.now() 
+        }, { merge: true });
+      } catch (error) {
+        console.warn(`Activity add failed for ${userId}: ${error.message}`);
+      }
+    },
+
+    solveProblem: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const { problemId } = request.body || {};
+      if (!userId || !problemId) return response.status(400).json({ error: "Missing parameters" });
+      
+      try {
+        if (!db) {
+          const users = await readLocalUsers();
+          if (!users[userId]) users[userId] = { profile: { stats: {}, solvedProblems: [], activities: [] } };
+          if (!users[userId].profile) users[userId].profile = { stats: {}, solvedProblems: [], activities: [] };
+          
+          const profile = users[userId].profile;
+          if (!profile.solvedProblems) profile.solvedProblems = [];
+          if (!profile.stats) profile.stats = {};
+          if (!profile.activities) profile.activities = [];
+          
+          let solved = profile.solvedProblems;
+          if (!solved.includes(problemId)) {
+            solved.push(problemId);
+            profile.stats.problemsSolved = (Number(profile.stats.problemsSolved) || 0) + 1;
+            
+            profile.activities.unshift({
+              type: "problem_solve",
+              text: `Solved ${problemId.replace(/-/g, ' ')}`,
+              subtext: "Accepted 100%",
+              timestamp: Date.now()
+            });
+            profile.activities = profile.activities.slice(0, 10);
+            
+            users[userId].updatedAt = Date.now();
+            await writeLocalUsers(users);
+          }
+          return response.json({ ok: true, solvedProblems: solved });
+        }
+        
+        const docRef = db.collection("users").doc(userId);
+        const doc = await docRef.get();
+        const data = doc.exists ? doc.data() : { profile: { stats: {}, solvedProblems: [] } };
+        
+        const solved = data.profile?.solvedProblems || [];
+        if (!solved.includes(problemId)) {
+          solved.push(problemId);
+          const stats = data.profile?.stats || {};
+          stats.problemsSolved = (Number(stats.problemsSolved) || 0) + 1;
+          
+          await docRef.set({ 
+            profile: { ...data.profile, solvedProblems: solved, stats },
+            updatedAt: Date.now() 
+          }, { merge: true });
+          
+          // Add Activity
+          const activities = data.profile?.activities || [];
+          activities.unshift({
+            type: "problem_solve",
+            text: `Solved ${problemId.replace(/-/g, ' ')}`,
+            subtext: "Accepted 100%",
+            timestamp: Date.now()
+          });
+          const cappedActivities = activities.slice(0, 10);
+          await docRef.set({ profile: { activities: cappedActivities } }, { merge: true });
+        }
+        
+        return response.json({ ok: true, solvedProblems: solved });
+      } catch (error) {
+        console.error(`Failed to record solved problem: ${error.message}`);
+        return response.status(500).json({ error: error.message });
       }
     }
   };

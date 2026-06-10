@@ -49,11 +49,11 @@ export function CommsPanel({
   };
 
   useLayoutEffect(() => {
-    scrollToBottom();
+    setTimeout(scrollToBottom, 10);
   }, [messages, showChat]);
 
   useLayoutEffect(() => {
-    scrollAiToBottom();
+    setTimeout(scrollAiToBottom, 10);
   }, [aiMessages, aiThinking, showAi]);
 
   function sendChat() {

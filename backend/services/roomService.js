@@ -56,13 +56,17 @@ export class RoomService {
       status: room.users.length > 0 ? "active" : "idle",
       usersList: (room.users || []).slice(0, 6),
       lang: room.files.find((file) => file.name.endsWith(".js"))?.language || "mixed",
-      problemId: room.problemId || null
+      problemId: room.problemId || null,
+      createdAt: room.createdAt || Date.now()
     };
   }
 
   snapshot(room) {
     return {
       ...this.publicRoom(room),
+      allowAi: room.allowAi !== false,
+      allowCopyPaste: room.allowCopyPaste !== false,
+      inviteCode: room.inviteCode,
       files: room.files,
       messages: room.messages.slice(-50),
       usersList: room.users,

@@ -67,7 +67,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const canEdit = me?.role !== "Viewer";
   const canSpeak = Boolean(me && me.role !== "Viewer");
   const canChat = Boolean(me);
-  const canUseAi = Boolean(room);
+  const canUseAi = Boolean(room) && room?.allowAi !== false;
   const showPreview = files.some((file) => file.name.endsWith(".html"));
   const previewDoc = useMemo(() => buildPreview(files), [files]);
 
@@ -394,9 +394,9 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     }
   }
 
-  function updateRoomSettings({ max, visibility }) {
+  function updateRoomSettings({ max, visibility, allowAi, allowCopyPaste }) {
     if (!me || me.role !== "Host") return;
-    socket.emit("room:settings", { roomId: activeRoomId, max, visibility });
+    socket.emit("room:settings", { roomId: activeRoomId, max, visibility, allowAi, allowCopyPaste });
   }
 
   function createFile(fileName, language, code) {
@@ -530,25 +530,20 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
       if (runRequestId.current !== requestId) return false;
 
-      const failed = results.find((result) => !result.passed);
-      const nextStatus = failed ? "error" : "finished";
+      const firstFailed = results.find((result) => !result.passed);
+      const passedCount = results.filter((r) => r.passed).length;
+      const totalCount = testCases.length;
+      
+      const nextStatus = firstFailed ? "error" : "finished";
       setCompilerStatus(nextStatus);
 
-      if (!failed) {
+      if (!firstFailed) {
         setOutput("Program is correct. All sample test cases passed. 🎉");
         return true;
       } else {
-        const failedIndex = results.indexOf(failed) + 1;
-        setOutput([
-          `Wrong answer on sample test case ${failedIndex}.`,
-          "",
-          `Input:\n${failed.input}`,
-          "",
-          `Expected Output:\n${failed.expected}`,
-          "",
-          `Your Output:\n${failed.actual || "(empty)"}`
-        ].join("\n"));
-        return false;
+        const failedIndex = results.indexOf(firstFailed);
+        
+        setOutput(`Wrong Answer! ${passedCount}/${totalCount} test cases passed.\nFailed on test case ${failedIndex + 1}:\nInput: ${firstFailed.input}\nExpected: ${firstFailed.expected}\nActual: ${firstFailed.actual || "(empty)"}`);return false;
       }
     } catch (error) {
       if (runRequestId.current !== requestId) return false;

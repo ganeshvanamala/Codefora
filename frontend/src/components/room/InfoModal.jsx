@@ -5,7 +5,7 @@ export function InfoModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="profile-modal-overlay" style={{ zIndex: 1000 }}>
+    <div className="profile-modal-overlay" style={{ zIndex: 10000 }}>
       <div className="profile-modal-card" style={{ maxWidth: '600px', width: '90%' }}>
         <div className="profile-modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

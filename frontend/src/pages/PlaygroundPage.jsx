@@ -184,24 +184,30 @@ export function PlaygroundPage() {
   };
 
   // Resize logic
+  const handleResize = (e) => {
+    if (isResizing) {
+      const delta = e.clientY - resizeStart.current.y;
+      const newHeight = resizeStart.current.height - delta;
+      setConsoleHeight(Math.max(100, Math.min(newHeight, window.innerHeight - 100)));
+    }
+  };
+
+  const stopResizing = () => {
+    setIsResizing(false);
+  };
+
   useEffect(() => {
-    const onMove = (e) => {
-      if (isResizing) {
-        const delta = e.clientY - resizeStart.current.y;
-        setConsoleHeight(Math.max(100, Math.min(window.innerHeight - 150, resizeStart.current.height - delta)));
-      }
-    };
-    const onUp = () => setIsResizing(false);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mousemove', handleResize);
+    window.addEventListener('mouseup', stopResizing);
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mousemove', handleResize);
+      window.removeEventListener('mouseup', stopResizing);
     };
-  }, [isResizing]);
+  }, [isResizing, consoleHeight]);
 
   return (
     <div className="playground-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#020817' }}>
+      {isResizing && <div style={{ position: 'fixed', inset: 0, zIndex: 9999, cursor: 'row-resize' }} />}
       <Navbar />
       
       <div className="playground-header" style={{ 
@@ -345,9 +351,9 @@ export function PlaygroundPage() {
       </div>
 
       <div className="playground-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ flex: 1, display: 'flex' }}>
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Editor Section */}
-          <div style={{ flex: 1, borderRight: '1px solid var(--glass-border)' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
             <Editor
               height="100%"
               theme="vs-dark"
@@ -359,13 +365,14 @@ export function PlaygroundPage() {
                 lineHeight: 24,
                 minimap: { enabled: false },
                 wordWrap: 'on',
-                padding: { top: 20 }
+                padding: { top: 20 },
+                fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace"
               }}
             />
           </div>
 
           {/* Preview Section */}
-          <div style={{ width: '40%', display: 'flex', flexDirection: 'column', background: '#fff' }}>
+          <div style={{ width: '40%', display: 'flex', flexDirection: 'column', background: '#fff', borderLeft: '1px solid var(--line)', minHeight: 0, overflow: 'hidden' }}>
             <div style={{ padding: '8px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b' }}>
               <Globe size={14} />
               <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Web Preview</span>
@@ -378,15 +385,15 @@ export function PlaygroundPage() {
           </div>
         </div>
 
-        {/* Console Section */}
-        <ConsolePanel
-          output={output}
-          preview={{ showPreview: false }}
-          style={{ height: `${consoleHeight}px`, borderTop: '2px solid var(--primary-orange)' }}
-          onResizeStart={(e) => {
-            resizeStart.current = { y: e.clientY, height: consoleHeight };
-            setIsResizing(true);
-          }}
+          <ConsolePanel
+            output={output}
+            preview={{ showPreview: false }}
+            style={{ height: `${consoleHeight}px`, flex: "0 0 auto", borderTop: '2px solid var(--primary-orange)' }}
+            onResizeStart={(e) => {
+              e.preventDefault();
+              resizeStart.current = { y: e.clientY, height: consoleHeight };
+              setIsResizing(true);
+            }}
           onClear={() => setOutput("Ready.")}
           stdin={stdin}
           setStdin={setStdin}

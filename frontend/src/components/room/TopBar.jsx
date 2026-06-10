@@ -1,7 +1,7 @@
-import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw, ExternalLink, Settings, Lock, Unlock } from "lucide-react";
+import { Code2, LogOut, Mic, MicOff, Users, X, BookOpen, Info, StickyNote, Timer, Play, Square, RotateCcw, ExternalLink, Settings, Lock, Unlock, Copy } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
-export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes, timer }) {
+export function TopBar({ room, users, files, runFile, setRunFile, micOn, permissions, onMic, actions, onLeaveRequest, onToggleProblem, onShowInfo, onShowNotes, onShowUsersModal, hasProblem, timer }) {
   const [timeLeft, setTimeLeft] = useState("");
   const [customMin, setCustomMin] = useState(25);
   const [customSec, setCustomSec] = useState(0);
@@ -67,29 +67,20 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: "2px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <h1 style={{ margin: 0, fontSize: "14px", fontWeight: "600", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "250px" }}>
-              {room?.name || "Room"}
+              {room?.name || "Room"} <span style={{ color: "var(--text-muted)", fontSize: "12px", marginLeft: "4px" }}>({room?.id})</span>
             </h1>
-            {(room?.problemId || (room?.name && room.name.includes("Problem Room:"))) && (
+            {hasProblem && (
               <button 
-                onClick={onToggleProblem}
+                onClick={onShowUsersModal}
                 style={{ 
-                  background: "var(--primary-orange)", 
-                  color: "#fff",
-                  border: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                  fontSize: "11px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  flexShrink: 0
+                  display: "flex", alignItems: "center", gap: "6px", height: "26px", padding: "0 10px",
+                  background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.15)",
+                  color: "#fff", fontSize: "11px", fontWeight: "bold", borderRadius: "4px", cursor: "pointer",
+                  transition: "all 0.2s", flexShrink: 0
                 }}
               >
-                <ExternalLink size={12} /> 
-                <span>View Problem</span>
+                <Users size={12} /> 
+                <span>View Users</span>
               </button>
             )}
           </div>
@@ -367,6 +358,24 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 </div>
               </div>
 
+              {room?.visibility === "private" && room?.inviteCode && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Invite Code</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255,255,255,0.05)", padding: "6px", borderRadius: "4px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <span style={{ fontSize: "12px", fontFamily: "monospace", color: "var(--primary-orange)", flex: 1, letterSpacing: "1px", textAlign: "center" }}>
+                      {room.inviteCode}
+                    </span>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(room.inviteCode)}
+                      style={{ background: "transparent", border: "none", color: "#fff", cursor: "pointer", padding: "2px" }}
+                      title="Copy Invite Code"
+                    >
+                      <Copy size={12} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Max Capacity</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -384,6 +393,30 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                   <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", minWidth: "20px" }}>{room?.max || 7}</span>
                 </div>
                 <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Current members: {users.length}</span>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Anti-Cheat</label>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: permissions.isHost ? "pointer" : "not-allowed", fontSize: "12px", color: "#fff" }}>
+                  <input
+                    type="checkbox"
+                    disabled={!permissions.isHost}
+                    checked={room?.allowAi !== false}
+                    onChange={(e) => actions.updateRoomSettings({ allowAi: e.target.checked })}
+                    style={{ margin: 0, width: "14px", height: "14px", cursor: permissions.isHost ? "pointer" : "not-allowed" }}
+                  />
+                  Allow AI Usage
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: permissions.isHost ? "pointer" : "not-allowed", fontSize: "12px", color: "#fff" }}>
+                  <input
+                    type="checkbox"
+                    disabled={!permissions.isHost}
+                    checked={room?.allowCopyPaste !== false}
+                    onChange={(e) => actions.updateRoomSettings({ allowCopyPaste: e.target.checked })}
+                    style={{ margin: 0, width: "14px", height: "14px", cursor: permissions.isHost ? "pointer" : "not-allowed" }}
+                  />
+                  Allow Copy & Paste
+                </label>
               </div>
             </div>
           )}

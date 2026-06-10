@@ -65,14 +65,15 @@ export function ConsolePanel({
             <Terminal size={15} /> 
             <span>Console</span>
           </button>
-          <button 
-            className={panelMode === "preview" ? "active" : ""} 
-            disabled={!preview.showPreview} 
-            onClick={() => setPanelMode("preview")}
-          >
-            <Globe2 size={15} /> 
-            <span>Web Preview</span>
-          </button>
+          {preview?.showPreview && (
+            <button 
+              className={panelMode === "preview" ? "active" : ""} 
+              onClick={() => setPanelMode("preview")}
+            >
+              <Globe2 size={15} /> 
+              <span>Web Preview</span>
+            </button>
+          )}
         </div>
         
         <div className="console-actions">

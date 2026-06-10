@@ -83,7 +83,8 @@ export function ProfilePage() {
       bio: bio.trim(),
       emotionId: selectedEmotion,
       community: selectedCommunity,
-      preferredTheme: "dark"
+      preferredTheme: "dark",
+      activities: [{ type: "profile_update", text: "Updated Profile", subtext: "Profile updated successfully", timestamp: Date.now() }, ...(profileData.activities || []).slice(0, 9)]
     };
 
     const ok = await saveProfile(user.uid, nextProfile).then(() => true).catch(() => false);
@@ -132,7 +133,6 @@ export function ProfilePage() {
         {/* LEFT SIDEBAR */}
         <aside className="profile-v2-sidebar">
           <div className="profile-v2-card main-profile-card">
-            <button className="profile-edit-btn" title="Edit Profile"><Edit3 size={14} /></button>
             
             <div className="profile-avatar-container">
               {selectedEmotion ? (
@@ -147,6 +147,17 @@ export function ProfilePage() {
 
             <h1 className="profile-name">{headerName}</h1>
             <div className="profile-role">
+              <span style={{ fontSize: "10px", fontFamily: "monospace", color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: "4px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                ID: {(() => {
+                  const uid = user?.uid;
+                  if (!uid) return "Unknown";
+                  let hash = 0;
+                  for (let i = 0; i < uid.length; i++) hash = Math.imul(31, hash) + uid.charCodeAt(i) | 0;
+                  return Math.abs(hash).toString().padStart(8, '0').slice(0, 8);
+                })()}
+              </span>
+            </div>
+            <div className="profile-role" style={{ marginTop: "6px" }}>
               <Award size={12} /> Specialist
             </div>
             <p className="profile-email">{user.email}</p>
@@ -436,38 +447,29 @@ export function ProfilePage() {
               </div>
               
               <div className="activity-timeline">
-                <div className="activity-item">
-                  <div className="activity-icon bg-green"><CheckCircle2 size={12} /></div>
-                  <div className="activity-content">
-                    <strong>Solved Two Sum</strong>
-                    <span>Easy • Practice</span>
+                {(!profileData.activities || profileData.activities.length === 0) ? (
+                  <div className="activity-item">
+                    <div className="activity-icon bg-orange"><Award size={12} /></div>
+                    <div className="activity-content">
+                      <strong>Account Created</strong>
+                      <span>Welcome to Codefora! 🚀</span>
+                    </div>
+                    <div className="activity-time">Just now</div>
                   </div>
-                  <div className="activity-time">2m ago</div>
-                </div>
-                <div className="activity-item">
-                  <div className="activity-icon bg-blue"><UserPlus size={12} /></div>
-                  <div className="activity-content">
-                    <strong>Joined Room CF-91</strong>
-                    <span>with 3 others</span>
-                  </div>
-                  <div className="activity-time">15m ago</div>
-                </div>
-                <div className="activity-item">
-                  <div className="activity-icon bg-orange"><Award size={12} /></div>
-                  <div className="activity-content">
-                    <strong>Account Created</strong>
-                    <span>Welcome to Codefora! 🚀</span>
-                  </div>
-                  <div className="activity-time">1h ago</div>
-                </div>
-                <div className="activity-item">
-                  <div className="activity-icon bg-purple"><Code size={12} /></div>
-                  <div className="activity-content">
-                    <strong>Updated Bio</strong>
-                    <span>Profile updated successfully</span>
-                  </div>
-                  <div className="activity-time">2h ago</div>
-                </div>
+                ) : (
+                  profileData.activities.map((activity, idx) => (
+                    <div className="activity-item" key={idx}>
+                      <div className={`activity-icon ${activity.type === 'room_join' ? 'bg-blue' : activity.type === 'problem_solve' ? 'bg-green' : 'bg-purple'}`}>
+                        {activity.type === 'room_join' ? <Users size={12} /> : activity.type === 'problem_solve' ? <CheckCircle2 size={12} /> : <Code size={12} />}
+                      </div>
+                      <div className="activity-content">
+                        <strong>{activity.text}</strong>
+                        <span>{activity.subtext}</span>
+                      </div>
+                      <div className="activity-time">{new Date(activity.timestamp).toLocaleDateString()}</div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

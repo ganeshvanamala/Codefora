@@ -140,7 +140,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
     socket.on("room:join", (data) => handleJoin(data));
     socket.on("room:join:force", (data) => handleJoin({ ...data, force: true }));
 
-    socket.on("room:settings", ({ roomId, max, visibility }) => {
+    socket.on("room:settings", ({ roomId, max, visibility, allowAi, allowCopyPaste }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
       const authorized = Boolean(room && ((user && user.role === "Host") || (user?.userId && room.ownerUserId && user.userId === room.ownerUserId)));
@@ -153,6 +153,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       
       if (visibility === "public" || visibility === "private") {
         room.visibility = visibility;
+      }
+
+      if (allowAi !== undefined) {
+        room.allowAi = Boolean(allowAi);
+      }
+
+      if (allowCopyPaste !== undefined) {
+        room.allowCopyPaste = Boolean(allowCopyPaste);
       }
 
       roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
