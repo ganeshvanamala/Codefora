@@ -68,8 +68,9 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const canSpeak = Boolean(me && me.role !== "Viewer");
   const canChat = Boolean(me);
   const canUseAi = Boolean(room) && room?.allowAi !== false;
+  const [previewTarget, setPreviewTarget] = useState(null);
   const showPreview = files.some((file) => file.name.endsWith(".html"));
-  const previewDoc = useMemo(() => buildPreview(files), [files]);
+  const previewDoc = useMemo(() => buildPreview(files, previewTarget), [files, previewTarget]);
 
   useEffect(() => {
     canSpeakRef.current = canSpeak;
@@ -328,14 +329,16 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
   function handleFilesUpdate(nextFiles) {
     setFiles(nextFiles);
-    setActiveName((current) => {
-      if (expectedActiveNameRef.current && nextFiles.some((f) => f.name === expectedActiveNameRef.current)) {
-        const target = expectedActiveNameRef.current;
-        expectedActiveNameRef.current = null;
-        return target;
-      }
-      return nextFiles.some((file) => file.name === current) ? current : nextFiles[0]?.name || "";
-    });
+    
+    // Evaluate target outside state updater to avoid React StrictMode double-invocation bugs
+    const expected = expectedActiveNameRef.current;
+    if (expected && nextFiles.some((f) => f.name === expected)) {
+      setActiveName(expected);
+      expectedActiveNameRef.current = null;
+    } else {
+      setActiveName((current) => nextFiles.some((file) => file.name === current) ? current : nextFiles[0]?.name || "");
+    }
+    
     setRunFile((current) => nextFiles.some((file) => file.name === current) ? current : nextFiles.find((file) => file.name.endsWith(".js"))?.name || nextFiles[0]?.name || "");
   }
 
@@ -352,6 +355,12 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     const code = value ?? "";
     setFiles((items) => items.map((file) => file.name === activeFile.name ? { ...file, code } : file));
     socket.emit("file:update", { roomId: activeRoomId, fileName: activeFile.name, code });
+  }
+
+  function updateFileCode(fileName, code) {
+    if (!fileName || !canEdit) return;
+    setFiles((items) => items.map((file) => file.name === fileName ? { ...file, code } : file));
+    socket.emit("file:update", { roomId: activeRoomId, fileName, code });
   }
 
   function sendChat(text) {
@@ -453,7 +462,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     }
   }
 
-  function changeFileLanguage(oldFileName, newLanguage) {
+  function changeFileLanguage(oldFileName, newLanguage, code) {
     const extensions = {
       javascript: ".js",
       typescript: ".ts",
@@ -476,7 +485,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     const newFileName = `${baseName}${ext}`;
 
     expectedActiveNameRef.current = newFileName;
-    socket.emit("file:rename", { roomId: activeRoomId, oldFileName, newFileName, language: newLanguage });
+    socket.emit("file:rename", { roomId: activeRoomId, oldFileName, newFileName, language: newLanguage, code });
   }
 
   async function submitCode(problem) {
@@ -971,10 +980,11 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     preview: { showPreview, previewDoc },
     compiler: { compilerStatus, isRunningCode, isSubmittingCode },
     actions: {
-      updateCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
+      updateCode, updateFileCode, sendChat, sendSticker, endRoom, createFile, deleteActiveFile,
       updateRole, kickUser, runCode, submitCode, askAi, toggleMic, forceJoin, clearOutput,
       updateNotes, drawNote, startTimer, stopTimer, setTimerMode, pushHistory, saveWork, changeFileLanguage,
       updateRoomSettings,
+      setPreviewTarget,
       setExpectedActiveName: (name) => {
         expectedActiveNameRef.current = name;
       }

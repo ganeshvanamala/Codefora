@@ -37,7 +37,7 @@
       "emotionId": "sider:icon_27.png",
       "preferredTheme": "dark",
       "stats": {
-        "roomsJoined": 4,
+        "roomsJoined": 15,
         "problemsSolved": 2
       },
       "activities": [
@@ -45,61 +45,61 @@
           "type": "room_join",
           "text": "Joined user1's Room",
           "subtext": "Collaboration",
-          "timestamp": 1781109547657
-        },
-        {
-          "type": "room_join",
-          "text": "Joined user1's Room",
-          "subtext": "Collaboration",
-          "timestamp": 1781109330567
-        },
-        {
-          "type": "room_join",
-          "text": "Joined user1's Room",
-          "subtext": "Collaboration",
-          "timestamp": 1781109190997
-        },
-        {
-          "type": "room_join",
-          "text": "Joined user1's Room",
-          "subtext": "Collaboration",
-          "timestamp": 1781108951418
-        },
-        {
-          "type": "problem_solve",
-          "text": "Solved pattern square grid",
-          "subtext": "Accepted 100%",
-          "timestamp": 1781107885153
-        },
-        {
-          "type": "profile_update",
-          "text": "Updated Profile",
-          "subtext": "Profile updated successfully",
-          "timestamp": 1781107772917
-        },
-        {
-          "type": "profile_update",
-          "text": "Updated Profile",
-          "subtext": "Profile updated successfully",
-          "timestamp": 1781107767611
-        },
-        {
-          "type": "problem_solve",
-          "text": "Solved pattern right triangle",
-          "subtext": "Accepted 100%",
-          "timestamp": 1781107530566
+          "timestamp": 1781117067745
         },
         {
           "type": "room_join",
           "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
           "subtext": "Problem Solving",
-          "timestamp": 1781107466914
+          "timestamp": 1781117004979
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116868008
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116700470
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116644215
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116630505
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116503857
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116304657
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781116249887
         },
         {
           "type": "room_join",
           "text": "Joined user1's Room",
           "subtext": "Collaboration",
-          "timestamp": 1781107444110
+          "timestamp": 1781115917424
         }
       ],
       "solvedProblems": [
@@ -108,6 +108,42 @@
       ],
       "community": "sider"
     },
-    "updatedAt": 1781109547657
+    "updatedAt": 1781117067745,
+    "works": [
+      {
+        "name": "Project in CF-TN8M",
+        "files": [
+          {
+            "name": "index.cpp",
+            "language": "cpp",
+            "code": "<main class=\"hero\">\n  <h1>Code together. Instantly.</h1>\n  <button>Launch room</button>\n</main>"
+          },
+          {
+            "name": "styles.c",
+            "language": "c",
+            "code": ".hero {\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  background: #1E1E2F;\n  color: #E0E0E0;\n}"
+          },
+          {
+            "name": "main.js",
+            "language": "javascript",
+            "code": "const name = \"Codefora\";\nconsole.log(`${name} room is live`);"
+          },
+          {
+            "name": "main.java",
+            "language": "java",
+            "code": "class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Room compiled successfully\");\n  }\n}"
+          },
+          {
+            "name": "k.c",
+            "language": "c",
+            "code": "#include <stdio.h>\n\nint main() {\n    // write your code here\n    return 0;\n}"
+          }
+        ],
+        "type": "lab",
+        "originRoomId": "CF-TN8M",
+        "id": "work-1781113353293-g4qzj",
+        "createdAt": 1781113353293
+      }
+    ]
   }
 }

@@ -275,7 +275,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       io.to(roomId).emit("files:update", room.files);
     });
 
-    socket.on("file:rename", ({ roomId, oldFileName, newFileName, language }) => {
+    socket.on("file:rename", ({ roomId, oldFileName, newFileName, language, code }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
       if (!room || !user || user.role === "Viewer" || !oldFileName || !newFileName?.trim()) return;
@@ -285,6 +285,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
 
       file.name = newFileName.trim().replace(/[\\/]/g, "");
       if (language) file.language = language;
+      if (code !== undefined) file.code = code;
 
       roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
       io.to(roomId).emit("files:update", room.files);

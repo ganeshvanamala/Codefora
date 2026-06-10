@@ -72,6 +72,7 @@ export function RoomPage() {
   const [usersPanelWidth, setUsersPanelWidth] = useState(222);
   const [isResizing, setIsResizing] = useState(false);
   const [isResizingUsers, setIsResizingUsers] = useState(false);
+  const [consoleMode, setConsoleMode] = useState("output");
   const consoleResizeStart = useRef({ y: 0, height: 280 });
   const usersResizeStart = useRef({ x: 0, width: 222 });
 
@@ -407,19 +408,32 @@ export function RoomPage() {
               typingCursors={typingCursors}
               permissions={permissions}
               onChange={actions.updateCode}
+              onUpdateFileCode={actions.updateFileCode}
               onCreateFile={actions.createFile}
               onExpectActiveName={actions.setExpectedActiveName}
               onDeleteFile={actions.deleteActiveFile}
               onChangeLanguage={actions.changeFileLanguage}
               onSaveWork={actions.saveWork}
-              onRun={() => actions.runCode(stdin)}
+              onRun={() => {
+                if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
+                  if (activeFile.name.endsWith('.html')) {
+                    actions.setPreviewTarget(activeFile.name);
+                  }
+                  if (preview?.showPreview) {
+                    setConsoleMode("preview");
+                    return;
+                  }
+                }
+                setConsoleMode("output");
+                actions.runCode(stdin);
+              }}
               onSubmit={() => {
                 actions.submitCode(activeProblem);
                 setShowTimeTravel(true);
               }}
               isRunningCode={compiler.isRunningCode}
               isSubmittingCode={compiler.isSubmittingCode}
-              canSubmit={permissions.canEdit}
+              canSubmit={!!activeProblem && compiler.compilerStatus === "Ready"}
             />
             <ConsolePanel
               output={output}
@@ -434,7 +448,19 @@ export function RoomPage() {
               setRunFile={setRunFile}
               isRunningCode={compiler.isRunningCode}
               isSubmittingCode={compiler.isSubmittingCode}
+              panelMode={consoleMode}
+              setPanelMode={setConsoleMode}
               onRun={() => {
+                if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
+                  if (activeFile.name.endsWith('.html')) {
+                    actions.setPreviewTarget(activeFile.name);
+                  }
+                  if (preview?.showPreview) {
+                    setConsoleMode("preview");
+                    return;
+                  }
+                }
+                setConsoleMode("output");
                 actions.runCode(stdin);
               }}
               onSubmit={() => {

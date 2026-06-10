@@ -1213,7 +1213,7 @@ label {
 
 .filter-pills {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .filter-pills--wrap {
@@ -1221,14 +1221,17 @@ label {
 }
 
 .filter-pill {
-  min-height: 38px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 10px;
   color: var(--text);
   background: rgba(2, 6, 23, 0.68);
   border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
   text-align: left;
-  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease, color 180ms ease;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .filter-pill:hover {
@@ -2182,9 +2185,9 @@ label {
 .problem-list-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  overflow: hidden;
+  gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
 }
 
 .compact-search {
@@ -2200,10 +2203,21 @@ label {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  margin-top: auto;
 }
 
 .sort-mini select {
   min-height: 40px;
+  width: 100%;
+  background: var(--field);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
 }
 
 .compact-problem-list {
@@ -8066,5 +8080,18 @@ label {
   color: #FF5555;
   background: rgba(255, 85, 85, 0.05);
   border-color: rgba(255, 85, 85, 0.2);
+}
+
+
+.console-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.console-panel-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 

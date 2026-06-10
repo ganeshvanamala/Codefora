@@ -9,6 +9,7 @@ import { api } from "../api/client";
 import { useAuth } from "../hooks/useAuth";
 import { buildPreview } from "../lib/preview";
 import { useTheme } from "../hooks/useTheme";
+import { BOILERPLATES } from "../components/room/EditorPanel";
 
 const FILE_TYPES = [
   { label: "JavaScript", language: "javascript", extension: ".js" },
@@ -70,7 +71,8 @@ export function PlaygroundPage() {
       alert("File already exists");
       return;
     }
-    const newFile = { name: fileName, language: selectedType.language, code: "" };
+    const boilerplate = BOILERPLATES[selectedType.language] || "";
+    const newFile = { name: fileName, language: selectedType.language, code: boilerplate };
     setFiles(prev => [...prev, newFile]);
     setActiveName(fileName);
     setNewFileName("");
@@ -134,8 +136,9 @@ export function PlaygroundPage() {
     }
   };
 
+  const [previewTarget, setPreviewTarget] = useState(null);
   const activeFile = files.find(f => f.name === activeName) || files[0];
-  const previewDoc = buildPreview(files);
+  const previewDoc = buildPreview(files, previewTarget);
 
   const handleCodeChange = (value) => {
     setFiles(prev => prev.map(f => f.name === activeName ? { ...f, code: value } : f));
@@ -143,6 +146,9 @@ export function PlaygroundPage() {
 
   const handleRun = async () => {
     if (activeFile.language === 'html' || activeFile.language === 'css') {
+      if (activeFile.language === 'html') {
+        setPreviewTarget(activeFile.name);
+      }
       setOutput("Preview updated.");
       return;
     }
@@ -387,7 +393,7 @@ export function PlaygroundPage() {
 
           <ConsolePanel
             output={output}
-            preview={{ showPreview: false }}
+            preview={undefined}
             style={{ height: `${consoleHeight}px`, flex: "0 0 auto", borderTop: '2px solid var(--primary-orange)' }}
             onResizeStart={(e) => {
               e.preventDefault();

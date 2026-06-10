@@ -24,9 +24,26 @@ const FILE_TYPES = [
   { label: "SQL", language: "sql", extension: ".sql" }
 ];
 
-export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
+export const BOILERPLATES = {
+  javascript: "function solution() {\n  // write your code here\n}\n\nconsole.log(solution());",
+  typescript: "function solution(): void {\n  // write your code here\n}\n\nconsole.log(solution());",
+  python: "def solution():\n    # write your code here\n    pass\n\nif __name__ == '__main__':\n    solution()",
+  java: "public class Main {\n    public static void main(String[] args) {\n        // write your code here\n    }\n}",
+  c: "#include <stdio.h>\n\nint main() {\n    // write your code here\n    return 0;\n}",
+  cpp: "#include <iostream>\nusing namespace std;\n\nint main() {\n    // write your code here\n    return 0;\n}",
+  csharp: "using System;\n\nclass Program {\n    static void Main() {\n        // write your code here\n    }\n}",
+  go: "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // write your code here\n}",
+  rust: "fn main() {\n    // write your code here\n}",
+  php: "<?php\n// write your code here\n?>",
+  sql: "-- write your sql here",
+  html: "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>",
+  css: "/* write your css here */\nbody {\n    margin: 0;\n    padding: 0;\n    font-family: sans-serif;\n}"
+};
+
+export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onUpdateFileCode, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState(FILE_TYPES[0].language);
+  const [languageCache, setLanguageCache] = useState({});
   const [pendingDeleteFile, setPendingDeleteFile] = useState(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -57,12 +74,14 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   }, [activeFile?.name]);
 
   function createFile() {
-    const activeLanguage = activeFile?.language || newFileType || "javascript";
+    const isNewFileContext = newFileName.trim().length > 0;
+    const activeLanguage = isNewFileContext ? newFileType : (activeFile?.language || newFileType || "javascript");
     const selectedType = FILE_TYPES.find((type) => type.language === activeLanguage) || FILE_TYPES[0];
     const cleanName = newFileName.trim();
     if (!cleanName) return;
     const fileName = cleanName.includes(".") ? cleanName : `${cleanName}${selectedType.extension}`;
-    onCreateFile(fileName, selectedType.language);
+    const boilerplate = BOILERPLATES[selectedType.language] || "";
+    onCreateFile(fileName, selectedType.language, boilerplate);
     if (onExpectActiveName) onExpectActiveName(fileName);
     setNewFileName("");
   }
@@ -352,10 +371,29 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
           <select
             className="file-type-select"
             disabled={!permissions.canEdit}
-            value={activeFile?.language || "javascript"}
+            value={newFileName.trim() ? newFileType : (activeFile?.language || "javascript")}
             onChange={(event) => {
-              if (onChangeLanguage && activeFile) {
-                onChangeLanguage(activeFile.name, event.target.value);
+              const lang = event.target.value;
+              if (newFileName.trim()) {
+                setNewFileType(lang);
+              } else if (onChangeLanguage && activeFile) {
+                const baseName = activeFile.name.includes(".") ? activeFile.name.substring(0, activeFile.name.lastIndexOf(".")) : activeFile.name;
+                
+                // Now that we have the latest cache, we can look up the new code
+                const cachedCode = languageCache[baseName]?.[lang];
+                const newCode = cachedCode !== undefined ? cachedCode : (BOILERPLATES[lang] || "");
+                
+                // Cache current code (pure state update)
+                setLanguageCache(prev => ({
+                  ...prev,
+                  [baseName]: {
+                    ...(prev[baseName] || {}),
+                    [activeFile.language]: activeFile.code
+                  }
+                }));
+                
+                // Send both rename and new code in one shot (outside state updater)
+                onChangeLanguage(activeFile.name, lang, newCode);
               }
             }}
             style={{

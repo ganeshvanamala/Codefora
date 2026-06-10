@@ -11,6 +11,10 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import { PlaygroundPage } from "./pages/PlaygroundPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import Loader from "./components/Loader";
+import { Footer } from "./components/Footer";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
+import { TermsOfServicePage } from "./pages/TermsOfServicePage";
+import { CodeOfConductPage } from "./pages/CodeOfConductPage";
 import { useLocation } from "react-router-dom";
 import { trackPageView } from "./lib/analytics";
 
@@ -27,16 +31,21 @@ function LoaderManager({ children }) {
 
   useEffect(() => {
     // show on route changes briefly
+    window.scrollTo(0, 0);
     setLoading(true);
     trackPageView(location.pathname);
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, [location.pathname]);
 
+  const footerRoutes = ['/home', '/rooms', '/problems', '/feedback', '/profile', '/privacy', '/terms', '/conduct'];
+  const showFooter = footerRoutes.includes(location.pathname);
+
   return (
     <>
       <Loader visible={loading} />
       {children}
+      {showFooter && <Footer />}
     </>
   );
 }
@@ -58,6 +67,9 @@ const router = createBrowserRouter([
       { path: "profile", element: <ProfilePage /> },
       { path: "playground", element: <PlaygroundPage /> },
       { path: "feedback", element: <FeedbackPage /> },
+      { path: "privacy", element: <PrivacyPolicyPage /> },
+      { path: "terms", element: <TermsOfServicePage /> },
+      { path: "conduct", element: <CodeOfConductPage /> },
       { path: "room/:roomId", element: <RoomPage /> },
       { path: "code/:roomId", element: <RoomPage /> },
       { path: "code/private/:roomId", element: <RoomPage /> }

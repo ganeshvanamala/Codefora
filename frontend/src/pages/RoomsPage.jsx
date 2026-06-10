@@ -308,63 +308,6 @@ export function RoomsPage() {
         </section>
       </section>
 
-      <footer className="rooms-footer">
-        <div className="rooms-footer-content">
-          <div className="rooms-footer-brand">
-            <BrandButton logo />
-            <p>The real-time competitive coding platform for developers to learn, compete and grow together.</p>
-          </div>
-
-          <div className="rooms-footer-column">
-            <h4>Platform</h4>
-            <ul>
-              <li><a href="#">Rooms</a></li>
-              <li><a href="#">Problems</a></li>
-              <li><a href="#">Battles</a></li>
-              <li><a href="#">Contests</a></li>
-              <li><a href="#">Leaderboard</a></li>
-            </ul>
-          </div>
-
-          <div className="rooms-footer-column">
-            <h4>Resources</h4>
-            <ul>
-              <li><a href="#">Blog</a></li>
-              <li><a href="#">Docs</a></li>
-              <li><a href="#">Guides</a></li>
-              <li><a href="#">API</a></li>
-              <li><a href="#">Changelog</a></li>
-            </ul>
-          </div>
-
-          <div className="rooms-footer-column">
-            <h4>Community</h4>
-            <ul>
-              <li><a href="#">Discussions</a></li>
-              <li><a href="#">Events</a></li>
-              <li><a href="#">Top Users</a></li>
-              <li><a href="#">Hall of Fame</a></li>
-              <li><a href="#">Support</a></li>
-            </ul>
-          </div>
-
-          <div className="rooms-footer-column">
-            <h4>Legal</h4>
-            <ul>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">Code of Conduct</a></li>
-            </ul>
-          </div>
-
-        </div>
-
-        <div className="rooms-footer-bottom">
-          <p>&copy; 2024 Codefora. All rights reserved.</p>
-          <p>Made with <span style={{color: 'var(--primary)'}}>❤️</span> for developers</p>
-        </div>
-      </footer>
-
       {showCreateModal && (
         <div className="profile-modal-overlay" role="dialog" aria-modal="true" aria-label="Create a room">
           <form className="profile-modal-card" onSubmit={(e) => { e.preventDefault(); createRoom(); }}>
@@ -384,15 +327,11 @@ export function RoomsPage() {
 
             <label className="profile-input-group">
               Room Size (Members)
-              <select value={maxMembers} onChange={(e) => setMaxMembers(e.target.value ? Number(e.target.value) : "")}>
-                <option value="">Select room size</option>
-                <option value="1">1 Member</option>
-                <option value="2">2 Members</option>
-                <option value="3">3 Members</option>
-                <option value="4">4 Members</option>
-                <option value="5">5 Members</option>
-                <option value="6">6 Members</option>
-                <option value="7">7 Members</option>
+              <select value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} required>
+                <option value="" disabled>Select max size</option>
+                {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                  <option key={num} value={num}>{num} {num === 1 ? 'Member' : 'Members'}</option>
+                ))}
               </select>
             </label>
 

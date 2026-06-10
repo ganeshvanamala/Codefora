@@ -17,9 +17,13 @@ export function ConsolePanel({
   activeProblem, 
   canSubmit,
   stdin,
-  setStdin 
+  setStdin,
+  panelMode: externalPanelMode,
+  setPanelMode: externalSetPanelMode 
 }) {
-  const [panelMode, setPanelMode] = useState("output");
+  const [localPanelMode, setLocalPanelMode] = useState("output");
+  const panelMode = externalPanelMode !== undefined ? externalPanelMode : localPanelMode;
+  const setPanelMode = externalSetPanelMode || setLocalPanelMode;
   const [showInput, setShowInput] = useState(true); // Default to showing input side-by-side for better onboarding
 
   const renderFormattedOutput = (rawOutput) => {
@@ -65,7 +69,7 @@ export function ConsolePanel({
             <Terminal size={15} /> 
             <span>Console</span>
           </button>
-          {preview?.showPreview && (
+          {preview && (
             <button 
               className={panelMode === "preview" ? "active" : ""} 
               onClick={() => setPanelMode("preview")}
@@ -153,11 +157,11 @@ export function ConsolePanel({
         {panelMode === "output" ? (
           showInput ? (
             <div className="console-split-container" style={{ display: 'flex', height: '100%', width: '100%', gap: '16px', padding: '16px', boxSizing: 'border-box' }}>
-              <div className="console-input-half" style={{ flex: '1 1 40%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <div className="console-input-half" style={{ flex: '1 1 40%', display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
                 <div style={{ fontSize: '11px', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Custom Input (stdin)
                 </div>
-                <div style={{ flex: 1, background: '#070c14', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', display: 'flex' }}>
+                <div style={{ flex: 1, background: '#070c14', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', display: 'flex', minHeight: 0 }}>
                   <textarea 
                     style={{ 
                       flex: 1, 
@@ -177,21 +181,21 @@ export function ConsolePanel({
                   />
                 </div>
               </div>
-              <div className="console-output-half" style={{ flex: '1 1 60%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <div className="console-output-half" style={{ flex: '1 1 60%', display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Output
                 </div>
-                <div style={{ flex: 1, background: '#070c14', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '16px', overflowY: 'auto', boxSizing: 'border-box' }}>
+                <div style={{ flex: 1, background: '#070c14', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '16px', overflowY: 'auto', boxSizing: 'border-box', minHeight: 0 }}>
                   {renderFormattedOutput(output)}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="console-container" style={{ padding: '16px', height: '100%', boxSizing: 'border-box', overflowY: 'auto' }}>
+            <div className="console-container" style={{ padding: '16px', height: '100%', boxSizing: 'border-box', overflowY: 'auto', minHeight: 0 }}>
               {renderFormattedOutput(output)}
             </div>
           )
-        ) : preview.showPreview ? (
+        ) : preview?.showPreview ? (
           <div className="preview-container">
             <iframe 
               className="preview-iframe" 
@@ -201,9 +205,10 @@ export function ConsolePanel({
             />
           </div>
         ) : (
-          <div className="console-output empty">
-            <Globe2 size={40} className="text-muted opacity-20" />
+          <div className="console-output empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+            <Globe2 size={40} style={{ opacity: 0.2, marginBottom: '16px' }} />
             <p>No HTML file detected for preview.</p>
+            <p style={{ fontSize: '12px', opacity: 0.7, marginTop: '8px' }}>Create an index.html file to view it here.</p>
           </div>
         )}
       </div>

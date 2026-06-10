@@ -6,7 +6,12 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   const [customMin, setCustomMin] = useState(25);
   const [customSec, setCustomSec] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [localMaxMembers, setLocalMaxMembers] = useState(room?.max || 7);
   const settingsRef = useRef(null);
+
+  useEffect(() => {
+    setLocalMaxMembers(room?.max || 7);
+  }, [room?.max]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -413,18 +418,19 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Max Capacity</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <input 
-                    type="range" 
-                    min={Math.max(3, users.length)} 
-                    max="7" 
-                    step="1"
-                    defaultValue={room?.max || 7}
-                    onMouseUp={(e) => actions.updateRoomSettings({ max: parseInt(e.target.value) })}
-                    onTouchEnd={(e) => actions.updateRoomSettings({ max: parseInt(e.target.value) })}
-                    disabled={!permissions.isHost}
-                    style={{ flex: 1 }}
-                  />
-                  <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", minWidth: "20px" }}>{room?.max || 7}</span>
+                    <input 
+                      type="range" 
+                      min={users.length} 
+                      max="7" 
+                      step="1"
+                      value={localMaxMembers}
+                      onChange={(e) => setLocalMaxMembers(parseInt(e.target.value))}
+                      onMouseUp={() => actions.updateRoomSettings({ max: localMaxMembers })}
+                      onTouchEnd={() => actions.updateRoomSettings({ max: localMaxMembers })}
+                      disabled={!permissions.isHost}
+                      style={{ flex: 1, accentColor: "var(--primary-orange)", cursor: permissions.isHost ? "pointer" : "not-allowed" }}
+                    />
+                    <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", minWidth: "20px" }}>{localMaxMembers}</span>
                 </div>
                 <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Current members: {users.length}</span>
               </div>
