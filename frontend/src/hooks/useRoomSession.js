@@ -538,7 +538,10 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
       setCompilerStatus(nextStatus);
 
       if (!firstFailed) {
-        setOutput("Program is correct. All sample test cases passed. 🎉");
+        setOutput("Program is correct. All sample test cases passed. ✅");
+        if (activeUserId) {
+          api.solveProblem(activeUserId, problem.id).catch(console.error);
+        }
         return true;
       } else {
         const failedIndex = results.indexOf(firstFailed);

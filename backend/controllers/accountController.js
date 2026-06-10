@@ -40,7 +40,7 @@ export function createAccountController() {
   const db = createFirestore();
 
   async function getAccount(userId) {
-    if (db) {
+    if (db && !db.isMock) {
       const doc = await db.collection("users").doc(userId).get();
       return { exists: doc.exists, data: doc.data() || {}, ref: doc.ref };
     }
@@ -50,7 +50,7 @@ export function createAccountController() {
   }
 
   async function setAccount(userId, data, options = {}) {
-    if (db) {
+    if (db && !db.isMock) {
       await db.collection("users").doc(userId).set(data, options);
       return;
     }

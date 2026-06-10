@@ -34,9 +34,56 @@
     "profile": {
       "displayName": "user1",
       "bio": "fd",
-      "emotionId": "angry",
-      "preferredTheme": "dark"
+      "emotionId": "sider:icon_27.png",
+      "preferredTheme": "dark",
+      "stats": {
+        "roomsJoined": 2,
+        "problemsSolved": 2
+      },
+      "activities": [
+        {
+          "type": "problem_solve",
+          "text": "Solved pattern square grid",
+          "subtext": "Accepted 100%",
+          "timestamp": 1781107885153
+        },
+        {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1781107772917
+        },
+        {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1781107767611
+        },
+        {
+          "type": "problem_solve",
+          "text": "Solved pattern right triangle",
+          "subtext": "Accepted 100%",
+          "timestamp": 1781107530566
+        },
+        {
+          "type": "room_join",
+          "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
+          "subtext": "Problem Solving",
+          "timestamp": 1781107466914
+        },
+        {
+          "type": "room_join",
+          "text": "Joined user1's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1781107444110
+        }
+      ],
+      "solvedProblems": [
+        "pattern-right-triangle",
+        "pattern-square-grid"
+      ],
+      "community": "sider"
     },
-    "updatedAt": 1778328111496
+    "updatedAt": 1781107885153
   }
 }

@@ -27,7 +27,7 @@ export function createProfileController() {
       const userId = String(request.params.userId || "").trim();
       if (!userId) return response.status(400).json({ error: "Missing userId" });
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           const user = users[userId] || {};
           return response.json(user.profile || {});
@@ -48,7 +48,7 @@ export function createProfileController() {
       const profile = request.body || {};
       if (!userId) return response.status(400).json({ error: "Missing userId" });
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           users[userId] = {
             ...(users[userId] || {}),
@@ -79,7 +79,7 @@ export function createProfileController() {
       };
 
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           if (!users[userId]) users[userId] = { profile: {}, works: [] };
           if (!users[userId].works) users[userId].works = [];
@@ -103,7 +103,7 @@ export function createProfileController() {
       const userId = String(request.params.userId || "").trim();
       if (!userId) return response.status(400).json({ error: "Missing userId" });
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           const user = users[userId] || {};
           return response.json(user.works || []);
@@ -122,7 +122,7 @@ export function createProfileController() {
     incrementStat: async (userId, statName, amount = 1) => {
       if (!userId) return;
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           if (!users[userId]) users[userId] = { profile: { stats: {} } };
           if (!users[userId].profile) users[userId].profile = { stats: {} };
@@ -152,7 +152,7 @@ export function createProfileController() {
     addActivity: async (userId, activity) => {
       if (!userId) return;
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           if (!users[userId]) users[userId] = { profile: { activities: [] } };
           if (!users[userId].profile) users[userId].profile = { activities: [] };
@@ -187,7 +187,7 @@ export function createProfileController() {
       if (!userId || !problemId) return response.status(400).json({ error: "Missing parameters" });
       
       try {
-        if (!db) {
+        if (!db || db.isMock) {
           const users = await readLocalUsers();
           if (!users[userId]) users[userId] = { profile: { stats: {}, solvedProblems: [], activities: [] } };
           if (!users[userId].profile) users[userId].profile = { stats: {}, solvedProblems: [], activities: [] };

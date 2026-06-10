@@ -22,6 +22,7 @@ export function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
   const [showEmotionModal, setShowEmotionModal] = useState(false);
+  const [showAllActivities, setShowAllActivities] = useState(false);
   const [works, setWorks] = useState([]);
   const [loadingWorks, setLoadingWorks] = useState(false);
 
@@ -443,7 +444,7 @@ export function ProfilePage() {
                 <div className="card-title">
                   <Flame size={16} className="text-orange" /> RECENT ACTIVITY
                 </div>
-                <button className="view-all-btn">View All</button>
+                <button className="view-all-btn" onClick={() => setShowAllActivities(true)}>View All</button>
               </div>
               
               <div className="activity-timeline">
@@ -452,12 +453,12 @@ export function ProfilePage() {
                     <div className="activity-icon bg-orange"><Award size={12} /></div>
                     <div className="activity-content">
                       <strong>Account Created</strong>
-                      <span>Welcome to Codefora! 🚀</span>
+                      <span>Welcome to Codefora! 🎉</span>
                     </div>
                     <div className="activity-time">Just now</div>
                   </div>
                 ) : (
-                  profileData.activities.map((activity, idx) => (
+                  profileData.activities.slice(0, 2).map((activity, idx) => (
                     <div className="activity-item" key={idx}>
                       <div className={`activity-icon ${activity.type === 'room_join' ? 'bg-blue' : activity.type === 'problem_solve' ? 'bg-green' : 'bg-purple'}`}>
                         {activity.type === 'room_join' ? <Users size={12} /> : activity.type === 'problem_solve' ? <CheckCircle2 size={12} /> : <Code size={12} />}
@@ -476,6 +477,33 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {showAllActivities && (
+        <div className="profile-modal-overlay" role="dialog" aria-modal="true" aria-label="All Activities">
+          <div className="profile-modal-card" style={{ maxWidth: "500px", width: "90%", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div className="profile-modal-header" style={{ marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, color: "#fff", fontSize: "1.1rem" }}>All Recent Activities</h3>
+            </div>
+            <div className="activity-timeline" style={{ flex: 1, overflowY: "auto", margin: "0 -18px", padding: "0 18px" }}>
+              {profileData.activities.map((activity, idx) => (
+                <div className="activity-item" key={idx}>
+                  <div className={`activity-icon ${activity.type === 'room_join' ? 'bg-blue' : activity.type === 'problem_solve' ? 'bg-green' : 'bg-purple'}`}>
+                    {activity.type === 'room_join' ? <Users size={12} /> : activity.type === 'problem_solve' ? <CheckCircle2 size={12} /> : <Code size={12} />}
+                  </div>
+                  <div className="activity-content">
+                    <strong>{activity.text}</strong>
+                    <span>{activity.subtext}</span>
+                  </div>
+                  <div className="activity-time">{new Date(activity.timestamp).toLocaleDateString()}</div>
+                </div>
+              ))}
+            </div>
+            <div className="profile-modal-footer" style={{ marginTop: "24px" }}>
+              <button className="button" onClick={() => setShowAllActivities(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showEmotionModal && (
         <div className="profile-modal-overlay" role="dialog" aria-modal="true" aria-label="Select emotion">
           <div className="profile-modal-card">
@@ -490,11 +518,13 @@ export function ProfilePage() {
                 <X size={16} />
               </button>
             </div>
-            <EmotionPicker 
-              selectedEmotion={selectedEmotion} 
-              onSelectEmotion={setSelectedEmotion} 
-              category={selectedCommunity}
-            />
+              <div style={{ flex: 1, overflowY: "auto", margin: "0 -18px", padding: "0 18px" }}>
+                <EmotionPicker 
+                  selectedEmotion={selectedEmotion} 
+                  onSelectEmotion={setSelectedEmotion} 
+                  category={selectedCommunity}
+                />
+              </div>
             <div className="profile-modal-footer">
               <button type="button" className="button primary" onClick={() => setShowEmotionModal(false)}>
                 Done

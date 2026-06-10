@@ -135,6 +135,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       socket.emit("room:state", roomService.snapshot(room));
       io.to(room.id).emit("presence:update", room.users);
       broadcastRooms();
+      
+      if (requestUserId && profileController) {
+        profileController.addActivity(requestUserId, {
+          type: "room_join",
+          text: `Joined ${room.name}`,
+          subtext: room.problemId ? "Problem Solving" : "Collaboration"
+        }).catch(e => console.warn("Failed to log room join activity", e));
+      }
     };
 
     socket.on("room:join", (data) => handleJoin(data));

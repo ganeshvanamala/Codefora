@@ -5678,7 +5678,7 @@ label {
 .profile-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 999;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -5689,7 +5689,9 @@ label {
 .profile-modal-card {
   width: min(880px, 100%);
   max-height: min(88vh, 760px);
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 18px;
   background: var(--panel);
   border: 1px solid var(--line);
