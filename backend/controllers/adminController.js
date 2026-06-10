@@ -100,6 +100,8 @@ export function createAdminController(roomRepository) {
           };
         });
 
+        users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
         return response.json(users);
       } catch (err) {
         console.error("Admin list users failed:", err);

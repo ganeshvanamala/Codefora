@@ -420,6 +420,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <input 
                       type="range" 
+                      className="custom-slider"
                       min={users.length} 
                       max="7" 
                       step="1"
@@ -428,7 +429,11 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                       onMouseUp={() => actions.updateRoomSettings({ max: localMaxMembers })}
                       onTouchEnd={() => actions.updateRoomSettings({ max: localMaxMembers })}
                       disabled={!permissions.isHost}
-                      style={{ flex: 1, accentColor: "var(--primary-orange)", cursor: permissions.isHost ? "pointer" : "not-allowed" }}
+                      style={{ 
+                        flex: 1, 
+                        cursor: permissions.isHost ? "pointer" : "not-allowed",
+                        background: `linear-gradient(to right, var(--primary-orange) ${users.length >= 7 ? 100 : ((localMaxMembers - users.length) / (7 - users.length)) * 100}%, rgba(255, 255, 255, 0.1) ${users.length >= 7 ? 100 : ((localMaxMembers - users.length) / (7 - users.length)) * 100}%)`
+                      }}
                     />
                     <span style={{ fontSize: "14px", fontWeight: "bold", color: "#fff", minWidth: "20px" }}>{localMaxMembers}</span>
                 </div>

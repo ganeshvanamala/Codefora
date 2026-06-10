@@ -58,7 +58,7 @@ export class PistonService {
       };
     } catch (error) {
       console.error("[Compiler] Judge0 Error:", error.message);
-      throw createCompilerError("COMPILER_UNAVAILABLE", `Compiler is offline. Error: ${error.message}`, 503);
+      throw createCompilerError("COMPILER_UNAVAILABLE", `Network issue, please improve your internet. (${error.message})`, 503);
     }
   }
 }
