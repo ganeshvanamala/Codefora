@@ -372,11 +372,12 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <input 
                     type="range" 
-                    min={users.length} 
+                    min={Math.max(3, users.length)} 
                     max="7" 
                     step="1"
-                    value={room?.max || 7}
-                    onChange={(e) => actions.updateRoomSettings({ max: parseInt(e.target.value) })}
+                    defaultValue={room?.max || 7}
+                    onMouseUp={(e) => actions.updateRoomSettings({ max: parseInt(e.target.value) })}
+                    onTouchEnd={(e) => actions.updateRoomSettings({ max: parseInt(e.target.value) })}
                     disabled={!permissions.isHost}
                     style={{ flex: 1 }}
                   />

@@ -85,7 +85,6 @@ export function EditorPanel({ roomId, files, activeFile, activeName, setActiveNa
 
         onCreateFile(fileName, typeMatch?.language || "javascript", content);
         if (onExpectActiveName) onExpectActiveName(fileName);
-        alert(`Debug: Uploaded ${fileName} (${content.length} bytes) to Room/Playground! If you don't see it, the backend didn't save it.`);
       } catch (err) {
         console.error("Failed to parse or create imported file", err);
       }

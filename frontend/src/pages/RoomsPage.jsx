@@ -51,7 +51,13 @@ export function RoomsPage() {
   useEffect(() => {
     api.listRooms().then(setRooms).catch(console.error);
     socket.connect();
-    socket.on("rooms:update", setRooms);
+    
+    const handleRoomsUpdate = (data) => {
+      console.log("[RoomsPage] Received rooms:update", data?.length);
+      setRooms(data || []);
+    };
+    
+    socket.on("rooms:update", handleRoomsUpdate);
     
     // Handle messages from redirection (like being kicked)
     const params = new URLSearchParams(location.search);
@@ -78,7 +84,7 @@ export function RoomsPage() {
       navigate(location.pathname + (newSearch ? `?${newSearch}` : ""), { replace: true });
     }
 
-    return () => socket.off("rooms:update", setRooms);
+    return () => socket.off("rooms:update", handleRoomsUpdate);
   }, [location.search, navigate]);
 
   const isRoomsPage = location.pathname !== "/problems";
