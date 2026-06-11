@@ -85,7 +85,9 @@ export const TourManager = () => {
         return;
       }
 
-      if (user) {
+      const isManualUser = user?.providerId === 'manual';
+
+      if (user && !isManualUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           const dbStatus = userDoc.exists() ? userDoc.data()[`hasSeenTour_${pageName}`] : false;
@@ -97,13 +99,14 @@ export const TourManager = () => {
             setRun(true);
           }
         } catch (error) {
-          console.error("[TourManager] Error fetching tour status:", error);
-          setRun(true); // default to show if error occurs
+          console.error("[TourManager] Error fetching tour status, falling back to local storage:", error);
+          const hasSeenLocal = localStorage.getItem(`codefora_tour_${user.uid}_${pageName}`) === 'true';
+          setRun(!hasSeenLocal);
         }
       } else {
-        // purely localStorage for guests since they don't have a DB entry
-        const hasSeen = localStorage.getItem(`codefora_tour_guest_${pageName}`) === 'true';
-        console.log(`[TourManager] Guest local storage status: ${hasSeen}`);
+        const fallbackId = user ? user.uid : 'guest';
+        const hasSeen = localStorage.getItem(`codefora_tour_${fallbackId}_${pageName}`) === 'true';
+        console.log(`[TourManager] Local storage status for ${fallbackId}: ${hasSeen}`);
         setRun(!hasSeen);
       }
       setTourInitialized(true);
@@ -539,13 +542,18 @@ export const TourManager = () => {
       console.log(`[TourManager] Tour completed or skipped on ${pageName}. Status: ${status}, Action: ${action}`);
       setRun(false);
       
-      if (user) {
+      const isManualUser = user?.providerId === 'manual';
+      
+      if (user && !isManualUser) {
         console.log(`[TourManager] Saving completion to DB for user ${user.uid}`);
         // Sync completion for THIS SPECIFIC PAGE permanently to database
         setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: true }, { merge: true }).catch(console.error);
+        // Also save to local storage as a robust fallback
+        localStorage.setItem(`codefora_tour_${user.uid}_${pageName}`, 'true');
       } else {
-        console.log(`[TourManager] Saving completion to guest local storage`);
-        localStorage.setItem(`codefora_tour_guest_${pageName}`, 'true');
+        const fallbackId = user ? user.uid : 'guest';
+        console.log(`[TourManager] Saving completion to local storage for ${fallbackId}`);
+        localStorage.setItem(`codefora_tour_${fallbackId}_${pageName}`, 'true');
       }
       
       // Mark this specific page as completed for this session to prevent re-running on browser back
