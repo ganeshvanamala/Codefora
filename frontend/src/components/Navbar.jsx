@@ -36,7 +36,7 @@ export function Navbar() {
       zIndex: 100
     }}>
       <BrandButton logo />
-      <nav style={{ gap: '40px', display: 'flex', alignItems: 'center' }}>
+      <nav className="tour-navbar" style={{ gap: '40px', display: 'flex', alignItems: 'center' }}>
         <NavLink to="/home" end style={linkStyle}>Home</NavLink>
         <NavLink to="/rooms" style={linkStyle}>Rooms</NavLink>
         <NavLink to="/problems" style={linkStyle}>Problems</NavLink>

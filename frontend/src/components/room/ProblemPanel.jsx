@@ -5,7 +5,7 @@ export function ProblemPanel({ problem }) {
   if (!problem) return null;
 
   return (
-    <aside className="problem-panel">
+    <aside className="problem-panel tour-problem-left">
       <div className="problem-panel-header">
         <div className="toolbar-eyebrow">Collaborative Challenge</div>
         <h2>{problem.title}</h2>

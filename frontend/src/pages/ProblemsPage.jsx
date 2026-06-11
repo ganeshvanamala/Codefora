@@ -104,7 +104,8 @@ export function ProblemsPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }, [selectedProblemId]);
+    window.dispatchEvent(new Event('tour-view-changed'));
+  }, [selectedProblemId, showRoomModal]);
 
   const filteredProblems = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -324,12 +325,12 @@ export function ProblemsPage() {
       {!selectedProblem ? (
         <section className="problems-overview-layout">
           <aside className="problem-list-panel problems-overview-filters">
-            <div className="problems-search-shell compact-search">
+            <div className="problems-search-shell compact-search tour-problems-search">
               <Search size={16} />
               <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search problems..." />
             </div>
 
-            <div className="filter-group">
+            <div className="filter-group tour-problems-difficulty">
               <span className="filter-label">Difficulty</span>
               <div className="filter-pills">
                 {["All", ...difficulties].map((difficulty) => (
@@ -345,7 +346,7 @@ export function ProblemsPage() {
               </div>
             </div>
 
-            <div className="filter-group">
+            <div className="filter-group tour-problems-tags">
               <span className="filter-label">Tags</span>
               <div className="filter-pills filter-pills--wrap">
                 {allTags.map((tag) => (
@@ -361,7 +362,7 @@ export function ProblemsPage() {
               </div>
             </div>
 
-            <label className="sort-mini">
+            <label className="sort-mini tour-problems-sort">
               Sort by
               <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
                 {sortOptions.map((option) => <option key={option}>{option}</option>)}
@@ -378,7 +379,7 @@ export function ProblemsPage() {
               <strong>{filteredProblems.length} problems</strong>
             </div>
 
-            <div className="problems-overview-grid">
+            <div className="problems-overview-grid tour-problems-list">
               {loadingProblems ? (
                 <div className="problems-empty-state">
                   <Loader2 className="animate-spin" size={48} />
@@ -400,7 +401,7 @@ export function ProblemsPage() {
                   <button
                     type="button"
                     key={problem.id}
-                    className="problem-overview-card"
+                    className="problem-overview-card tour-problem-card"
                     onClick={() => {
                       setSelectedProblemId(problem.id);
                       trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
@@ -432,7 +433,7 @@ export function ProblemsPage() {
         </section>
       ) : (
       <section className="problem-code-layout no-sidebar">
-        <section className="problem-info-panel">
+        <section className="problem-info-panel tour-problem-left">
           <div className="problem-info-scroll">
             <button
               type="button"
@@ -453,7 +454,7 @@ export function ProblemsPage() {
             </div>
 
             <button 
-              className="button button-primary collaborate-btn" 
+              className="button button-primary collaborate-btn tour-problem-collaborate" 
               onClick={() => {
                 setRoomName(`Problem Room: ${selectedProblem.title}`);
                 setShowRoomModal(true);
@@ -506,7 +507,7 @@ export function ProblemsPage() {
               <select className="run-file-select" value={selectedLanguage.file} onChange={() => {}} aria-label="Current file">
                 <option>{selectedLanguage.file}</option>
               </select>
-              <button className="button primary run-btn" onClick={handleCompile} disabled={isRunning}>
+              <button className="button primary run-btn tour-problem-run" onClick={handleCompile} disabled={isRunning}>
                 {isRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
                 <span>Run Code</span>
               </button>
@@ -515,6 +516,7 @@ export function ProblemsPage() {
             <label className="language-picker">
               Language
               <select
+                className="tour-problem-lang"
                 value={language}
                 onChange={(event) => {
                   setLanguage(event.target.value);
@@ -549,7 +551,7 @@ export function ProblemsPage() {
           </div>
 
           <div className="problem-action-row">
-            <button className="button primary" onClick={handleSubmit} disabled={isRunning}>
+            <button className="button primary tour-problem-submit" onClick={handleSubmit} disabled={isRunning}>
               Submit
             </button>
           </div>
@@ -623,7 +625,7 @@ export function ProblemsPage() {
 
       <button
         type="button"
-        className="problem-ai-fab"
+        className="problem-ai-fab tour-problem-ai-chat"
         onClick={() => setProblemAiOpen(!problemAiOpen)}
         aria-label={problemAiOpen ? "Close problem AI assistant" : "Open problem AI assistant"}
       >
@@ -684,7 +686,7 @@ export function ProblemsPage() {
               <h3>Create Problem Room</h3>
             </div>
             
-            <label className="profile-input-group">
+            <label className="profile-input-group tour-room-name">
               Room Name
               <input
                 autoFocus
@@ -694,7 +696,7 @@ export function ProblemsPage() {
               />
             </label>
 
-            <label className="profile-input-group">
+            <label className="profile-input-group tour-room-size">
               Room Size (Members)
               <select value={maxMembers} onChange={(e) => setMaxMembers(Number(e.target.value))}>
                 <option value="2">2 Members</option>
@@ -706,7 +708,7 @@ export function ProblemsPage() {
               </select>
             </label>
 
-            <label className="profile-input-group">
+            <label className="profile-input-group tour-room-mode">
               Room Mode
               <div className="room-mode-toggle" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "8px" }}>
                 <button
@@ -766,7 +768,7 @@ export function ProblemsPage() {
               >
                 Cancel
               </button>
-              <button type="submit" className="button primary" disabled={creating}>
+              <button type="submit" className="button primary tour-submit-room" disabled={creating}>
                 {creating ? "Creating..." : "Create Room"}
               </button>
             </div>

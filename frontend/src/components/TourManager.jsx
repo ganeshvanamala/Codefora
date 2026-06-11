@@ -1,0 +1,596 @@
+import React, { useState, useEffect } from 'react';
+import { Joyride, STATUS, EVENTS } from 'react-joyride';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { TourMascotTooltip } from './TourMascotTooltip';
+import { useAuth } from '../hooks/useAuth';
+
+const AutoClickBeacon = React.forwardRef((props, forwardedRef) => {
+  const localRef = React.useRef(null);
+
+  React.useEffect(() => {
+    // Instantly click ourselves so the event bubbles to react-joyride's listener
+    const timer = setTimeout(() => {
+      if (localRef.current) {
+        localRef.current.click();
+        localRef.current.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      }
+      if (props.onClick) {
+        props.onClick();
+      }
+    }, 10);
+    return () => clearTimeout(timer);
+  }, [props.onClick]);
+
+  return (
+    <span 
+      ref={(node) => {
+        localRef.current = node;
+        if (typeof forwardedRef === 'function') forwardedRef(node);
+        else if (forwardedRef) forwardedRef.current = node;
+      }} 
+      style={{ opacity: 0, pointerEvents: 'none', position: 'absolute', width: '1px', height: '1px' }} 
+      {...props} 
+    />
+  );
+});
+
+export const TourManager = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [run, setRun] = useState(() => {
+    if (sessionStorage.getItem('tourActive') === 'true') return true;
+    // Check if any generic or user-specific v12 key exists
+    let hasSeen = false;
+    for (let i = 0; i < localStorage.length; i++) {
+      if (localStorage.key(i)?.startsWith('codefora_tour_v12_')) {
+        hasSeen = true;
+        break;
+      }
+    }
+    return !hasSeen;
+  });
+  const [domReady, setDomReady] = useState(true);
+  const [mountJoyride, setMountJoyride] = useState(false);
+  const [tourViewVersion, setTourViewVersion] = useState(0);
+
+  // Sync run state to sessionStorage so it survives across pages
+  useEffect(() => {
+    if (run) {
+      sessionStorage.setItem('tourActive', 'true');
+    } else {
+      sessionStorage.removeItem('tourActive');
+    }
+  }, [run]);
+
+  // Wait for the heavy Code Room DOM to fully mount before starting the tour
+  useEffect(() => {
+    if (location.pathname.startsWith('/code/')) {
+      setDomReady(false);
+      const interval = setInterval(() => {
+        if (document.querySelector('.tour-users-panel') || document.querySelector('.tour-problem-left')) {
+          setDomReady(true);
+          // Auto-start the tour if it was active
+          if (sessionStorage.getItem('tourActive') === 'true') {
+            setRun(true);
+          }
+          clearInterval(interval);
+        }
+      }, 500);
+      return () => clearInterval(interval);
+    } else {
+      setDomReady(true);
+    }
+  }, [location.pathname]);
+
+  // Auto-start for first-time users
+  useEffect(() => {
+    // If the tour is already active (intra-page transitions), don't delay
+    if (sessionStorage.getItem('tourActive') === 'true') {
+      setMountJoyride(true);
+      return;
+    }
+
+    // Delay mounting Joyride to guarantee DOM elements are painted for first-time load
+    const timer = setTimeout(() => {
+      setMountJoyride(true);
+      // If we are auto-running for a first-time user, securely set the localStorage flag
+      if (run && sessionStorage.getItem('tourActive') !== 'true') {
+        const userId = user ? user.uid : 'guest';
+        localStorage.setItem(`codefora_tour_v12_${userId}`, 'true');
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [run, user]);
+
+  useEffect(() => {
+    const handleViewChange = () => {
+      setTourViewVersion(v => v + 1);
+      if (sessionStorage.getItem('tourActive') === 'true') {
+        setTimeout(() => setRun(true), 100);
+      }
+    };
+    window.addEventListener('tour-view-changed', handleViewChange);
+    return () => window.removeEventListener('tour-view-changed', handleViewChange);
+  }, []);
+
+  // We split the steps by page!
+  const homeSteps = [
+    {
+      target: '.tour-navbar',
+      content: 'Welcome to Codefora! This is your main navigation hub. You can access all tools from here.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '#tour-join-room',
+      content: 'Click here to join a room and start pair-programming with others!',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '#tour-practice-button',
+      content: 'Or click Practice to solve LeetCode-style algorithmic problems on your own!',
+      disableBeacon: true,
+      placement: 'bottom',
+    }
+  ];
+
+  const roomsSteps = [
+    {
+      target: '.tour-rooms-list',
+      content: 'You can join any of these active private and public rooms listed right here!',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-create-room',
+      content: 'Click this button to open the menu, then click Next!',
+      spotlightClicks: true,
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-room-name',
+      content: 'Enter a fun name for your room here.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-room-size',
+      content: 'Choose how many people can join the room (up to 10).',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-room-mode',
+      content: 'Choose Public (anyone can join) or Private (invite-only).',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-submit-room',
+      content: 'Click here to launch your room and enter the Code Editor!',
+      disableBeacon: true,
+      placement: 'bottom',
+      spotlightClicks: true,
+    }
+  ];
+
+  const problemsListSteps = [
+    {
+      target: '.tour-problems-search',
+      content: 'Use this search bar to quickly find specific algorithmic challenges.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-problems-difficulty',
+      content: 'Filter problems by Difficulty: Easy, Medium, or Hard.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-problems-tags',
+      content: 'Filter by specific Tags like Arrays, Dynamic Programming, or Graphs.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-problems-sort',
+      content: 'Sort the list by Trending, Newest, or Most Solved.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-problem-card',
+      content: 'Click on any problem card to open it! (Do NOT click Next, click the actual problem)',
+      spotlightClicks: true,
+      disableBeacon: true,
+      placement: 'top',
+    }
+  ];
+
+  const problemDetailsSteps = [
+    {
+      target: '.tour-problem-left',
+      content: 'This panel shows the problem statement, constraints, and sample test cases.',
+      disableBeacon: true,
+      placement: 'right',
+    },
+    {
+      target: '.tour-problem-ai-chat',
+      content: 'Click this floating button to ask the AI Assistant for hints if you get stuck.',
+      spotlightClicks: true,
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-problem-lang',
+      content: 'Select your preferred programming language from this dropdown.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-problem-run',
+      content: 'Run your code against the sample test cases to see if it works.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-problem-submit',
+      content: 'Submit your code against the hidden test cases to solve the problem and earn XP!',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-problem-collaborate',
+      content: 'Stuck? Click Collaborate & Solve to create a private Room with this problem loaded!',
+      spotlightClicks: true,
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-room-name',
+      content: 'You can customize the room name here.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-room-size',
+      content: 'Choose how many friends can join you.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-room-mode',
+      content: 'Make it public for anyone, or private for friends only.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-submit-room',
+      content: 'Click Create Room to jump into the collaborative editor!',
+      spotlightClicks: true,
+      disableBeacon: true,
+      placement: 'top',
+    }
+  ];
+
+  const playgroundSteps = [
+    {
+      target: '.tour-pg-file-create',
+      content: 'Welcome to the Playground! You can create new files for your project here.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-pg-file-import',
+      content: 'Import existing files from your computer to work on them.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-pg-file-export',
+      content: 'Download your entire project as a ZIP file when you are done.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-pg-tabs',
+      content: 'Switch between your open files easily using these tabs.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-pg-editor',
+      content: 'This is the code editor. Write your awesome code here!',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-pg-run',
+      content: 'Run your code to see the output in the console.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-pg-save',
+      content: 'Save your work to your profile so you can access it later.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-console',
+      content: 'The output of your code will appear down here in the Console.',
+      disableBeacon: true,
+      placement: 'top',
+    }
+  ];
+
+  const profileSteps = [
+    {
+      target: '.tour-profile-card',
+      content: 'This is your developer profile card. It shows your global rank and stats!',
+      disableBeacon: true,
+      placement: 'right',
+    },
+    {
+      target: '.tour-profile-settings',
+      content: 'Here you can update your personal information and preferences.',
+      disableBeacon: true,
+      placement: 'left',
+    },
+    {
+      target: '.tour-profile-name',
+      content: 'Change your display name so friends can find you.',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-profile-bio',
+      content: 'Write a short bio to introduce yourself to the community.',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-profile-community',
+      content: 'Select which community you belong to, Sider or Loop.',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-profile-avatar',
+      content: 'Customize your avatar or emotion to express yourself!',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-profile-works',
+      content: 'All the projects you save in the Playground will securely appear right here.',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-profile-activity',
+      content: 'Your recent activity, such as rooms joined or problems solved, will show up here.',
+      disableBeacon: true,
+      placement: 'top',
+    }
+  ];
+
+  const codeRoomSteps = [
+    {
+      target: '.tour-users-panel',
+      content: 'This is the Users Panel! You can see who is currently in the room and what their role is (Host, Editor, or Viewer).',
+      disableBeacon: true,
+      placement: 'right',
+    },
+    {
+      target: '.tour-chat-button',
+      content: 'Click this floating button to open the Room Chat & AI assistant!',
+      disableBeacon: true,
+      placement: 'left',
+      spotlightClicks: true,
+    },
+    {
+      target: '.tour-chat-attachment',
+      content: 'In the chat, you can click this file symbol to send fun stickers to your teammates!',
+      disableBeacon: true,
+      placement: 'left',
+      spotlightClicks: true,
+    },
+    {
+      target: '.tour-chat-ai',
+      content: 'You can also switch to the AI tab to ask our intelligent coding assistant for help debugging!',
+      disableBeacon: true,
+      placement: 'left',
+    },
+    {
+      target: '.tour-mic-button',
+      content: 'Click here to turn on your microphone and talk to your team with crystal-clear voice chat!',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-notes-button',
+      content: 'Need to explain an algorithm? Click Notes to open a shared whiteboard and scratchpad!',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-settings-button',
+      content: 'Room Hosts can click here to configure room permissions and anti-cheat settings.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-code-editor',
+      content: 'This is the synchronized code editor. Every keystroke is instantly shared with the room!',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-run-button',
+      content: 'Click Run to execute your code securely in our cloud environment.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-submit-button',
+      content: 'If this is a Problem Room, click Submit to test your code against all hidden test cases.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-console',
+      content: 'The output of your code, as well as compilation errors, will appear down here in the Console.',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-web-preview',
+      content: 'If you are writing HTML/CSS/JS, click Web Preview to see a live render of your website!',
+      disableBeacon: true,
+      placement: 'top',
+    },
+    {
+      target: '.tour-leave-button',
+      content: 'Click Leave to exit the room. You can always rejoin later using the Room ID.',
+      disableBeacon: true,
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-end-button',
+      content: 'If you are the Host, you can End the Room entirely to kick everyone out and delete the session.',
+      disableBeacon: true,
+      placement: 'bottom',
+    }
+  ];
+
+  // Pick the right steps based on current URL
+  let currentSteps = [];
+  if (location.pathname === '/home') currentSteps = homeSteps;
+  if (location.pathname === '/rooms') currentSteps = roomsSteps;
+  if (location.pathname === '/playground') currentSteps = playgroundSteps;
+  if (location.pathname === '/profile') currentSteps = profileSteps;
+  if (location.pathname.startsWith('/code/')) {
+    const isProblemRoom = document.querySelector('.tour-problem-left') !== null;
+    if (isProblemRoom) {
+      currentSteps = [
+        {
+          target: '.tour-problem-left',
+          content: 'This panel shows the problem statement, constraints, and sample test cases.',
+          disableBeacon: true,
+          placement: 'right',
+        },
+        {
+          target: '.tour-room-users-btn',
+          content: 'Click here to view all users in the room and see who is Host, Editor, or Viewer.',
+          disableBeacon: true,
+          placement: 'bottom',
+        },
+        ...codeRoomSteps.slice(1) // skip the .tour-users-panel since it's hidden in a modal
+      ];
+    } else {
+      currentSteps = codeRoomSteps;
+    }
+  }
+  if (location.pathname === '/problems') {
+    const isDetailsView = document.querySelector('.tour-problem-left') !== null || document.querySelector('.tour-problem-lang') !== null;
+    currentSteps = isDetailsView ? problemDetailsSteps : problemsListSteps;
+  }
+
+  const handleJoyrideCallback = (data) => {
+    const { status, type, step } = data;
+
+    // Manually scroll to elements inside custom overflow containers if needed
+    if (type === EVENTS.TOOLTIP || type === EVENTS.STEP_BEFORE) {
+      if (step?.target === '.tour-problem-collaborate') {
+        setTimeout(() => {
+          const btn = document.querySelector('.tour-problem-collaborate');
+          if (btn) btn.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }, 10);
+      }
+    }
+
+    // When the tour finishes on the current page...
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      setRun(false);
+      
+      // If they finished the Home tour, navigate to Rooms and start the Rooms tour!
+      if (location.pathname === '/home') {
+        navigate('/rooms');
+        setTimeout(() => setRun(true), 10); // Instant transition
+      }
+      // If they finished the Rooms tour, ONLY navigate to Problems if they didn't join/create a room!
+      else if (location.pathname === '/rooms') {
+        setTimeout(() => {
+          if (window.location.pathname === '/rooms') {
+            navigate('/problems');
+            setRun(true);
+          }
+        }, 10);
+      }
+      else if (location.pathname === '/problems') {
+        setTimeout(() => {
+          if (window.location.pathname === '/problems') {
+            navigate('/playground');
+            setRun(true);
+          }
+        }, 10);
+      }
+      else if (location.pathname === '/playground') {
+        setTimeout(() => {
+          if (window.location.pathname === '/playground') {
+            if (user) {
+              navigate('/profile');
+              setRun(true);
+            } else {
+              // Guests don't have a profile page to tour, so finish the tour completely!
+              localStorage.setItem('codefora_tour_v12_guest', 'true');
+              sessionStorage.removeItem('tourActive');
+              alert("Tour Complete! You're ready to code!");
+            }
+          }
+        }, 10);
+      }
+      // If they finished Profile, or Code Room, they are completely done!
+      else if (location.pathname === '/profile' || location.pathname.startsWith('/code/')) {
+        const userId = user ? user.uid : 'guest';
+        localStorage.setItem(`codefora_tour_${userId}`, 'true');
+        sessionStorage.removeItem('tourActive');
+        if (status === STATUS.FINISHED) {
+          alert("Tour Complete! You're ready to code!");
+        }
+      }
+    }
+  };
+
+  return (
+    <>
+      {mountJoyride && (
+        <Joyride
+          key={location.pathname}
+          callback={handleJoyrideCallback}
+          continuous
+          disableOverlayClose
+          disableScrolling
+          hideCloseButton
+          run={run && domReady}
+          showProgress
+          showSkipButton
+          steps={currentSteps}
+          tooltipComponent={TourMascotTooltip}
+          beaconComponent={AutoClickBeacon}
+          styles={{
+            options: {
+              zIndex: 9999999,
+              overlayColor: 'rgba(0, 0, 0, 0.75)',
+            },
+          }}
+        />
+      )}
+    </>
+  );
+};

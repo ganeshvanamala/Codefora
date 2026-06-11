@@ -235,7 +235,7 @@ export default function HomePage() {
                 programming skills through real-time collaboration.
               </p>
               <div style={{ display: 'flex', gap: '20px' }}>
-                <button onClick={() => navigate("/rooms")} style={{
+                <button id="tour-join-room" onClick={() => navigate("/rooms")} style={{
                   padding: '16px 36px', fontSize: '1.1rem', fontWeight: 'bold',
                   background: '#FF9100', color: '#1a0e00', border: 'none', borderRadius: '12px',
                   display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
@@ -246,7 +246,7 @@ export default function HomePage() {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                   Join Room
                 </button>
-                <button onClick={() => navigate("/problems")} style={{
+                <button id="tour-practice-button" onClick={() => navigate("/problems")} style={{
                   padding: '16px 36px', fontSize: '1.1rem', fontWeight: 'bold',
                   background: '#00E5FF', color: '#001a1d', border: 'none',
                   borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px',

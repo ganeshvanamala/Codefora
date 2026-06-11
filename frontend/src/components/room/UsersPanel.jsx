@@ -33,7 +33,7 @@ export function UsersPanel({
 
   return (
     <aside 
-      className="side-panel users-panel" 
+      className="side-panel users-panel tour-users-panel" 
       style={{ 
         display: "flex", 
         flexDirection: "column", 

@@ -541,7 +541,7 @@ export function RoomPage() {
 
         <button
           type="button"
-          className="floating-chat-button"
+          className="floating-chat-button tour-chat-button"
           onClick={() => setIsChatOpen(!isChatOpen)}
           title="Toggle Chat & AI"
         >

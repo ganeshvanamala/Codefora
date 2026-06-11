@@ -58,7 +58,7 @@ export function ConsolePanel({
 
 
   return (
-    <section className="console-panel" style={style}>
+    <section className="console-panel tour-console" style={style}>
       <div className="resize-handle" onMouseDown={onResizeStart} onDoubleClick={(event) => event.preventDefault()} aria-hidden="true" />
       <div className="console-panel-head">
         <div className="panel-tabs">
@@ -71,7 +71,7 @@ export function ConsolePanel({
           </button>
           {preview && (
             <button 
-              className={panelMode === "preview" ? "active" : ""} 
+              className={`${panelMode === "preview" ? "active" : ""} tour-web-preview`} 
               onClick={() => setPanelMode("preview")}
             >
               <Globe2 size={15} /> 

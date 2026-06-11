@@ -83,6 +83,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
             {hasProblem && (
               <button 
                 onClick={onShowUsersModal}
+                className="tour-room-users-btn"
                 style={{ 
                   display: "flex", alignItems: "center", gap: "6px", height: "26px", padding: "0 10px",
                   background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.15)",
@@ -237,6 +238,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
         {/* Mic Toggle pill */}
         <button
+          className="tour-mic-button"
           onClick={onMic}
           disabled={!permissions.canSpeak}
           style={{
@@ -261,6 +263,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
 
         {/* Notes Toggle pill */}
         <button
+          className="tour-notes-button"
           onClick={onShowNotes}
           style={{
             display: "flex",
@@ -310,6 +313,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         {/* Room Settings Pill */}
         <div style={{ position: "relative" }} ref={settingsRef}>
           <button
+            className="tour-settings-button"
             onClick={() => setShowSettings(!showSettings)}
             style={{
               display: "flex",
@@ -469,6 +473,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
 
         {/* Leave Room Pill */}
         <button
+          className="tour-leave-button"
           onClick={onLeaveRequest}
           style={{
             display: "flex",
@@ -493,6 +498,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
         {/* End Room Pill */}
         {permissions.isHost && (
           <button
+            className="tour-end-button"
             onClick={() => actions.endRoom()}
             style={{
               display: "flex",

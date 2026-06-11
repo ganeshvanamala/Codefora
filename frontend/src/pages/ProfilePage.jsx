@@ -132,7 +132,7 @@ export function ProfilePage() {
 
       <div className="profile-v2-container">
         {/* LEFT SIDEBAR */}
-        <aside className="profile-v2-sidebar">
+        <aside className="profile-v2-sidebar tour-profile-card">
           <div className="profile-v2-card main-profile-card">
             
             <div className="profile-avatar-container">
@@ -163,7 +163,7 @@ export function ProfilePage() {
             </div>
             <p className="profile-email">{user.email}</p>
 
-            <div className="profile-stats-grid">
+            <div className="profile-stats-grid tour-profile-stats">
               <div className="stat-box">
                 <Code className="stat-icon blue" size={18} />
                 <div className="stat-info">
@@ -259,7 +259,7 @@ export function ProfilePage() {
           </div>
 
           {/* SETTINGS */}
-          <div className="profile-v2-card settings-card">
+          <div className="profile-v2-card settings-card tour-profile-settings">
             <div className="card-header-flex">
               <div className="card-title">
                 <UserCircle2 size={16} /> PROFILE SETTINGS
@@ -274,7 +274,7 @@ export function ProfilePage() {
 
             <div className="settings-grid">
               <div className="settings-col">
-                <div className="input-group">
+                <div className="input-group tour-profile-name">
                   <label>Display Name</label>
                   <div className="input-with-icon">
                     <input 
@@ -287,7 +287,7 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="input-group">
+                <div className="input-group tour-profile-bio">
                   <label>Bio</label>
                   <div className="textarea-wrapper">
                     <textarea 
@@ -302,7 +302,7 @@ export function ProfilePage() {
               </div>
 
               <div className="settings-col">
-                <div className="input-group">
+                <div className="input-group tour-profile-community">
                   <label>Community</label>
                   <div className="community-selector-row">
                     <button 
@@ -322,7 +322,7 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="input-group">
+                <div className="input-group tour-profile-avatar">
                   <label>Avatar / Emotion</label>
                   <div className="avatar-setting-row">
                     <div className="avatar-preview-small">
@@ -359,7 +359,7 @@ export function ProfilePage() {
           {/* BOTTOM WIDGETS */}
           <div className="profile-v2-widgets">
             {/* MY WORKS SECTION */}
-            <div className="profile-v2-card widget-card" style={{ gridColumn: '1 / -1' }}>
+            <div className="profile-v2-card widget-card tour-profile-works" style={{ gridColumn: '1 / -1' }}>
               <div className="card-header-flex">
                 <div className="card-title">
                   <Folder size={16} className="text-blue" /> MY SAVED WORKS
@@ -439,7 +439,7 @@ export function ProfilePage() {
             </div>
 
             {/* RECENT ACTIVITY */}
-            <div className="profile-v2-card widget-card">
+            <div className="profile-v2-card widget-card tour-profile-activity">
               <div className="card-header-flex">
                 <div className="card-title">
                   <Flame size={16} className="text-orange" /> RECENT ACTIVITY

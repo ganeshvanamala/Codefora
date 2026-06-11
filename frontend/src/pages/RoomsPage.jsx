@@ -218,13 +218,13 @@ export function RoomsPage() {
                 <option value="Most Popular">Most Popular</option>
                 <option value="Least Full">Least Full</option>
               </select>
-              <button className="button button-primary" onClick={() => setShowCreateModal(true)} style={{ backgroundColor: '#FF7F3F', borderColor: '#FF7F3F', color: '#fff' }}>
+              <button className="button button-primary tour-create-room" onClick={() => setShowCreateModal(true)} style={{ backgroundColor: '#FF7F3F', borderColor: '#FF7F3F', color: '#fff' }}>
                 <Plus size={18} /> Create Room
               </button>
             </div>
           </div>
 
-          <div className="rooms-list">
+          <div className="rooms-list tour-rooms-list" style={{ minHeight: '300px' }}>
             {(() => {
               const filtered = rooms.filter((room) => {
                 const term = searchTerm.trim().toLowerCase();
@@ -315,7 +315,7 @@ export function RoomsPage() {
               <h3>Create a New Room</h3>
             </div>
             
-            <label className="profile-input-group">
+            <label className="profile-input-group tour-room-name">
               Room Name
               <input
                 autoFocus
@@ -325,7 +325,7 @@ export function RoomsPage() {
               />
             </label>
 
-            <label className="profile-input-group">
+            <label className="profile-input-group tour-room-size">
               Room Size (Members)
               <select value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} required>
                 <option value="" disabled>Select max size</option>
@@ -337,7 +337,7 @@ export function RoomsPage() {
 
             <label className="profile-input-group">
               Room Mode
-              <div className="room-mode-toggle" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "8px" }}>
+              <div className="room-mode-toggle tour-room-mode" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "8px" }}>
                 <button
                   type="button"
                   style={{

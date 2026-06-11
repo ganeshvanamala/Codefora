@@ -230,7 +230,7 @@ export function PlaygroundPage() {
             <h2 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '700' }}>Playground</h2>
           </div>
 
-          <div className="file-tools" style={{ 
+          <div className="file-tools tour-pg-file-create" style={{ 
             borderBottom: 'none', 
             background: 'transparent', 
             padding: 0,
@@ -265,7 +265,7 @@ export function PlaygroundPage() {
             <div className="file-tools-divider" style={{ margin: '0 4px' }} />
 
             <button 
-              className="button compact secondary create-file-button" 
+              className="button compact secondary create-file-button tour-pg-file-import" 
               onClick={() => fileInputRef.current?.click()}
               title="Import"
             >
@@ -279,7 +279,7 @@ export function PlaygroundPage() {
             />
 
             <button 
-              className="button compact secondary create-file-button" 
+              className="button compact secondary create-file-button tour-pg-file-export" 
               onClick={handleExport}
               disabled={isExporting}
               title="Export"
@@ -291,7 +291,7 @@ export function PlaygroundPage() {
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button 
-            className="button primary compact" 
+            className="button primary compact tour-pg-run" 
             onClick={handleRun} 
             disabled={isRunning}
             style={{ gap: '8px' }}
@@ -300,7 +300,7 @@ export function PlaygroundPage() {
             Run
           </button>
           <button 
-            className="button secondary compact" 
+            className="button secondary compact tour-pg-save" 
             onClick={handleSave}
             disabled={isSaving}
             style={{ gap: '8px' }}
@@ -311,7 +311,7 @@ export function PlaygroundPage() {
         </div>
       </div>
 
-      <div className="playground-tabs-row" style={{ 
+      <div className="playground-tabs-row tour-pg-tabs" style={{ 
         padding: '0 24px', 
         background: 'rgba(15, 23, 42, 0.4)', 
         borderBottom: '1px solid var(--glass-border)',
@@ -359,7 +359,7 @@ export function PlaygroundPage() {
       <div className="playground-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Editor Section */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
+          <div className="tour-pg-editor" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
             <Editor
               height="100%"
               theme="vs-dark"

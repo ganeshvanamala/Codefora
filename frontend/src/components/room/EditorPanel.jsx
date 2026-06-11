@@ -348,7 +348,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   }, [users]);
 
   return (
-    <section className="editor-panel">
+    <section className="editor-panel tour-editor">
       <div className="file-tabs">
         {files.map((file) => (
           <div className={`file-tab ${activeName === file.name ? "active" : ""}`} key={file.name}>
@@ -621,7 +621,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
           {/* Run Code Button */}
           <button 
-            className="button compact secondary"
+            className="button compact secondary tour-run-button"
             style={{
               height: '30px',
               borderRadius: '6px',
@@ -647,7 +647,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
           {/* Submit Button */}
           <button 
-            className="button compact"
+            className="button compact tour-submit-button"
             style={{
               height: '30px',
               borderRadius: '6px',
@@ -673,7 +673,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         </div>
       </div>
 
-      <div className="editor-wrap">
+      <div className="editor-wrap tour-code-editor">
         <Editor
           height="100%"
           theme={theme === "dark" ? "vs-dark" : "light"}

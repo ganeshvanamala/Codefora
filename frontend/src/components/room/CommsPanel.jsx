@@ -102,7 +102,7 @@ export function CommsPanel({
         <div className="comms-header-right">
           <button
             type="button"
-            className="ai-toggle-pill"
+            className="ai-toggle-pill tour-chat-ai"
             onClick={() => onSelectTab(showChat ? "ai" : "chat")}
           >
             {showChat ? (
@@ -189,7 +189,7 @@ export function CommsPanel({
             <div className="sticker-picker-wrap">
               <button
                 type="button"
-                className="chat-tool-btn-cyber"
+                className="chat-tool-btn-cyber tour-chat-attachment"
                 disabled={!permissions.canChat}
                 onClick={() => setShowStickers((current) => !current)}
                 aria-label="Open stickers"
