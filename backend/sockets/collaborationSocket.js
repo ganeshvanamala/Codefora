@@ -113,7 +113,8 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
           role = "Member"; // Downgrade if the host role was already transferred away
         }
       } else {
-        role = room.visibility === "public" ? "Viewer" : "Member";
+        const isPublicRoom = room.visibility === "public" || room.isPublic === true;
+        role = isPublicRoom ? "Viewer" : "Member";
       }
 
       // Restore color from memory or assign a new one
