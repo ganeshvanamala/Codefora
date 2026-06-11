@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createCompilerRoutes } from "./compiler.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 
-export function createApiRoutes({ roomController, executionController, aiController, emotionController, profileController, accountController, compilerController, adminController, problemController, feedbackController }) {
+export function createApiRoutes({ roomController, executionController, aiController, emotionController, profileController, compilerController, adminController, problemController, feedbackController }) {
   const router = Router();
 
   router.get("/health", (_request, response) => response.json({ ok: true }));
@@ -21,10 +21,6 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.post("/profiles/:userId/save-work", profileController.saveWork);
     router.post("/profiles/:userId/solve", profileController.solveProblem);
     router.get("/profiles/:userId/works", profileController.listWorks);
-  }
-  if (accountController) {
-    router.post("/auth/signup", accountController.signup);
-    router.post("/auth/login", accountController.login);
   }
   if (compilerController) {
     router.use("/compiler", createCompilerRoutes(compilerController));
