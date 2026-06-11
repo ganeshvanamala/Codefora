@@ -301,6 +301,34 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       name: currentUser?.name || 'Anonymous',
       color: color
     });
+
+    // Dynamically inject box-shadow glows that match the injected border-color
+    const updateCursorGlows = () => {
+      if (!yjsRefs.current.provider) return;
+      const states = yjsRefs.current.provider.awareness.getStates();
+      let css = '';
+      states.forEach((state, clientId) => {
+        if (state.user && state.user.color) {
+          css += `.yRemoteSelection-${clientId} { box-shadow: 0 0 5px ${state.user.color}, 0 0 10px ${state.user.color} !important; }\n`;
+        }
+      });
+      let styleEl = document.getElementById('yjs-custom-glows');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'yjs-custom-glows';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = css;
+    };
+
+    yjsRefs.current.provider.awareness.on('change', updateCursorGlows);
+    updateCursorGlows();
+
+    return () => {
+      if (yjsRefs.current.provider) {
+        yjsRefs.current.provider.awareness.off('change', updateCursorGlows);
+      }
+    };
   }, [users]);
 
   return (

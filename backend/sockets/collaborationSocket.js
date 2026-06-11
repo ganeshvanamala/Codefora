@@ -115,22 +115,38 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       } else {
         role = room.visibility === "public" ? "Viewer" : "Member";
       }
+
+      // Restore color from memory or assign a new one
+      room.userColors = room.userColors || {};
+      if (!room.userColors[authKey] || isHost) {
+        // Force update host color just in case, but usually Host is FF7A18
+        room.userColors[authKey] = assignUserColor(role, room.users);
+      }
       
-      const user = {
-        socketId: socket.id,
-        name: profile?.displayName || cleanName,
-        role,
-        mic: false,
-        speaking: false,
-        color: assignUserColor(role, room.users),
-        joinedAt: Date.now(),
-        userId: requestUserId || null,
-        sessionId: requestSessionId || null,
-        bio: profile?.bio || null,
-        photoURL: profile?.photoURL || null,
-        emotionId: profile?.emotionId || null,
-        stats: profile?.stats || null
-      };
+      const existingUser = room.users.find(u => u.socketId === socket.id);
+      if (existingUser) {
+        existingUser.name = profile?.displayName || cleanName;
+        existingUser.role = role;
+        existingUser.color = room.userColors[authKey];
+        existingUser.joinedAt = Date.now();
+      } else {
+        const user = {
+          socketId: socket.id,
+          name: profile?.displayName || cleanName,
+          role,
+          mic: false,
+          speaking: false,
+          color: room.userColors[authKey],
+          joinedAt: Date.now(),
+          userId: requestUserId || null,
+          sessionId: requestSessionId || null,
+          bio: profile?.bio || null,
+          photoURL: profile?.photoURL || null,
+          emotionId: profile?.emotionId || null,
+          stats: profile?.stats || null
+        };
+        room.users.push(user);
+      }
 
       socket.join(room.id);
       socketUsers.set(socket.id, room.id);
