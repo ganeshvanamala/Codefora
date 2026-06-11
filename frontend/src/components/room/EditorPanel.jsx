@@ -258,6 +258,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
     // Track local cursor movements to broadcast so the UsersPanel can show "typing in main.js:4"
     const disposables = [
       editorInstance.onDidChangeModelContent(() => {
+        if (!editorInstance.hasTextFocus()) return; // Prevent echoing Yjs remote changes
         const position = editorInstance.getPosition();
         if (!position || !activeFile.name) return;
         socket.emit("typing", {
@@ -268,6 +269,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         });
       }),
       editorInstance.onDidChangeCursorPosition((event) => {
+        if (!editorInstance.hasTextFocus()) return; // Only emit if the user is actively focused
         if (!activeFile.name) return;
         socket.emit("cursor:update", {
           roomId,
