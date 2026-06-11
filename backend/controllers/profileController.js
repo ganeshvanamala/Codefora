@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const localProfilesPath = path.join(__dirname, "../data/manualUsers.json");
+const localWorksPath = path.join(__dirname, "../data/localWorks.json");
 
 async function readLocalUsers() {
   try {
@@ -17,6 +18,19 @@ async function readLocalUsers() {
 async function writeLocalUsers(users) {
   await fs.mkdir(path.dirname(localProfilesPath), { recursive: true });
   await fs.writeFile(localProfilesPath, JSON.stringify(users, null, 2));
+}
+
+async function readLocalWorks() {
+  try {
+    return JSON.parse(await fs.readFile(localWorksPath, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+async function writeLocalWorks(works) {
+  await fs.mkdir(path.dirname(localWorksPath), { recursive: true });
+  await fs.writeFile(localWorksPath, JSON.stringify(works, null, 2));
 }
 
 export function createProfileController() {
@@ -74,23 +88,21 @@ export function createProfileController() {
       
       const newWork = {
         ...work,
-        id: `work-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        createdAt: Date.now()
+        ownerId: userId,
+        id: work.id || `work-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        createdAt: work.createdAt || Date.now(),
+        updatedAt: Date.now()
       };
 
       try {
         if (!db || db.isMock) {
-          const users = await readLocalUsers();
-          if (!users[userId]) users[userId] = { profile: {}, works: [] };
-          if (!users[userId].works) users[userId].works = [];
-          users[userId].works.push(newWork);
-          await writeLocalUsers(users);
+          const works = await readLocalWorks();
+          works[newWork.id] = newWork;
+          await writeLocalWorks(works);
           return response.json({ ok: true, work: newWork });
         }
 
-        await db.collection("users").doc(userId).set({
-          works: admin.firestore.FieldValue.arrayUnion(newWork)
-        }, { merge: true });
+        await db.collection("works").doc(newWork.id).set(newWork, { merge: true });
         
         return response.json({ ok: true, work: newWork });
       } catch (error) {
@@ -104,15 +116,24 @@ export function createProfileController() {
       if (!userId) return response.status(400).json({ error: "Missing userId" });
       try {
         if (!db || db.isMock) {
-          const users = await readLocalUsers();
-          const user = users[userId] || {};
-          return response.json(user.works || []);
+          const works = await readLocalWorks();
+          const userWorks = Object.values(works)
+            .filter(w => w.ownerId === userId)
+            .sort((a, b) => b.createdAt - a.createdAt);
+          return response.json(userWorks);
         }
 
-        const doc = await db.collection("users").doc(userId).get();
-        if (!doc.exists) return response.json([]);
-        const data = doc.data() || {};
-        return response.json(data.works || []);
+        const querySnapshot = await db.collection("works")
+          .where("ownerId", "==", userId)
+          .get();
+          
+        const works = [];
+        querySnapshot.forEach(doc => works.push(doc.data()));
+        
+        // Sort descending by createdAt
+        works.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        
+        return response.json(works);
       } catch (error) {
         console.warn(`Works list failed: ${error.message}`);
         return response.status(500).json({ error: error.message });
