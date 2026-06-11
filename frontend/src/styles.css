@@ -8140,15 +8140,14 @@ label {
 
 .yRemoteSelectionHead {
   position: absolute;
-  border-left: 2px solid var(--yjs-color) !important;
+  border-left-width: 2px !important;
+  border-left-style: solid !important;
   border-top: none !important;
   border-bottom: none !important;
   border-right: none !important;
-  box-shadow: 0 0 5px var(--yjs-color), 0 0 10px var(--yjs-color) !important;
   animation: yjsBlink 1s step-end infinite !important;
   margin-left: -1px; /* Center the cursor */
   box-sizing: border-box;
 }
 
 .yRemoteSelectionHead::after { display: none !important; }
-
