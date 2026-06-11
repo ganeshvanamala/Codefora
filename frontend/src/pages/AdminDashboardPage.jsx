@@ -134,13 +134,13 @@ export default function AdminDashboardPage() {
 
 
 
-  const reports = [
-    { type: 'Toxic Bio', user: 'bad_user_01', reason: 'Inappropriate bio', time: '5m ago' },
-    { type: 'Spam Room', user: 'spam_room_77', reason: 'Spamming links', time: '12m ago' },
-    { type: 'Toxic Username', user: 'noob_king_$$', reason: 'Offensive name', time: '18m ago' },
-    { type: 'Room Misuse', user: 'CF-90', reason: 'Rule violation', time: '21m ago' },
-    { type: 'Toxic Bio', user: 'abusive_user', reason: 'Harassment', time: '25m ago' },
-  ];
+  const reports = feedbackList.filter(f => f.type === 'report').map(f => ({
+    type: 'User Report',
+    user: f.username || 'Unknown',
+    reason: f.text || 'No reason provided',
+    time: new Date(f.timestamp).toLocaleString(),
+    id: f.id
+  }));
 
   // The activityLog state is defined above, removing the static duplicate.
 
@@ -569,10 +569,10 @@ export default function AdminDashboardPage() {
                       </thead>
                       <tbody>
                         {reports.map((r, i) => (
-                          <tr key={i}>
+                          <tr key={r.id || i}>
                             <td style={{ color: '#FF5555' }}>{r.type}</td>
                             <td>{r.user}</td>
-                            <td>{r.reason}</td>
+                            <td title={r.reason}>{r.reason.length > 30 ? r.reason.substring(0, 30) + "..." : r.reason}</td>
                             <td>{r.time}</td>
                             <td>
                               <div className="admin-table-actions">
@@ -588,7 +588,7 @@ export default function AdminDashboardPage() {
                   </div>
                   {activeTab === 'Reports' && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
-                      <span>Showing 5 of 68 reports</span>
+                      <span>Showing {reports.length} reports</span>
                       <button className="admin-link-button" style={{ color: '#FF9100' }}>Load More</button>
                     </div>
                   )}
