@@ -230,7 +230,7 @@ export function UsersPanel({
                   </div>
                   {user.isTyping && user.currentFile && (
                     <span style={{ fontSize: "10px", color: "var(--primary-orange)", fontWeight: "500", marginTop: "4px", wordBreak: "break-all" }}>
-                      typing in {user.currentFile}...
+                      typing in {user.currentFile}
                     </span>
                   )}
                 </div>
