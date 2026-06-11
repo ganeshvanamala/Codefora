@@ -228,7 +228,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
     
     const binding = new MonacoBinding(type, editorInstance.getModel(), new Set([editorInstance]), provider.awareness);
 
-    // Assign user color and name to the cursor
+    // Assign user color and name to the cursor initially
     const currentUser = users.find(u => u.socketId === socket.id);
     const color = currentUser?.color || (currentUser?.role === "Host" ? "#ffb000" : "#8b5cf6");
     provider.awareness.setLocalStateField('user', {
@@ -288,7 +288,19 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         yjsRefs.current = { doc: null, provider: null, binding: null, saveTimeout: null };
       }
     };
-  }, [editorInstance, activeFile?.name, roomId, users]);
+  }, [editorInstance, activeFile?.name, roomId]);
+
+  // Keep awareness up to date without destroying the connection
+  useEffect(() => {
+    if (!yjsRefs.current.provider) return;
+    const currentUser = users.find(u => u.socketId === socket.id);
+    const color = currentUser?.color || (currentUser?.role === "Host" ? "#ffb000" : "#8b5cf6");
+    
+    yjsRefs.current.provider.awareness.setLocalStateField('user', {
+      name: currentUser?.name || 'Anonymous',
+      color: color
+    });
+  }, [users]);
 
   return (
     <section className="editor-panel">
