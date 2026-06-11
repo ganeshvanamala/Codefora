@@ -136,9 +136,12 @@ export default function AdminDashboardPage() {
 
   const reports = feedbackList.filter(f => f.type === 'report').map(f => ({
     type: 'User Report',
-    user: f.username || 'Unknown',
-    reason: f.text || 'No reason provided',
-    time: new Date(f.timestamp).toLocaleString(),
+    reportedName: f.reportedName || f.username || 'Unknown',
+    reportedId: f.reportedId || 'No ID',
+    reporterName: f.reporterName || 'Unknown',
+    reporterId: f.reporterId || 'No ID',
+    reason: f.message || 'No reason provided',
+    time: f.timestamp ? new Date(f.timestamp).toLocaleString() : (f.createdAt ? new Date(f.createdAt).toLocaleString() : 'Just now'),
     id: f.id
   }));
 
@@ -562,6 +565,7 @@ export default function AdminDashboardPage() {
                         <tr>
                           <th>Type</th>
                           <th>Reported User</th>
+                          <th>Reported By</th>
                           <th>Reason</th>
                           <th>Time</th>
                           <th>Actions</th>
@@ -571,7 +575,14 @@ export default function AdminDashboardPage() {
                         {reports.map((r, i) => (
                           <tr key={r.id || i}>
                             <td style={{ color: '#FF5555' }}>{r.type}</td>
-                            <td>{r.user}</td>
+                            <td>
+                              <div>{r.reportedName}</div>
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{r.reportedId}</div>
+                            </td>
+                            <td>
+                              <div>{r.reporterName}</div>
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{r.reporterId}</div>
+                            </td>
                             <td title={r.reason}>{r.reason.length > 30 ? r.reason.substring(0, 30) + "..." : r.reason}</td>
                             <td>{r.time}</td>
                             <td>

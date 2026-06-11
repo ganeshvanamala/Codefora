@@ -286,7 +286,14 @@ export function UsersPanel({
                       fetch(API_URL + "/api/feedback", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ type: "report", username: user.name, text: `Reported User ID: ${user.userId}` })
+                        body: JSON.stringify({ 
+                          type: "report", 
+                          message: `User Abuse Report`,
+                          reportedId: user.userId || user.socketId,
+                          reportedName: user.name,
+                          reporterId: localStorage.getItem("userId") || "Unknown",
+                          reporterName: localStorage.getItem("username") || "Anonymous"
+                        })
                       }).then(() => alert("User reported to admin.")).catch(console.error);
                     }}
                   >
