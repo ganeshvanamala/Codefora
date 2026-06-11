@@ -70,7 +70,7 @@ export function UsersPanel({
           gap: "4px", 
           flex: 1, 
           overflowY: "auto",
-          flexShrink: 0
+          minHeight: 0
         }}
       >
         {users.map((user) => (
