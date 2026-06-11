@@ -1,5 +1,11 @@
 import { cryptoId } from "../utils/id.js";
 
+const MEMBER_COLORS = ["#8BE9FD", "#FFB86C", "#FF79C6", "#BD93F9", "#50FA7B", "#F1FA8C", "#FF5555", "#00E676", "#D500F9", "#00B0FF", "#FF3D00"];
+const assignUserColor = (role) => {
+  if (role === "Host") return "#FF7A18";
+  return MEMBER_COLORS[Math.floor(Math.random() * MEMBER_COLORS.length)];
+};
+
 export function registerCollaborationSocket(io, { roomRepository, roomService, profileController }) {
   const socketUsers = new Map();
   const userIdToRoomId = new Map(); // Track authenticated userId -> roomId to prevent multi-room access
@@ -104,7 +110,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         role,
         mic: false,
         speaking: false,
-        color: role === "Host" ? "#FF7A18" : role === "Member" ? "#8BE9FD" : "#50FA7B",
+        color: assignUserColor(role),
         joinedAt: Date.now(),
         userId: requestUserId || null,
         sessionId: requestSessionId || null,
@@ -123,7 +129,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         room.users.forEach(u => {
           if (u.role === "Host" && u.userId !== requestUserId) {
             u.role = "Member";
-            u.color = "#8BE9FD";
+            u.color = assignUserColor("Member");
           }
         });
       }
@@ -184,7 +190,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       if (!room || !user || !target || user.role !== "Host" || target.socketId === user.socketId) return;
       if (role === "Host") {
         user.role = "Member";
-        user.color = "#8BE9FD";
+        user.color = assignUserColor("Member");
         target.role = "Host";
         target.color = "#FF7A18";
         target.mic = Boolean(target.mic);
@@ -194,7 +200,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       } else {
         if (target.role === "Host") return;
         target.role = role === "Member" ? "Member" : "Viewer";
-        target.color = target.role === "Member" ? "#8BE9FD" : "#50FA7B";
+        target.color = assignUserColor(target.role);
       }
       if (target.role === "Viewer") {
         target.mic = false;

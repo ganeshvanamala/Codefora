@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { socket } from "../../lib/socket";
+import { API_URL } from "../../config";
 import JSZip from "jszip";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
@@ -217,9 +218,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
     const doc = new Y.Doc();
     
     // Connect to the backend Yjs WebSocket server
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Use the backend API_URL origin if available, or just the same host
-    const wsUrl = `${wsProtocol}//${window.location.host}/yjs`;
+    const wsUrl = API_URL.replace(/^http/, 'ws') + '/yjs';
     
     // Use a unique room name for this file in this room
     const docRoomName = `room-${roomId}-file-${activeFile.name.replace(/[^a-zA-Z0-9-.]/g, '')}`;
