@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Headphones, Mic, MicOff, MoreVertical, Shield, UserX, MessageSquare } from "lucide-react";
+import { Check, Headphones, Mic, MicOff, MoreVertical, Shield, UserX, MessageSquare, Volume2 } from "lucide-react";
 import { getInviteCode } from "../../lib/navigation";
 import { API_URL } from "../../config";
 
