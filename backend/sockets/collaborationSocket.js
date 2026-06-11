@@ -2,9 +2,10 @@ import { cryptoId } from "../utils/id.js";
 
 const MEMBER_COLORS = ["#8BE9FD", "#FFB86C", "#FF79C6", "#BD93F9", "#50FA7B", "#F1FA8C", "#FF5555", "#00E676"];
 const assignUserColor = (role, existingUsers = []) => {
+  if (role === "Viewer") return "#4B5563"; // Neutral gray for viewers
   if (role === "Host") return "#FF7A18";
   
-  // Find a color that isn't currently used by any member in the room
+  // Find a color that isn't currently used by any member or host in the room
   const usedColors = new Set(existingUsers.map(u => u.color));
   const availableColors = MEMBER_COLORS.filter(color => !usedColors.has(color));
   
