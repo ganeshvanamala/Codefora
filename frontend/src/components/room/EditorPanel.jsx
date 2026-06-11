@@ -255,7 +255,31 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       }
     });
 
+    // Track local cursor movements to broadcast so the UsersPanel can show "typing in main.js:4"
+    const disposables = [
+      editorInstance.onDidChangeModelContent(() => {
+        const position = editorInstance.getPosition();
+        if (!position || !activeFile.name) return;
+        socket.emit("typing", {
+          roomId,
+          fileName: activeFile.name,
+          position: { lineNumber: position.lineNumber, column: position.column },
+          isTyping: true
+        });
+      }),
+      editorInstance.onDidChangeCursorPosition((event) => {
+        if (!activeFile.name) return;
+        socket.emit("cursor:update", {
+          roomId,
+          fileName: activeFile.name,
+          position: { lineNumber: event.position.lineNumber, column: event.position.column },
+          isTyping: false
+        });
+      })
+    ];
+
     return () => {
+      disposables.forEach((disposable) => disposable.dispose());
       if (yjsRefs.current.provider) {
         yjsRefs.current.provider.destroy();
         yjsRefs.current.binding.destroy();
