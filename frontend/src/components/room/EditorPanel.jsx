@@ -258,14 +258,16 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
     // Track local cursor movements to broadcast so the UsersPanel can show "typing in main.js:4"
     const disposables = [
       editorInstance.onKeyDown(() => {
-        const position = editorInstance.getPosition();
-        if (!position || !activeFile.name) return;
-        socket.emit("typing", {
-          roomId,
-          fileName: activeFile.name,
-          position: { lineNumber: position.lineNumber, column: position.column },
-          isTyping: true
-        });
+        setTimeout(() => {
+          const position = editorInstance.getPosition();
+          if (!position || !activeFile.name) return;
+          socket.emit("typing", {
+            roomId,
+            fileName: activeFile.name,
+            position: { lineNumber: position.lineNumber, column: position.column },
+            isTyping: true
+          });
+        }, 0);
       }),
       editorInstance.onDidChangeCursorPosition((event) => {
         // reason === 3 means Explicit (user clicked or used arrow keys)
@@ -309,7 +311,13 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       let css = '';
       states.forEach((state, clientId) => {
         if (state.user && state.user.color) {
-          css += `.yRemoteSelection-${clientId} { box-shadow: 0 0 5px ${state.user.color}, 0 0 10px ${state.user.color} !important; }\n`;
+          css += `
+            .yRemoteSelection-${clientId} { background-color: ${state.user.color}33 !important; }
+            .yRemoteSelectionHead-${clientId} { 
+              border-left-color: ${state.user.color} !important; 
+              box-shadow: 0 0 5px ${state.user.color}, 0 0 10px ${state.user.color} !important; 
+            }
+          `;
         }
       });
       let styleEl = document.getElementById('yjs-custom-glows');
