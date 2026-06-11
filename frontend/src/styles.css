@@ -8140,7 +8140,7 @@ label {
 
 .yRemoteSelectionHead {
   position: absolute;
-  border-left-width: 2px !important;
+  border-left-width: 3px !important;
   border-left-style: solid !important;
   border-top: none !important;
   border-bottom: none !important;

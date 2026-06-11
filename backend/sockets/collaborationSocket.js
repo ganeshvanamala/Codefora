@@ -1,6 +1,6 @@
 import { cryptoId } from "../utils/id.js";
 
-const MEMBER_COLORS = ["#8BE9FD", "#FFB86C", "#FF79C6", "#BD93F9", "#50FA7B", "#F1FA8C", "#FF5555", "#00E676"];
+const MEMBER_COLORS = ["#00E5FF", "#FF9100", "#FF007F", "#B400FF", "#00FF00", "#FFEA00", "#FF0000", "#00FFCC"];
 const assignUserColor = (role, existingUsers = []) => {
   if (role === "Viewer") return "#4B5563"; // Neutral gray for viewers
   if (role === "Host") return "#FF7A18";

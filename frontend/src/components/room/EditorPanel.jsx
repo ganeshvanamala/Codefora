@@ -281,7 +281,15 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       })
     ];
 
+    const handleBeforeUnload = () => {
+      if (yjsRefs.current.provider) {
+        yjsRefs.current.provider.disconnect();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       disposables.forEach((disposable) => disposable.dispose());
       if (yjsRefs.current.provider) {
         yjsRefs.current.provider.destroy();
@@ -315,7 +323,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
             .yRemoteSelection-${clientId} { background-color: ${state.user.color}33 !important; }
             .yRemoteSelectionHead-${clientId} { 
               border-left-color: ${state.user.color} !important; 
-              box-shadow: 0 0 5px ${state.user.color}, 0 0 10px ${state.user.color} !important; 
+              box-shadow: 0 0 8px ${state.user.color}, 0 0 16px ${state.user.color} !important; 
             }
           `;
         }
