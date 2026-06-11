@@ -4,8 +4,10 @@ export const TourMascotTooltip = ({
   continuous,
   index,
   step,
+  isLastStep,
   backProps,
   closeProps,
+  skipProps,
   primaryProps,
   tooltipProps,
 }) => {
@@ -66,7 +68,7 @@ export const TourMascotTooltip = ({
       {/* Buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
         <button
-          {...closeProps}
+          {...skipProps}
           style={{
             background: 'transparent',
             border: 'none',
@@ -109,7 +111,7 @@ export const TourMascotTooltip = ({
               fontWeight: 600
             }}
           >
-            {continuous && index < 6 ? 'Next ➔' : 'Finish ✔️'}
+            {isLastStep ? 'Finish ✔️' : 'Next ➔'}
           </button>
         </div>
       </div>
