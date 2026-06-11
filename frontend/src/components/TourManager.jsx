@@ -526,6 +526,7 @@ export const TourManager = () => {
 
   const handleJoyrideCallback = (data) => {
     const { status, type, step, action } = data;
+    console.log(`[Joyride Event] Type: ${type}, Status: ${status}, Action: ${action}`);
 
     // Manually scroll to elements inside custom overflow containers if needed
     if (type === EVENTS.TOOLTIP || type === EVENTS.STEP_BEFORE) {
