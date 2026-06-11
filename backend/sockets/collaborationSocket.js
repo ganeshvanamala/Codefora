@@ -123,30 +123,21 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         room.userColors[authKey] = assignUserColor(role, room.users);
       }
       
-      const existingUser = room.users.find(u => u.socketId === socket.id);
-      if (existingUser) {
-        existingUser.name = profile?.displayName || cleanName;
-        existingUser.role = role;
-        existingUser.color = room.userColors[authKey];
-        existingUser.joinedAt = Date.now();
-      } else {
-        const user = {
-          socketId: socket.id,
-          name: profile?.displayName || cleanName,
-          role,
-          mic: false,
-          speaking: false,
-          color: room.userColors[authKey],
-          joinedAt: Date.now(),
-          userId: requestUserId || null,
-          sessionId: requestSessionId || null,
-          bio: profile?.bio || null,
-          photoURL: profile?.photoURL || null,
-          emotionId: profile?.emotionId || null,
-          stats: profile?.stats || null
-        };
-        room.users.push(user);
-      }
+      const user = {
+        socketId: socket.id,
+        name: profile?.displayName || cleanName,
+        role,
+        mic: false,
+        speaking: false,
+        color: room.userColors[authKey],
+        joinedAt: Date.now(),
+        userId: requestUserId || null,
+        sessionId: requestSessionId || null,
+        bio: profile?.bio || null,
+        photoURL: profile?.photoURL || null,
+        emotionId: profile?.emotionId || null,
+        stats: profile?.stats || null
+      };
 
       socket.join(room.id);
       socketUsers.set(socket.id, room.id);
@@ -162,7 +153,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         });
       }
 
-      // Final cleanup
+      // Final cleanup to prevent duplicates
       room.users = room.users.filter(u => u.socketId !== socket.id && (!requestUserId || u.userId !== requestUserId));
 
       room.users.push(user);
