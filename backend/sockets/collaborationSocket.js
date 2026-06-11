@@ -1,9 +1,20 @@
 import { cryptoId } from "../utils/id.js";
 
-const MEMBER_COLORS = ["#8BE9FD", "#FFB86C", "#FF79C6", "#BD93F9", "#50FA7B", "#F1FA8C", "#FF5555", "#00E676", "#D500F9", "#00B0FF", "#FF3D00"];
-const assignUserColor = (role) => {
+const MEMBER_COLORS = ["#8BE9FD", "#FFB86C", "#FF79C6", "#BD93F9", "#50FA7B", "#F1FA8C", "#FF5555", "#00E676"];
+const assignUserColor = (role, existingUsers = []) => {
   if (role === "Host") return "#FF7A18";
-  return MEMBER_COLORS[Math.floor(Math.random() * MEMBER_COLORS.length)];
+  
+  // Find a color that isn't currently used by any member in the room
+  const usedColors = new Set(existingUsers.map(u => u.color));
+  const availableColors = MEMBER_COLORS.filter(color => !usedColors.has(color));
+  
+  // If all colors are used, fallback to random from the full palette
+  if (availableColors.length === 0) {
+    return MEMBER_COLORS[Math.floor(Math.random() * MEMBER_COLORS.length)];
+  }
+  
+  // Return a random color from the available (unused) ones
+  return availableColors[Math.floor(Math.random() * availableColors.length)];
 };
 
 export function registerCollaborationSocket(io, { roomRepository, roomService, profileController }) {
@@ -110,7 +121,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         role,
         mic: false,
         speaking: false,
-        color: assignUserColor(role),
+        color: assignUserColor(role, room.users),
         joinedAt: Date.now(),
         userId: requestUserId || null,
         sessionId: requestSessionId || null,
@@ -129,7 +140,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         room.users.forEach(u => {
           if (u.role === "Host" && u.userId !== requestUserId) {
             u.role = "Member";
-            u.color = assignUserColor("Member");
+            u.color = assignUserColor("Member", room.users);
           }
         });
       }
@@ -190,7 +201,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       if (!room || !user || !target || user.role !== "Host" || target.socketId === user.socketId) return;
       if (role === "Host") {
         user.role = "Member";
-        user.color = assignUserColor("Member");
+        user.color = assignUserColor("Member", room.users);
         target.role = "Host";
         target.color = "#FF7A18";
         target.mic = Boolean(target.mic);
@@ -200,7 +211,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       } else {
         if (target.role === "Host") return;
         target.role = role === "Member" ? "Member" : "Viewer";
-        target.color = assignUserColor(target.role);
+        target.color = assignUserColor(target.role, room.users);
       }
       if (target.role === "Viewer") {
         target.mic = false;

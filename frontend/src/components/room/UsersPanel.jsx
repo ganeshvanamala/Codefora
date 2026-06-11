@@ -79,10 +79,11 @@ export function UsersPanel({
             key={user.socketId}
             style={{
               background: "#121822",
-              border: "1px solid rgba(255, 255, 255, 0.05)",
+              border: `1px solid ${user.color || "rgba(255, 255, 255, 0.05)"}`,
+              boxShadow: `0 0 15px ${user.color}20`,
               borderRadius: "12px",
               position: "relative",
-              marginBottom: "4px",
+              marginBottom: "8px",
               padding: "10px"
             }}
           >

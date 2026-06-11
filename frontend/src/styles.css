@@ -8132,6 +8132,23 @@ label {
 
 
 
-/* Hide Yjs Monaco remote selection names */
+/* Yjs Monaco Remote Selection Styling */
+@keyframes yjsBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.yRemoteSelectionHead {
+  position: absolute;
+  border-left: 2px solid var(--yjs-color) !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: none !important;
+  box-shadow: 0 0 5px var(--yjs-color), 0 0 10px var(--yjs-color) !important;
+  animation: yjsBlink 1s step-end infinite !important;
+  margin-left: -1px; /* Center the cursor */
+  box-sizing: border-box;
+}
+
 .yRemoteSelectionHead::after { display: none !important; }
 
