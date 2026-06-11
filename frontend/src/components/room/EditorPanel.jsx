@@ -5,6 +5,9 @@ import { createPortal } from "react-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { socket } from "../../lib/socket";
 import JSZip from "jszip";
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
+import { MonacoBinding } from "y-monaco";
 
 const FILE_TYPES = [
   { label: "JavaScript", language: "javascript", extension: ".js" },
@@ -185,97 +188,84 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
   const otherUsers = users.filter((user) => user.socketId !== socket.id);
 
+  const yjsRefs = useRef({ doc: null, provider: null, binding: null, saveTimeout: null });
+
   useEffect(() => {
     return () => {
       editorDisposables.current.forEach((disposable) => disposable.dispose());
       editorDisposables.current = [];
+      if (yjsRefs.current.provider) {
+        yjsRefs.current.provider.destroy();
+        yjsRefs.current.binding.destroy();
+        yjsRefs.current.doc.destroy();
+        clearTimeout(yjsRefs.current.saveTimeout);
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (!editorInstance) return;
+    if (!editorInstance || !activeFile || !roomId) return;
 
-    const refresh = () => setEditorTick((value) => value + 1);
-    const currentFileName = activeFile?.name;
+    // Destroy old Yjs instance
+    if (yjsRefs.current.provider) {
+      yjsRefs.current.provider.destroy();
+      yjsRefs.current.binding.destroy();
+      yjsRefs.current.doc.destroy();
+      clearTimeout(yjsRefs.current.saveTimeout);
+    }
 
-    const disposables = [
-      editorInstance.onDidScrollChange(refresh),
-      editorInstance.onDidLayoutChange(refresh),
-      editorInstance.onDidChangeModelContent(() => {
-        refresh();
-        if (isRemoteUpdate.current) return;
-        const position = editorInstance.getPosition();
-        if (!position || !currentFileName) return;
-        socket.emit("typing", {
-          roomId,
-          fileName: currentFileName,
-          position: { lineNumber: position.lineNumber, column: position.column },
-          isTyping: true
-        });
-      }),
-      editorInstance.onDidChangeCursorPosition((event) => {
-        refresh();
-        if (isRemoteUpdate.current) return;
-        if (currentFileName) {
-          socket.emit("cursor:update", {
-            roomId,
-            fileName: currentFileName,
-            position: { lineNumber: event.position.lineNumber, column: event.position.column },
-            isTyping: false
-          });
-        }
-      })
-    ];
+    const doc = new Y.Doc();
+    
+    // Connect to the backend Yjs WebSocket server
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Use the backend API_URL origin if available, or just the same host
+    const wsUrl = `${wsProtocol}//${window.location.host}/yjs`;
+    
+    // Use a unique room name for this file in this room
+    const docRoomName = `room-${roomId}-file-${activeFile.name.replace(/[^a-zA-Z0-9-.]/g, '')}`;
+    const provider = new WebsocketProvider(wsUrl, docRoomName, doc);
+    
+    const type = doc.getText("monaco");
+    
+    const binding = new MonacoBinding(type, editorInstance.getModel(), new Set([editorInstance]), provider.awareness);
 
-    editorDisposables.current.forEach((disposable) => disposable.dispose());
-    editorDisposables.current = disposables;
+    // Assign user color and name to the cursor
+    const currentUser = users.find(u => u.socketId === socket.id);
+    const color = currentUser?.color || (currentUser?.role === "Host" ? "#ffb000" : "#8b5cf6");
+    provider.awareness.setLocalStateField('user', {
+      name: currentUser?.name || 'Anonymous',
+      color: color
+    });
+
+    // Automatically emit `onChange` (which triggers file:update) after 1.5s of no typing to persist to the database.
+    type.observe(() => {
+      clearTimeout(yjsRefs.current.saveTimeout);
+      yjsRefs.current.saveTimeout = setTimeout(() => {
+        if (onChange) onChange(type.toString());
+      }, 1500);
+    });
+
+    yjsRefs.current = { doc, provider, binding, saveTimeout: yjsRefs.current.saveTimeout };
+
+    // Set initial target code if the Yjs doc is empty but the active file has content
+    // Actually, Yjs will handle syncing if the doc exists. We'll wait for sync.
+    provider.on('synced', (isSynced) => {
+      if (isSynced && type.toString() === "" && activeFile.code) {
+        // If we are the first one joining and Yjs is empty, seed it with the database code
+        type.insert(0, activeFile.code);
+      }
+    });
 
     return () => {
-      disposables.forEach((disposable) => disposable.dispose());
-    };
-  }, [editorInstance, activeFile?.name, roomId]);
-
-  const visibleTypingCursors = typingCursors.filter(
-    (cursor) => !cursor.fileName || cursor.fileName === activeFile?.name
-  );
-  
-  // Watch for remote code updates and preserve cursor/scroll
-  useEffect(() => {
-    if (!editorInstance || !activeFile) return;
-    
-    const model = editorInstance.getModel();
-    if (!model) return;
-
-    const currentModelValue = model.getValue();
-    const targetCode = activeFile.code || "";
-    if (currentModelValue !== targetCode) {
-      isRemoteUpdate.current = true;
-      // Capture the exact state of the editor (cursor, selection, scroll)
-      const viewState = editorInstance.saveViewState();
-      
-      // Apply the change
-      // Use pushEditOperations to maintain undo history and markers
-      model.pushEditOperations(
-        [],
-        [{
-          range: model.getFullModelRange(),
-          text: targetCode,
-          forceMoveMarkers: true
-        }],
-        () => null
-      );
-      
-      // Immediately restore the exact view state to prevent any jumping
-      if (viewState) {
-        editorInstance.restoreViewState(viewState);
+      if (yjsRefs.current.provider) {
+        yjsRefs.current.provider.destroy();
+        yjsRefs.current.binding.destroy();
+        yjsRefs.current.doc.destroy();
+        clearTimeout(yjsRefs.current.saveTimeout);
+        yjsRefs.current = { doc: null, provider: null, binding: null, saveTimeout: null };
       }
-      
-      // Delay resetting the flag slightly to allow Monaco events to process
-      setTimeout(() => {
-        isRemoteUpdate.current = false;
-      }, 50);
-    }
-  }, [activeFile?.code, activeFile?.name, editorInstance]);
+    };
+  }, [editorInstance, activeFile?.name, roomId, users]);
 
   return (
     <section className="editor-panel">
@@ -622,8 +612,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
             });
           }}
           onChange={(value) => {
-            if (isRemoteUpdate.current) return;
-            if (onChange) onChange(value);
+            // Yjs handles the sync. We don't manually emit on every stroke here.
           }}
           options={{
             minimap: { enabled: false },

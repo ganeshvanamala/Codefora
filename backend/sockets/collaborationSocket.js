@@ -238,20 +238,20 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       broadcastRooms();
     });
 
-    socket.on("file:update", ({ roomId, fileName, code }) => {
-      if (code && typeof code === "string" && Buffer.byteLength(code, 'utf8') > 200000) {
-        socket.emit("room:error", "File is too large to sync (max 200KB).");
-        return;
-      }
-      const room = roomRepository.findById(roomId);
-      const user = room && roomService.findUser(room, socket.id);
-      if (!room || !user || user.role === "Viewer") return;
-      const file = room.files.find((item) => item.name === fileName);
-      if (!file) return;
-      file.code = code;
-      roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
-      socket.to(roomId).emit("file:update", { fileName, code, user: user.name });
-    });
+      socket.on("file:update", ({ roomId, fileName, code }) => {
+        if (code && typeof code === "string" && Buffer.byteLength(code, 'utf8') > 200000) {
+          socket.emit("room:error", "File is too large to sync (max 200KB).");
+          return;
+        }
+        const room = roomRepository.findById(roomId);
+        const user = room && roomService.findUser(room, socket.id);
+        if (!room || !user || user.role === "Viewer") return;
+        const file = room.files.find((item) => item.name === fileName);
+        if (!file) return;
+        file.code = code;
+        roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
+        // We do NOT broadcast file:update anymore. Yjs handles text synchronization.
+      });
 
     socket.on("file:create", ({ roomId, fileName, language, code }) => {
       console.log(`[Socket] file:create requested by ${socket.id} for file ${fileName}`);

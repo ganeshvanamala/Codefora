@@ -1,6 +1,10 @@
 import "dotenv/config";
 import http from "http";
 import { Server } from "socket.io";
+import { WebSocketServer } from "ws";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const { setupWSConnection } = require('./y-websocket-utils.cjs');
 import { createApp } from "./app.js";
 import { allowedOrigins } from "./config/cors.js";
 import { defaultFiles } from "./data/defaultFiles.js";
@@ -22,6 +26,21 @@ const broadcastRooms = () => io.emit("rooms:update", roomRepository.allPublicSum
 const app = createApp({ roomRepository, roomService, profileController, onRoomCreated: () => broadcastRooms() });
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: allowedOrigins(), methods: ["GET", "POST"] } });
+
+// Attach Yjs WebSocket server
+const wss = new WebSocketServer({ noServer: true });
+server.on("upgrade", (request, socket, head) => {
+  // We only handle /yjs namespace for Yjs
+  if (request.url.startsWith("/yjs")) {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
+  }
+});
+
+wss.on('connection', (conn, req) => {
+  setupWSConnection(conn, req, { gc: true });
+});
 
 registerCollaborationSocket(io, { roomRepository, roomService, profileController });
 
