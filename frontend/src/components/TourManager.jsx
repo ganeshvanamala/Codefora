@@ -73,8 +73,13 @@ export const TourManager = () => {
     if (loading) return; // wait for auth to completely resolve
 
     const checkTourStatus = async () => {
+      console.log(`[TourManager] Checking status for page: ${pageName}`);
+      
       // Prevent showing the tour again if they hit 'Back' to a page they already completed in this session
-      if (sessionStorage.getItem(`tourCompleted_${pageName}`) === 'true') {
+      const isCompletedInSession = sessionStorage.getItem(`tourCompleted_${pageName}`) === 'true';
+      console.log(`[TourManager] Session completed status: ${isCompletedInSession}`);
+      
+      if (isCompletedInSession) {
         setRun(false);
         setTourInitialized(true);
         return;
@@ -83,18 +88,22 @@ export const TourManager = () => {
       if (user) {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists() && userDoc.data()[`hasSeenTour_${pageName}`]) {
+          const dbStatus = userDoc.exists() ? userDoc.data()[`hasSeenTour_${pageName}`] : false;
+          console.log(`[TourManager] DB status for ${pageName}: ${dbStatus}`);
+          
+          if (dbStatus) {
             setRun(false);
           } else {
             setRun(true);
           }
         } catch (error) {
-          console.error("Error fetching tour status:", error);
+          console.error("[TourManager] Error fetching tour status:", error);
           setRun(true); // default to show if error occurs
         }
       } else {
         // purely localStorage for guests since they don't have a DB entry
         const hasSeen = localStorage.getItem(`codefora_tour_guest_${pageName}`) === 'true';
+        console.log(`[TourManager] Guest local storage status: ${hasSeen}`);
         setRun(!hasSeen);
       }
       setTourInitialized(true);
@@ -527,16 +536,20 @@ export const TourManager = () => {
 
     // When the tour finishes on the current page...
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status) || action === 'skip') {
+      console.log(`[TourManager] Tour completed or skipped on ${pageName}. Status: ${status}, Action: ${action}`);
       setRun(false);
       
       if (user) {
+        console.log(`[TourManager] Saving completion to DB for user ${user.uid}`);
         // Sync completion for THIS SPECIFIC PAGE permanently to database
         setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: true }, { merge: true }).catch(console.error);
       } else {
+        console.log(`[TourManager] Saving completion to guest local storage`);
         localStorage.setItem(`codefora_tour_guest_${pageName}`, 'true');
       }
       
       // Mark this specific page as completed for this session to prevent re-running on browser back
+      console.log(`[TourManager] Saving completion to session storage`);
       sessionStorage.setItem(`tourCompleted_${pageName}`, 'true');
     }
   };
