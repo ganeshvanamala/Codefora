@@ -539,8 +539,15 @@ export const TourManager = () => {
     }
 
     // When the tour finishes on the current page...
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status) || action === 'skip') {
-      console.log(`[TourManager] Tour completed or skipped on ${pageName}. Status: ${status}, Action: ${action}`);
+    const isTourEnding = 
+      [STATUS.FINISHED, STATUS.SKIPPED].includes(status) || 
+      ['skip', 'close'].includes(action) || 
+      type === EVENTS.TOUR_END;
+
+    if (isTourEnding) {
+      console.log(`[TourManager] Tour completed or skipped on ${pageName}. Status: ${status}, Action: ${action}, Type: ${type}`);
+      // Fallback alert for debugging with the user
+      alert("Tour completed! Saving to memory now.");
       setRun(false);
       
       const isManualUser = user?.providerId === 'manual';
