@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Joyride, STATUS, EVENTS } from 'react-joyride';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { TourMascotTooltip } from './TourMascotTooltip';
 import { useAuth } from '../hooks/useAuth';
+import { db } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AutoClickBeacon = React.forwardRef((props, forwardedRef) => {
   const localRef = React.useRef(null);
@@ -35,33 +35,20 @@ const AutoClickBeacon = React.forwardRef((props, forwardedRef) => {
 });
 
 export const TourManager = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [run, setRun] = useState(() => {
-    if (sessionStorage.getItem('tourActive') === 'true') return true;
-    // Check if any generic or user-specific v12 key exists
-    let hasSeen = false;
-    for (let i = 0; i < localStorage.length; i++) {
-      if (localStorage.key(i)?.startsWith('codefora_tour_v12_')) {
-        hasSeen = true;
-        break;
-      }
-    }
-    return !hasSeen;
-  });
+  const [run, setRun] = useState(false);
+  const [tourInitialized, setTourInitialized] = useState(false);
   const [domReady, setDomReady] = useState(true);
   const [mountJoyride, setMountJoyride] = useState(false);
   const [tourViewVersion, setTourViewVersion] = useState(0);
 
-  // Sync run state to sessionStorage so it survives across pages
-  useEffect(() => {
-    if (run) {
-      sessionStorage.setItem('tourActive', 'true');
-    } else {
-      sessionStorage.removeItem('tourActive');
-    }
-  }, [run]);
+  const getPageName = (path) => {
+    if (path.startsWith('/code/')) return 'code_room';
+    return path.replace('/', '') || 'home';
+  };
+  const pageName = getPageName(location.pathname);
 
   // Wait for the heavy Code Room DOM to fully mount before starting the tour
   useEffect(() => {
@@ -70,10 +57,6 @@ export const TourManager = () => {
       const interval = setInterval(() => {
         if (document.querySelector('.tour-users-panel') || document.querySelector('.tour-problem-left')) {
           setDomReady(true);
-          // Auto-start the tour if it was active
-          if (sessionStorage.getItem('tourActive') === 'true') {
-            setRun(true);
-          }
           clearInterval(interval);
         }
       }, 500);
@@ -83,25 +66,51 @@ export const TourManager = () => {
     }
   }, [location.pathname]);
 
-  // Auto-start for first-time users
+  // Determine if we should show the tour based on Firestore or Guest LocalStorage
   useEffect(() => {
-    // If the tour is already active (intra-page transitions), don't delay
-    if (sessionStorage.getItem('tourActive') === 'true') {
-      setMountJoyride(true);
-      return;
-    }
+    if (loading) return; // wait for auth to completely resolve
+
+    const checkTourStatus = async () => {
+      // Prevent showing the tour again if they hit 'Back' to a page they already completed in this session
+      if (sessionStorage.getItem(`tourCompleted_${pageName}`) === 'true') {
+        setRun(false);
+        setTourInitialized(true);
+        return;
+      }
+
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists() && userDoc.data()[`hasSeenTour_${pageName}`]) {
+            setRun(false);
+          } else {
+            setRun(true);
+          }
+        } catch (error) {
+          console.error("Error fetching tour status:", error);
+          setRun(true); // default to show if error occurs
+        }
+      } else {
+        // purely localStorage for guests since they don't have a DB entry
+        const hasSeen = localStorage.getItem(`codefora_tour_guest_${pageName}`) === 'true';
+        setRun(!hasSeen);
+      }
+      setTourInitialized(true);
+    };
+
+    checkTourStatus();
+  }, [user, loading, pageName]);
+
+  // Once status is resolved, handle DOM readiness and Joyride mounting
+  useEffect(() => {
+    if (!tourInitialized) return;
 
     // Delay mounting Joyride to guarantee DOM elements are painted for first-time load
     const timer = setTimeout(() => {
       setMountJoyride(true);
-      // If we are auto-running for a first-time user, securely set the localStorage flag
-      if (run && sessionStorage.getItem('tourActive') !== 'true') {
-        const userId = user ? user.uid : 'guest';
-        localStorage.setItem(`codefora_tour_v12_${userId}`, 'true');
-      }
     }, 500);
     return () => clearTimeout(timer);
-  }, [run, user]);
+  }, [tourInitialized]);
 
   useEffect(() => {
     const handleViewChange = () => {
@@ -502,7 +511,7 @@ export const TourManager = () => {
   }
 
   const handleJoyrideCallback = (data) => {
-    const { status, type, step } = data;
+    const { status, type, step, action } = data;
 
     // Manually scroll to elements inside custom overflow containers if needed
     if (type === EVENTS.TOOLTIP || type === EVENTS.STEP_BEFORE) {
@@ -515,55 +524,18 @@ export const TourManager = () => {
     }
 
     // When the tour finishes on the current page...
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status) || action === 'skip') {
       setRun(false);
       
-      // If they finished the Home tour, navigate to Rooms and start the Rooms tour!
-      if (location.pathname === '/home') {
-        navigate('/rooms');
-        setTimeout(() => setRun(true), 10); // Instant transition
+      if (user) {
+        // Sync completion for THIS SPECIFIC PAGE permanently to database
+        setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: true }, { merge: true }).catch(console.error);
+      } else {
+        localStorage.setItem(`codefora_tour_guest_${pageName}`, 'true');
       }
-      // If they finished the Rooms tour, ONLY navigate to Problems if they didn't join/create a room!
-      else if (location.pathname === '/rooms') {
-        setTimeout(() => {
-          if (window.location.pathname === '/rooms') {
-            navigate('/problems');
-            setRun(true);
-          }
-        }, 10);
-      }
-      else if (location.pathname === '/problems') {
-        setTimeout(() => {
-          if (window.location.pathname === '/problems') {
-            navigate('/playground');
-            setRun(true);
-          }
-        }, 10);
-      }
-      else if (location.pathname === '/playground') {
-        setTimeout(() => {
-          if (window.location.pathname === '/playground') {
-            if (user) {
-              navigate('/profile');
-              setRun(true);
-            } else {
-              // Guests don't have a profile page to tour, so finish the tour completely!
-              localStorage.setItem('codefora_tour_v12_guest', 'true');
-              sessionStorage.removeItem('tourActive');
-              alert("Tour Complete! You're ready to code!");
-            }
-          }
-        }, 10);
-      }
-      // If they finished Profile, or Code Room, they are completely done!
-      else if (location.pathname === '/profile' || location.pathname.startsWith('/code/')) {
-        const userId = user ? user.uid : 'guest';
-        localStorage.setItem(`codefora_tour_${userId}`, 'true');
-        sessionStorage.removeItem('tourActive');
-        if (status === STATUS.FINISHED) {
-          alert("Tour Complete! You're ready to code!");
-        }
-      }
+      
+      // Mark this specific page as completed for this session to prevent re-running on browser back
+      sessionStorage.setItem(`tourCompleted_${pageName}`, 'true');
     }
   };
 
