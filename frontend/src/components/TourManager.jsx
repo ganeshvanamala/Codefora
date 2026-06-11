@@ -524,7 +524,7 @@ export const TourManager = () => {
     currentSteps = isDetailsView ? problemDetailsSteps : problemsListSteps;
   }
 
-  const handleJoyrideCallback = (data) => {
+  const handleJoyrideCallback = React.useCallback((data) => {
     const { status, type, step, action } = data;
     console.log(`[Joyride Event] Type: ${type}, Status: ${status}, Action: ${action}`);
 
@@ -568,7 +568,7 @@ export const TourManager = () => {
       console.log(`[TourManager] Saving completion to session storage`);
       sessionStorage.setItem(`tourCompleted_${pageName}`, 'true');
     }
-  };
+  }, [user, pageName]);
 
   return (
     <>
