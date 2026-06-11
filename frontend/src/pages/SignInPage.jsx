@@ -85,7 +85,7 @@ export default function SignInPage() {
     setAuthStatus("");
     try {
       await sendPasswordResetEmail(auth, authForm.email);
-      setAuthStatus("Password reset email sent! Please check your inbox.");
+      setAuthStatus("Password reset email sent! Please check your inbox (and spam folder).");
     } catch (error) {
       setAuthStatus(error.message || "Failed to send reset email.");
     } finally {
@@ -111,13 +111,13 @@ export default function SignInPage() {
         await updateProfile(userCredential.user, { displayName: authForm.username });
         await sendEmailVerification(userCredential.user);
         
-        setAuthStatus("Account created successfully! Please check your email inbox to verify your account before logging in.");
+        setAuthStatus("Account created successfully! Please check your email inbox (and spam folder) to verify your account before logging in.");
         await signOut(auth); // Force them to verify before actually getting access
         setAuthTab("login");
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
         if (!userCredential.user.emailVerified) {
-          setAuthStatus("Please verify your email address before logging in. Check your inbox.");
+          setAuthStatus("Please verify your email address before logging in. Check your inbox (and spam folder).");
           await signOut(auth);
           setAuthBusy(false);
           return;
