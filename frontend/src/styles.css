@@ -8145,6 +8145,7 @@ label {
   border-top: none !important;
   border-bottom: none !important;
   border-right: none !important;
+  height: 100% !important;
   animation: yjsBlink 1s step-end infinite !important;
   margin-left: -1px; /* Center the cursor */
   box-sizing: border-box;
