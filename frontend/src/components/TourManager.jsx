@@ -76,6 +76,32 @@ export const TourManager = () => {
     }
   }, [location.pathname]);
 
+  // Broadcast tour state whenever it changes so UI toggles can sync
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('tour-state-broadcast', { detail: { isRunning: run } }));
+  }, [run]);
+
+  // Listen for manual tour controls from UI
+  useEffect(() => {
+    const handleManualStart = () => {
+      // Clear session block
+      sessionStorage.removeItem(`tourCompleted_${pageName}`);
+      setRun(true);
+    };
+    const handleManualStop = () => {
+      setRun(false);
+      sessionStorage.setItem(`tourCompleted_${pageName}`, 'true');
+    };
+
+    window.addEventListener('manual-start-tour', handleManualStart);
+    window.addEventListener('manual-stop-tour', handleManualStop);
+
+    return () => {
+      window.removeEventListener('manual-start-tour', handleManualStart);
+      window.removeEventListener('manual-stop-tour', handleManualStop);
+    };
+  }, [pageName]);
+
   // Determine if we should show the tour based on Firestore or Guest LocalStorage
   useEffect(() => {
     if (loading) return; // wait for auth to completely resolve

@@ -7,7 +7,14 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   const [customSec, setCustomSec] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [localMaxMembers, setLocalMaxMembers] = useState(room?.max || 7);
+  const [isTourRunning, setIsTourRunning] = useState(false);
   const settingsRef = useRef(null);
+
+  useEffect(() => {
+    const handleTourState = (e) => setIsTourRunning(e.detail?.isRunning || false);
+    window.addEventListener('tour-state-broadcast', handleTourState);
+    return () => window.removeEventListener('tour-state-broadcast', handleTourState);
+  }, []);
 
   useEffect(() => {
     setLocalMaxMembers(room?.max || 7);
@@ -465,6 +472,25 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                     style={{ margin: 0, width: "14px", height: "14px", cursor: permissions.isHost ? "pointer" : "not-allowed" }}
                   />
                   Allow Copy & Paste
+                </label>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "12px", marginTop: "4px" }}>
+                <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Your Preferences</label>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "12px", color: "#fff" }}>
+                  <input
+                    type="checkbox"
+                    checked={isTourRunning}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        window.dispatchEvent(new Event('manual-start-tour'));
+                      } else {
+                        window.dispatchEvent(new Event('manual-stop-tour'));
+                      }
+                    }}
+                    style={{ margin: 0, width: "14px", height: "14px", cursor: "pointer" }}
+                  />
+                  Room Tour Guide
                 </label>
               </div>
             </div>
