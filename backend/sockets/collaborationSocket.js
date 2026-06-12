@@ -119,7 +119,9 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
 
       // Restore color from memory or assign a new one
       room.userColors = room.userColors || {};
-      if (!room.userColors[authKey] || isHost) {
+      const activeColors = new Set(room.users.map(u => u.color));
+      
+      if (!room.userColors[authKey] || isHost || (role !== "Host" && activeColors.has(room.userColors[authKey]))) {
         // Force update host color just in case, but usually Host is FF7A18
         room.userColors[authKey] = assignUserColor(role, room.users);
       }
