@@ -1,19 +1,29 @@
 import { useNavigate, NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logoutUser, signInWithGoogle, auth } from "../lib/firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile, signOut } from "firebase/auth";
 import { saveUsername } from "../lib/navigation";
 import { api } from "../api/client";
 import { BrandButton } from "../components/BrandButton";
 import homevideo from "../../assets/homevideo.mp4";
+import { useAuth } from "../hooks/useAuth";
 
 export default function SignInPage() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState("login");
   const [authForm, setAuthForm] = useState({ username: "", email: "", password: "", confirmPassword: "" });
   const [authStatus, setAuthStatus] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      const isAdmin = user.email === "ganeshvanamala16@gmail.com";
+      navigate(isAdmin ? '/admin' : '/home', { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   async function handleGoogleSignIn() {
     try {
