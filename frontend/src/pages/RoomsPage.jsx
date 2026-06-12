@@ -177,7 +177,8 @@ export function RoomsPage() {
           height: '100%',
           objectFit: 'cover',
           zIndex: 0,
-          opacity: 1
+          opacity: 1,
+          filter: 'var(--home-video-filter)'
         }}
       >
         <source src={bg1} type="video/mp4" />
