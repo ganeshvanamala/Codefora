@@ -144,7 +144,7 @@ export const TourManager = () => {
 
     const checkTourStatus = async () => {
       // Only allow tour on requested pages
-      const allowedPages = ['rooms', 'code_room', 'problems'];
+      const allowedPages = ['code_room'];
       if (!allowedPages.includes(pageName)) {
         setRun(false);
         return; // Silently exit, no logs, no tour
