@@ -7423,7 +7423,7 @@ label {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  background: linear-gradient(90deg, #3b82f6, var(--primary-color));
+  background: linear-gradient(90deg, #3b82f6, #FF7A18);
   z-index: 0;
   opacity: 0.8;
   filter: blur(8px);
@@ -7470,8 +7470,8 @@ label {
 }
 
 .default-codefora-avatar .bracket:last-child {
-  color: var(--primary-color);
-  text-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
+  color: #FF7A18;
+  text-shadow: 0 0 15px rgba(255, 122, 24, 0.5);
 }
 
 .profile-name {
