@@ -10,11 +10,26 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   const [isTourRunning, setIsTourRunning] = useState(false);
   const settingsRef = useRef(null);
 
+  // Primary event-based sync
   useEffect(() => {
     const handleTourState = (e) => setIsTourRunning(e.detail?.isRunning || false);
     window.addEventListener('tour-state-broadcast', handleTourState);
     return () => window.removeEventListener('tour-state-broadcast', handleTourState);
   }, []);
+
+  // Foolproof safety net: If sessionStorage marks it completed, force toggle OFF!
+  useEffect(() => {
+    if (!isTourRunning) return;
+    const interval = setInterval(() => {
+      // Look at the raw sessionStorage value to confirm
+      const pathPageName = location.pathname.startsWith('/code/') ? 'code_room' : 'rooms';
+      const isCompleted = sessionStorage.getItem(`tourCompleted_${pathPageName}`) === 'true';
+      if (isCompleted) {
+        setIsTourRunning(false);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isTourRunning]);
 
   useEffect(() => {
     setLocalMaxMembers(room?.max || 7);
