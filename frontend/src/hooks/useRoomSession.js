@@ -677,10 +677,12 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
 
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         let isSpeaking = false;
+        let speakingTimeout = null;
 
         const checkSpeaking = () => {
           if (!localStream.current) {
             audioContext.close();
+            if (speakingTimeout) clearTimeout(speakingTimeout);
             return;
           }
           
@@ -698,9 +700,24 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
           const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
           const currentlySpeaking = volume > 20;
 
-          if (currentlySpeaking !== isSpeaking) {
-            isSpeaking = currentlySpeaking;
-            socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: isSpeaking });
+          if (currentlySpeaking && !isSpeaking) {
+            isSpeaking = true;
+            if (speakingTimeout) clearTimeout(speakingTimeout);
+            speakingTimeout = null;
+            socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: true });
+          } else if (!currentlySpeaking && isSpeaking) {
+            if (!speakingTimeout) {
+              speakingTimeout = setTimeout(() => {
+                isSpeaking = false;
+                socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: false });
+                speakingTimeout = null;
+              }, 1000); // 1 second hysteresis to prevent rapid toggling
+            }
+          } else if (currentlySpeaking && isSpeaking) {
+            if (speakingTimeout) {
+              clearTimeout(speakingTimeout);
+              speakingTimeout = null;
+            }
           }
 
           requestAnimationFrame(checkSpeaking);
