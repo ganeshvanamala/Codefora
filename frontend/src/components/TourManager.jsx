@@ -84,13 +84,30 @@ export const TourManager = () => {
   // Listen for manual tour controls from UI
   useEffect(() => {
     const handleManualStart = () => {
-      // Clear session block
+      // Clear session block and local storage to force it to run
       sessionStorage.removeItem(`tourCompleted_${pageName}`);
+      if (user) {
+        localStorage.removeItem(`codefora_tour_${user.uid}_${pageName}`);
+        setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: false }, { merge: true }).catch(console.error);
+      } else {
+        localStorage.removeItem(`codefora_tour_guest_${pageName}`);
+      }
       setRun(true);
     };
+
     const handleManualStop = () => {
       setRun(false);
       sessionStorage.setItem(`tourCompleted_${pageName}`, 'true');
+      
+      // Save permanently just like skipping the tour would
+      const isManualUser = user?.providerId === 'manual';
+      if (user && !isManualUser) {
+        setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: true }, { merge: true }).catch(console.error);
+        localStorage.setItem(`codefora_tour_${user.uid}_${pageName}`, 'true');
+      } else {
+        const fallbackId = user ? user.uid : 'guest';
+        localStorage.setItem(`codefora_tour_${fallbackId}_${pageName}`, 'true');
+      }
     };
 
     window.addEventListener('manual-start-tour', handleManualStart);
