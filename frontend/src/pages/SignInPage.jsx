@@ -21,7 +21,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      const isAdmin = user.email === "ganeshvanamala16@gmail.com";
+      const isAdmin = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(user.email);
       navigate(isAdmin ? '/admin' : '/home', { replace: true });
     }
   }, [user, loading, navigate]);
@@ -31,7 +31,7 @@ export default function SignInPage() {
       const result = await signInWithGoogle();
       const account = result?.user;
       
-      const role = account.email === "ganeshvanamala16@gmail.com" ? "admin" : "user";
+      const role = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(account.email) ? "admin" : "user";
       
       const displayName = account?.displayName || account?.email?.split("@")[0] || "Developer";
       saveUsername(displayName);
@@ -72,7 +72,7 @@ export default function SignInPage() {
     saveUsername(account.displayName || account.username);
     localStorage.setItem("codefora_user_id", account.userId);
     
-    const isAdmin = account.email === "ganeshvanamala16@gmail.com";
+    const isAdmin = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(account.email);
     if (isAdmin) {
       localStorage.setItem("codefora_role", "admin");
       localStorage.setItem("codefora_admin_token", "firebase_master_admin");

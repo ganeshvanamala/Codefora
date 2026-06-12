@@ -38,7 +38,7 @@ export const useAuth = () => {
   }, []);
 
   // Secure admin check based on email
-  const isAdmin = user?.email === "ganeshvanamala16@gmail.com";
+  const isAdmin = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(user?.email);
 
   return { user, loading, error, isAdmin };
 };
