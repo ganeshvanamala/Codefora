@@ -6,12 +6,20 @@ import loopsbg from "../../assets/loopsbgimage.jpeg";
 export function Footer() {
   return (
     <footer className="rooms-footer" style={{ 
-      backgroundImage: `url(${loopsbg})`, 
-      backgroundSize: 'cover', 
-      backgroundPosition: 'center',
       position: 'relative',
       marginTop: 'auto'
     }}>
+      {/* Background Image with Filter */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: `url(${loopsbg})`, 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center',
+        filter: 'var(--home-video-filter)',
+        zIndex: 0
+      }}></div>
+      
       {/* Overlay for footer readability */}
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1 }}></div>
       
