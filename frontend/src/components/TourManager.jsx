@@ -588,5 +588,30 @@ export const TourManager = () => {
     }
   }, [user, pageName]);
 
-  return null;
+  return (
+    <>
+      {mountJoyride && (
+        <Joyride
+          key={location.pathname}
+          callback={handleJoyrideCallback}
+          continuous
+          disableOverlayClose
+          disableScrolling
+          hideCloseButton
+          run={run && domReady}
+          showProgress
+          showSkipButton
+          steps={currentSteps}
+          tooltipComponent={TourMascotTooltip}
+          beaconComponent={AutoClickBeacon}
+          styles={{
+            options: {
+              zIndex: 9999999,
+              overlayColor: 'rgba(0, 0, 0, 0.75)',
+            },
+          }}
+        />
+      )}
+    </>
+  );
 };
