@@ -130,7 +130,8 @@ export default function HomePage() {
         backgroundPosition: 'center',
         opacity: 0.15,
         zIndex: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        filter: 'var(--home-video-filter)'
       }}></div>
 
       {/* GLOWING BACKGROUND ELEMENTS - Premium Orange Dominant */}
@@ -189,8 +190,7 @@ export default function HomePage() {
             transform: 'translate(-50%, -50%)',
             zIndex: 0,
             objectFit: 'cover',
-            opacity: 0.8,
-            filter: 'var(--home-video-filter)'
+            opacity: 0.8
           }}
         >
           <source src={homevideo} type="video/mp4" />
