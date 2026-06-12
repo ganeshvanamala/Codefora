@@ -67,7 +67,7 @@ export function Footer() {
 
       <div className="rooms-footer-bottom" style={{ position: 'relative', zIndex: 2, borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '40px' }}>
         <p>&copy; {new Date().getFullYear()} Codefora. All rights reserved.</p>
-        <p>Made with <span style={{ color: 'var(--brand-primary, #ff7a18)' }}>❤️</span> for developers</p>
+        <p>Made with <span style={{ color: 'var(--brand-primary, var(--primary-color))' }}>❤️</span> for developers</p>
       </div>
     </footer>
   );

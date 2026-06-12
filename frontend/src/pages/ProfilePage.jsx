@@ -89,7 +89,11 @@ export function ProfilePage() {
     };
 
     const ok = await saveProfile(user.uid, nextProfile).then(() => true).catch(() => false);
-    if (ok) setProfileData(nextProfile);
+    if (ok) {
+      setProfileData(nextProfile);
+      document.documentElement.dataset.community = selectedCommunity;
+      localStorage.setItem("codefora_community", selectedCommunity);
+    }
     setIsSaving(false);
     setSaveStatus(ok ? "Saved." : "Could not save profile.");
     setTimeout(() => setSaveStatus(""), 3000);
@@ -549,14 +553,14 @@ export function ProfilePage() {
           flex: 1;
         }
         .community-btn.sider {
-          background: rgba(255, 122, 24, 0.1);
-          color: #FF7A18;
-          border-color: rgba(255, 122, 24, 0.3);
+          background: rgba(var(--primary-rgb), 0.1);
+          color: var(--primary-color);
+          border-color: rgba(var(--primary-rgb), 0.3);
         }
         .community-btn.sider.active {
-          background: #FF7A18;
+          background: var(--primary-color);
           color: white;
-          box-shadow: 0 0 15px rgba(255, 122, 24, 0.5);
+          box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
           animation: orange-glow 2s infinite alternate;
         }
         .community-btn.loop {
@@ -570,8 +574,8 @@ export function ProfilePage() {
           box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
         }
         @keyframes orange-glow {
-          from { box-shadow: 0 0 5px rgba(255, 122, 24, 0.4); }
-          to { box-shadow: 0 0 20px rgba(255, 122, 24, 0.8); }
+          from { box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.4); }
+          to { box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.8); }
         }
       `}</style>
     </main>

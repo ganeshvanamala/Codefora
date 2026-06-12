@@ -22,7 +22,7 @@ export function Navbar() {
     fontWeight: 600,
     color: isActive ? '#fff' : 'rgba(255,255,255,0.7)',
     textDecoration: 'none',
-    borderBottom: isActive ? '2px solid #FF9100' : '2px solid transparent',
+    borderBottom: isActive ? '2px solid var(--primary-accent)' : '2px solid transparent',
     paddingBottom: '4px',
     transition: 'all 0.2s'
   });

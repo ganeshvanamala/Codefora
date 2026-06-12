@@ -18,10 +18,13 @@ import { TermsOfServicePage } from "./pages/TermsOfServicePage";
 import { CodeOfConductPage } from "./pages/CodeOfConductPage";
 import { useLocation } from "react-router-dom";
 import { trackPageView } from "./lib/analytics";
+import { useAuth } from "./hooks/useAuth";
+import { API_URL } from "./config";
 
 function LoaderManager({ children }) {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     // initial show
@@ -29,6 +32,27 @@ function LoaderManager({ children }) {
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    // Global Community Theme Sync
+    if (!user) {
+      document.documentElement.dataset.community = "sider";
+      return;
+    }
+    const isManualUser = user.providerId === "manual";
+    if (!isManualUser) {
+      fetch(`${API_URL}/api/profiles/${user.uid}`)
+        .then(r => r.json())
+        .then(profile => {
+          const comm = profile.community || "sider";
+          document.documentElement.dataset.community = comm;
+          localStorage.setItem("codefora_community", comm);
+        })
+        .catch(console.error);
+    } else {
+      document.documentElement.dataset.community = "sider";
+    }
+  }, [user]);
 
   useEffect(() => {
     // show on route changes briefly

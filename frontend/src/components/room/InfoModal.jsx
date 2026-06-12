@@ -53,7 +53,7 @@ export function InfoModal({ isOpen, onClose }) {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <Upload size={16} style={{ color: '#ff7a18', flexShrink: 0 }} />
+                <Upload size={16} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
                 <div style={{ fontSize: '0.85rem' }}>
                   <strong>Import/Export:</strong> Upload files from your device or export the entire room as a ZIP archive.
                 </div>

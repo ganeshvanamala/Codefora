@@ -197,11 +197,11 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="admin-sidebar-section" style={{ marginTop: '20px' }}>
-            <div className="admin-sidebar-title" style={{ color: '#FF9100' }}>⚡ Quick Actions</div>
+            <div className="admin-sidebar-title" style={{ color: 'var(--primary-accent)' }}>⚡ Quick Actions</div>
             <button className="admin-nav-item" onClick={() => { setEditingProblem(null); setShowProblemForm(true); }} style={{ border: '1px solid rgba(139, 233, 253, 0.2)', color: '#8BE9FD', justifyContent: 'center' }}>
               + Add Problem
             </button>
-            <button className="admin-nav-item" style={{ border: '1px solid rgba(255, 145, 0, 0.2)', color: '#FF9100', justifyContent: 'center' }}>
+            <button className="admin-nav-item" style={{ border: '1px solid rgba(255, 145, 0, 0.2)', color: 'var(--primary-accent)', justifyContent: 'center' }}>
               + Create Room
             </button>
           </div>
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="admin-test-cases-section">
-                    <h3 style={{ fontSize: '0.9rem', color: '#FF9100', margin: '15px 0 10px' }}>Test Cases (Judging)</h3>
+                    <h3 style={{ fontSize: '0.9rem', color: 'var(--primary-accent)', margin: '15px 0 10px' }}>Test Cases (Judging)</h3>
                     <div className="admin-test-case-row">
                       <div className="admin-setting-group">
                         <label className="admin-setting-label">Test Case 1 Input</label>
@@ -600,7 +600,7 @@ export default function AdminDashboardPage() {
                   {activeTab === 'Reports' && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
                       <span>Showing {reports.length} reports</span>
-                      <button className="admin-link-button" style={{ color: '#FF9100' }}>Load More</button>
+                      <button className="admin-link-button" style={{ color: 'var(--primary-accent)' }}>Load More</button>
                     </div>
                   )}
                 </div>
@@ -649,7 +649,7 @@ export default function AdminDashboardPage() {
                   
                   {activeTab === 'Dashboard' && (
                     <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: 'auto' }}>
-                      <button className="admin-link-button" style={{ color: '#FF9100' }} onClick={() => setActiveTab('Settings')}>View All Settings →</button>
+                      <button className="admin-link-button" style={{ color: 'var(--primary-accent)' }} onClick={() => setActiveTab('Settings')}>View All Settings →</button>
                     </div>
                   )}
                 </div>

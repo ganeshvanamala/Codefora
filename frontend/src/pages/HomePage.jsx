@@ -152,7 +152,7 @@ export default function HomePage() {
         right: '0%',
         width: '40vw',
         height: '40vw',
-        background: 'radial-gradient(circle, rgba(255, 122, 24, 0.12) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, transparent 70%)',
         filter: 'blur(100px)',
         zIndex: 0,
         pointerEvents: 'none',
@@ -213,7 +213,7 @@ export default function HomePage() {
           }}>
             <div style={{ flex: 1, maxWidth: '800px' }}>
               <h4 style={{
-                color: '#FF9100', fontSize: '1.1rem', fontWeight: 800,
+                color: 'var(--primary-accent)', fontSize: '1.1rem', fontWeight: 800,
                 textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '20px',
                 textShadow: '0 2px 10px rgba(0,0,0,0.8)'
               }}>
@@ -237,7 +237,7 @@ export default function HomePage() {
               <div style={{ display: 'flex', gap: '20px' }}>
                 <button id="tour-join-room" onClick={() => navigate("/rooms")} style={{
                   padding: '16px 36px', fontSize: '1.1rem', fontWeight: 'bold',
-                  background: '#FF9100', color: '#1a0e00', border: 'none', borderRadius: '12px',
+                  background: 'var(--primary-accent)', color: '#1a0e00', border: 'none', borderRadius: '12px',
                   display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
                   boxShadow: '0 8px 25px rgba(255, 145, 0, 0.4)', transition: 'all 0.2s'
                 }}
@@ -273,7 +273,7 @@ export default function HomePage() {
               }
 
               ::-webkit-scrollbar-thumb {
-                background: linear-gradient(to bottom, #FF9100, #00E5FF) !important;
+                background: linear-gradient(to bottom, var(--primary-accent), #00E5FF) !important;
                 border-radius: 10px !important;
                 border: 3px solid #030303 !important;
                 box-shadow: 0 0 10px rgba(255, 145, 0, 0.5) !important;
@@ -286,7 +286,7 @@ export default function HomePage() {
               /* Firefox Support */
               * {
                 scrollbar-width: thin;
-                scrollbar-color: #FF9100 #030303;
+                scrollbar-color: var(--primary-accent) #030303;
               }
 
               @keyframes scrollDown {
@@ -322,14 +322,14 @@ export default function HomePage() {
                 <div style={{
                   width: '4px',
                   height: '8px',
-                  background: 'linear-gradient(to bottom, #FF9100, #00E5FF)',
+                  background: 'linear-gradient(to bottom, var(--primary-accent), #00E5FF)',
                   borderRadius: '2px',
                   position: 'absolute',
                   top: '10px',
                   left: '50%',
                   marginLeft: '-2px',
                   animation: 'scrollDown 2s infinite ease-in-out',
-                  boxShadow: '0 0 10px #FF9100'
+                  boxShadow: '0 0 10px var(--primary-accent)'
                 }}></div>
               </div>
               <style>{`
@@ -369,7 +369,7 @@ export default function HomePage() {
               border: '1px solid rgba(255,255,255,0.1)',
               cursor: 'pointer'
             }}>
-              <div style={{ background: 'rgba(255, 122, 24, 0.2)', width: '60px', height: '60px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 25px', color: 'var(--brand-primary)', backdropFilter: 'blur(5px)' }}>
+              <div style={{ background: 'rgba(var(--primary-rgb), 0.2)', width: '60px', height: '60px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 25px', color: 'var(--brand-primary)', backdropFilter: 'blur(5px)' }}>
                 <Flame size={32} />
               </div>
               <h3 style={{ fontSize: '1.5rem', marginBottom: '15px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>Live Rooms</h3>

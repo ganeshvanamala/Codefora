@@ -48,7 +48,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
   const hasHost = users.some((user) => user.role === "Host");
   const localHostToken = getHostToken(activeRoomId);
   const localFallbackUser = room && !hasHost && localHostToken && room.hostName === username
-    ? { socketId: socket.id || "local-host", name: username, role: "Host", mic: false, speaking: false, color: "#FF7A18" }
+    ? { socketId: socket.id || "local-host", name: username, role: "Host", mic: false, speaking: false, color: "var(--primary-color)" }
     : null;
   const visibleUsers = useMemo(() => {
     const list = localFallbackUser ? [...users, localFallbackUser] : users;

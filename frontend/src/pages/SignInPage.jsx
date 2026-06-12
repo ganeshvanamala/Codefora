@@ -225,7 +225,7 @@ export default function SignInPage() {
               }}></span>
               <span style={{
                 fontWeight: '800', letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.85rem',
-                background: 'linear-gradient(90deg, #00E5FF, #FF9100)',
+                background: 'linear-gradient(90deg, #00E5FF, var(--primary-accent))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
@@ -243,7 +243,7 @@ export default function SignInPage() {
               <span style={{ color: 'white', textShadow: '0 10px 40px rgba(0,0,0,0.8)', display: 'inline-block' }}>Code. Collab.</span>
               <br />
               <span style={{
-                background: 'linear-gradient(90deg, #00E5FF, #FF9100)',
+                background: 'linear-gradient(90deg, #00E5FF, var(--primary-accent))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 display: 'inline-block',
@@ -272,7 +272,7 @@ export default function SignInPage() {
                   fontWeight: '800',
                   borderRadius: '50px',
                   border: 'none',
-                  background: '#FF9100',
+                  background: 'var(--primary-accent)',
                   color: '#1a0e00',
                   cursor: 'pointer',
                   boxShadow: '0 8px 25px rgba(255, 145, 0, 0.4)',
@@ -282,7 +282,7 @@ export default function SignInPage() {
                   gap: '10px'
                 }}
                   onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(255, 145, 0, 0.6)'; e.currentTarget.style.background = '#ffa32a'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 145, 0, 0.4)'; e.currentTarget.style.background = '#FF9100'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 145, 0, 0.4)'; e.currentTarget.style.background = 'var(--primary-accent)'; }}
                 >
                   Get Started <span style={{ fontSize: '1.3rem' }}>→</span>
                 </button>
@@ -404,7 +404,7 @@ export default function SignInPage() {
 
               {authTab === "login" && !showResend && (
                 <div style={{ textAlign: 'right', marginTop: '10px' }}>
-                  <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#FF9100', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}>
+                  <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}>
                     Forgot Password?
                   </button>
                 </div>
