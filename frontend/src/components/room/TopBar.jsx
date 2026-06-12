@@ -12,7 +12,10 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
 
   // Primary event-based sync
   useEffect(() => {
-    const handleTourState = (e) => setIsTourRunning(e.detail?.isRunning || false);
+    const handleTourState = (e) => {
+      console.log("[TopBar] Received tour-state-broadcast:", e.detail?.isRunning);
+      setIsTourRunning(e.detail?.isRunning || false);
+    };
     window.addEventListener('tour-state-broadcast', handleTourState);
     return () => window.removeEventListener('tour-state-broadcast', handleTourState);
   }, []);
@@ -21,12 +24,14 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   useEffect(() => {
     if (!isTourRunning) return;
     const interval = setInterval(() => {
-      // Look at the raw sessionStorage value to confirm
-      const pathPageName = location.pathname.startsWith('/code/') ? 'code_room' : 'rooms';
-      const isCompleted = sessionStorage.getItem(`tourCompleted_${pathPageName}`) === 'true';
-      if (isCompleted) {
-        setIsTourRunning(false);
-      }
+      try {
+        const pathPageName = window.location.pathname.startsWith('/code/') ? 'code_room' : 'rooms';
+        const isCompleted = window.sessionStorage.getItem(`tourCompleted_${pathPageName}`) === 'true';
+        if (isCompleted) {
+          console.log("[TopBar] Safety net triggered: Tour is completed in session, forcing toggle OFF");
+          setIsTourRunning(false);
+        }
+      } catch(e) {}
     }, 500);
     return () => clearInterval(interval);
   }, [isTourRunning]);
