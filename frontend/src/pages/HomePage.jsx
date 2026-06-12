@@ -237,7 +237,7 @@ export default function HomePage() {
               <div style={{ display: 'flex', gap: '20px' }}>
                 <button id="tour-join-room" onClick={() => navigate("/rooms")} style={{
                   padding: '16px 36px', fontSize: '1.1rem', fontWeight: 'bold',
-                  background: 'var(--primary-accent)', color: '#1a0e00', border: 'none', borderRadius: '12px',
+                  background: '#FF9100', color: '#1a0e00', border: 'none', borderRadius: '12px',
                   display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
                   boxShadow: '0 8px 25px rgba(255, 145, 0, 0.4)', transition: 'all 0.2s'
                 }}
