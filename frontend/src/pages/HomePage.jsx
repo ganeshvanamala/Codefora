@@ -141,7 +141,7 @@ export default function HomePage() {
         left: '10%',
         width: '80vw',
         height: '80vw',
-        background: 'radial-gradient(circle, rgba(255, 145, 0, 0.18) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.18) 0%, transparent 70%)',
         filter: 'blur(130px)',
         zIndex: 0,
         pointerEvents: 'none',

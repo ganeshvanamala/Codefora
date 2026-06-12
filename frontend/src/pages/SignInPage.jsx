@@ -196,7 +196,8 @@ export default function SignInPage() {
           height: '100%',
           objectFit: 'cover',
           zIndex: 0,
-          opacity: 1
+          opacity: 1,
+          filter: 'var(--home-video-filter)'
         }}
       >
         <source src={homevideo} type="video/mp4" />
