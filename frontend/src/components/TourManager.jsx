@@ -168,17 +168,19 @@ export const TourManager = () => {
         try {
           const response = await fetch(`${API_URL}/api/profiles/${user.uid}/tour-status/${pageName}`);
           
-          if (response.ok) {
-            const data = await response.json();
-            const dbStatus = data.status;
-            console.log(`[TourManager] DB status via API for ${pageName}: ${dbStatus}`);
-            
-            if (dbStatus) {
-              setRun(false);
+            if (response.ok) {
+              const data = await response.json();
+              const dbStatus = data.status;
+              console.log(`[TourManager] DB status via API for ${pageName}: ${dbStatus}`);
+              
+              const hasSeenLocal = localStorage.getItem(`codefora_tour_${user.uid}_${pageName}`) === 'true';
+              
+              if (dbStatus || hasSeenLocal) {
+                setRun(false);
+              } else {
+                setRun(true);
+              }
             } else {
-              setRun(true);
-            }
-          } else {
             throw new Error("API request failed");
           }
         } catch (error) {
