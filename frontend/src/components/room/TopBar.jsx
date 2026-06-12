@@ -482,6 +482,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                     type="checkbox"
                     checked={isTourRunning}
                     onChange={(e) => {
+                      setIsTourRunning(e.target.checked);
                       if (e.target.checked) {
                         window.dispatchEvent(new Event('manual-start-tour'));
                       } else {

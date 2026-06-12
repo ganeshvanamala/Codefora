@@ -601,8 +601,6 @@ export const TourManager = () => {
 
     if (isTourEnding) {
       console.log(`[TourManager] Tour completed or skipped on ${pageName}. Status: ${status}, Action: ${action}, Type: ${type}`);
-      // Fallback alert for debugging with the user
-      alert("Tour completed! Saving to memory now.");
       setRun(false);
       
       const isManualUser = user?.providerId === 'manual';
