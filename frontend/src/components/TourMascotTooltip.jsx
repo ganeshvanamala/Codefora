@@ -69,6 +69,10 @@ export const TourMascotTooltip = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
         <button
           {...skipProps}
+          onClick={(e) => {
+            if (typeof window.setTourToggleState === 'function') window.setTourToggleState(false);
+            if (skipProps && skipProps.onClick) skipProps.onClick(e);
+          }}
           style={{
             background: 'transparent',
             border: 'none',
@@ -100,6 +104,12 @@ export const TourMascotTooltip = ({
           )}
           <button
             {...primaryProps}
+            onClick={(e) => {
+              if (isLastStep && typeof window.setTourToggleState === 'function') {
+                window.setTourToggleState(false);
+              }
+              if (primaryProps && primaryProps.onClick) primaryProps.onClick(e);
+            }}
             style={{
               background: 'var(--accent-color, #3b82f6)',
               border: 'none',
