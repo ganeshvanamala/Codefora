@@ -511,16 +511,36 @@ export const TourManager = () => {
           content: 'This panel shows the problem statement, constraints, and sample test cases.',
           disableBeacon: true,
           placement: 'right',
-        }
+        },
+        {
+          target: '.tour-room-users-btn',
+          content: 'Click here to view all users in the room and see who is Host, Editor, or Viewer.',
+          disableBeacon: true,
+          placement: 'bottom',
+        },
+        ...codeRoomSteps.slice(1) // skip the .tour-users-panel since it's hidden in a modal
       ];
     } else {
-      currentSteps = codeRoomSteps.slice(0, 1);
+      currentSteps = codeRoomSteps;
     }
   }
   if (location.pathname === '/problems') {
     const isDetailsView = document.querySelector('.tour-problem-left') !== null || document.querySelector('.tour-problem-lang') !== null;
-    currentSteps = isDetailsView ? problemDetailsSteps.slice(0, 1) : problemsListSteps.slice(0, 1);
+    currentSteps = isDetailsView ? problemDetailsSteps : problemsListSteps;
   }
+
+  // CRITICAL FIX: Only include steps where the target element actually exists in the DOM right now!
+  // This prevents react-joyride from crashing if a button is hidden (like the End Room button for non-hosts)
+  // or if a panel is closed (like the Chat panel attachments).
+  currentSteps = currentSteps.filter(step => {
+    // Joyride uses body for some global steps, so body always exists
+    if (step.target === 'body') return true;
+    try {
+      return document.querySelector(step.target) !== null;
+    } catch {
+      return false;
+    }
+  });
 
   const handleJoyrideCallback = React.useCallback((data) => {
     const { status, type, step, action } = data;
