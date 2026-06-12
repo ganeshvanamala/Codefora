@@ -111,6 +111,51 @@ export function createProfileController() {
       }
     },
 
+    saveTourStatus: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const { pageName, status } = request.body || {};
+      
+      if (!userId || !pageName) return response.status(400).json({ error: "Missing parameters" });
+      
+      try {
+        if (!db || db.isMock) {
+          const users = await readLocalUsers();
+          if (!users[userId]) users[userId] = {};
+          users[userId][`hasSeenTour_${pageName}`] = status;
+          await writeLocalUsers(users);
+          return response.json({ ok: true });
+        }
+
+        await db.collection("users").doc(userId).set({ [`hasSeenTour_${pageName}`]: status }, { merge: true });
+        return response.json({ ok: true });
+      } catch (error) {
+        console.warn(`Tour status save failed: ${error.message}`);
+        return response.status(500).json({ error: error.message });
+      }
+    },
+
+    getTourStatus: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const pageName = String(request.params.pageName || "").trim();
+      
+      if (!userId || !pageName) return response.status(400).json({ error: "Missing parameters" });
+      
+      try {
+        if (!db || db.isMock) {
+          const users = await readLocalUsers();
+          const user = users[userId] || {};
+          return response.json({ status: user[`hasSeenTour_${pageName}`] === true });
+        }
+
+        const doc = await db.collection("users").doc(userId).get();
+        const dbStatus = doc.exists ? doc.data()[`hasSeenTour_${pageName}`] : false;
+        return response.json({ status: dbStatus === true });
+      } catch (error) {
+        console.warn(`Tour status fetch failed: ${error.message}`);
+        return response.status(500).json({ error: error.message });
+      }
+    },
+
     listWorks: async (request, response) => {
       const userId = String(request.params.userId || "").trim();
       if (!userId) return response.status(400).json({ error: "Missing userId" });

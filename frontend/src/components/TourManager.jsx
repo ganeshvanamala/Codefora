@@ -91,12 +91,22 @@ export const TourManager = () => {
 
   // Listen for manual tour controls from UI
   useEffect(() => {
+    const saveTourStatusToApi = (status) => {
+      if (!user) return;
+      const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+      fetch(`${VITE_BACKEND_URL}/api/profiles/${user.uid}/tour-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageName, status })
+      }).catch(console.error);
+    };
+
     const handleManualStart = () => {
       // Clear session block and local storage to force it to run
       sessionStorage.removeItem(`tourCompleted_${pageName}`);
       if (user) {
         localStorage.removeItem(`codefora_tour_${user.uid}_${pageName}`);
-        setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: false }, { merge: true }).catch(console.error);
+        saveTourStatusToApi(false);
       } else {
         localStorage.removeItem(`codefora_tour_guest_${pageName}`);
       }
@@ -110,7 +120,7 @@ export const TourManager = () => {
       // Save permanently just like skipping the tour would
       const isManualUser = user?.providerId === 'manual';
       if (user && !isManualUser) {
-        setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: true }, { merge: true }).catch(console.error);
+        saveTourStatusToApi(true);
         localStorage.setItem(`codefora_tour_${user.uid}_${pageName}`, 'true');
       } else {
         const fallbackId = user ? user.uid : 'guest';
@@ -155,17 +165,24 @@ export const TourManager = () => {
 
       if (user && !isManualUser) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          const dbStatus = userDoc.exists() ? userDoc.data()[`hasSeenTour_${pageName}`] : false;
-          console.log(`[TourManager] DB status for ${pageName}: ${dbStatus}`);
+          const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+          const response = await fetch(`${VITE_BACKEND_URL}/api/profiles/${user.uid}/tour-status/${pageName}`);
           
-          if (dbStatus) {
-            setRun(false);
+          if (response.ok) {
+            const data = await response.json();
+            const dbStatus = data.status;
+            console.log(`[TourManager] DB status via API for ${pageName}: ${dbStatus}`);
+            
+            if (dbStatus) {
+              setRun(false);
+            } else {
+              setRun(true);
+            }
           } else {
-            setRun(true);
+            throw new Error("API request failed");
           }
         } catch (error) {
-          console.error("[TourManager] Error fetching tour status, falling back to local storage:", error);
+          console.error("[TourManager] Error fetching tour status via API, falling back to local storage:", error);
           const hasSeenLocal = localStorage.getItem(`codefora_tour_${user.uid}_${pageName}`) === 'true';
           setRun(!hasSeenLocal);
         }
@@ -634,9 +651,15 @@ export const TourManager = () => {
       const isManualUser = user?.providerId === 'manual';
       
       if (user && !isManualUser) {
-        console.log(`[TourManager] Saving completion to DB for user ${user.uid}`);
-        // Sync completion for THIS SPECIFIC PAGE permanently to database
-        setDoc(doc(db, 'users', user.uid), { [`hasSeenTour_${pageName}`]: true }, { merge: true }).catch(console.error);
+        console.log(`[TourManager] Saving completion to API for user ${user.uid}`);
+        // Sync completion for THIS SPECIFIC PAGE permanently to database via API
+        const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+        fetch(`${VITE_BACKEND_URL}/api/profiles/${user.uid}/tour-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pageName, status: true })
+        }).catch(console.error);
+        
         // Also save to local storage as a robust fallback
         localStorage.setItem(`codefora_tour_${user.uid}_${pageName}`, 'true');
       } else {

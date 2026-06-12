@@ -19,6 +19,8 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.get("/profiles/:userId", profileController.get);
     router.post("/profiles/:userId", profileController.save);
     router.post("/profiles/:userId/save-work", profileController.saveWork);
+    router.post("/profiles/:userId/tour-status", profileController.saveTourStatus);
+    router.get("/profiles/:userId/tour-status/:pageName", profileController.getTourStatus);
     router.post("/profiles/:userId/solve", profileController.solveProblem);
     router.get("/profiles/:userId/works", profileController.listWorks);
   }
