@@ -501,10 +501,7 @@ export const TourManager = () => {
 
   // Pick the right steps based on current URL
   let currentSteps = [];
-  if (location.pathname === '/home') currentSteps = homeSteps;
-  if (location.pathname === '/rooms') currentSteps = roomsSteps;
-  if (location.pathname === '/playground') currentSteps = playgroundSteps;
-  if (location.pathname === '/profile') currentSteps = profileSteps;
+  if (location.pathname === '/rooms') currentSteps = roomsSteps.slice(0, 1);
   if (location.pathname.startsWith('/code/')) {
     const isProblemRoom = document.querySelector('.tour-problem-left') !== null;
     if (isProblemRoom) {
@@ -514,22 +511,15 @@ export const TourManager = () => {
           content: 'This panel shows the problem statement, constraints, and sample test cases.',
           disableBeacon: true,
           placement: 'right',
-        },
-        {
-          target: '.tour-room-users-btn',
-          content: 'Click here to view all users in the room and see who is Host, Editor, or Viewer.',
-          disableBeacon: true,
-          placement: 'bottom',
-        },
-        ...codeRoomSteps.slice(1) // skip the .tour-users-panel since it's hidden in a modal
+        }
       ];
     } else {
-      currentSteps = codeRoomSteps;
+      currentSteps = codeRoomSteps.slice(0, 1);
     }
   }
   if (location.pathname === '/problems') {
     const isDetailsView = document.querySelector('.tour-problem-left') !== null || document.querySelector('.tour-problem-lang') !== null;
-    currentSteps = isDetailsView ? problemDetailsSteps : problemsListSteps;
+    currentSteps = isDetailsView ? problemDetailsSteps.slice(0, 1) : problemsListSteps.slice(0, 1);
   }
 
   const handleJoyrideCallback = React.useCallback((data) => {
