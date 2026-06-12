@@ -101,9 +101,17 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         });
       }
       setMicOn(false);
+      sessionStorage.setItem("codefora_mic_on", "false");
       socket.emit("mic:update", { roomId: activeRoomId, mic: false, speaking: false });
     }
   }, [canSpeak, micOn, activeRoomId]);
+
+  useEffect(() => {
+    // Auto-restore mic state on reload if it was previously on
+    if (canSpeak && !micOn && !localStream.current && sessionStorage.getItem("codefora_mic_on") === "true") {
+      toggleMic();
+    }
+  }, [canSpeak, micOn]);
 
   useEffect(() => {
     const activeTyping = typingCursors[0];
@@ -641,6 +649,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
         });
       }
       setMicOn(false);
+      sessionStorage.setItem("codefora_mic_on", "false");
       socket.emit("mic:update", { roomId: activeRoomId, mic: false, speaking: false });
       return;
     }
@@ -706,6 +715,7 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
       }
 
       setMicOn(true);
+      sessionStorage.setItem("codefora_mic_on", "true");
       socket.emit("mic:update", { roomId: activeRoomId, mic: true, speaking: false });
 
     } catch (error) {
