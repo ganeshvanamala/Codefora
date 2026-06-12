@@ -239,7 +239,7 @@ export function CommsPanel({
           <div className="messages messages--assistant" ref={aiScrollRef} style={{ flex: 1, overflowY: "auto", padding: "8px 4px" }}>
             {aiMessages.length === 0 && (
               <div className="assistant-empty" style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
-                <Sparkles size={24} style={{ color: "#f97316", marginBottom: "12px" }} />
+                <Sparkles size={24} style={{ color: "var(--primary-color)", marginBottom: "12px" }} />
                 <p style={{ margin: 0, fontSize: "0.85rem" }}>Ask the assistant anything about your code, logic, or errors.</p>
               </div>
             )}
@@ -247,7 +247,7 @@ export function CommsPanel({
             {aiMessages.map((message) => (
               <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`} style={{ marginBottom: "12px" }}>
                 <div className="chat-sender-row" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <div className="chat-avatar" style={{ background: message.role === "user" ? "rgba(249, 115, 22, 0.2)" : "rgba(0, 150, 255, 0.2)", borderColor: message.role === "user" ? "rgba(249, 115, 22, 0.4)" : "rgba(0, 150, 255, 0.4)" }}>
+                  <div className="chat-avatar" style={{ background: message.role === "user" ? "rgba(var(--primary-rgb), 0.2)" : "rgba(0, 150, 255, 0.2)", borderColor: message.role === "user" ? "rgba(var(--primary-rgb), 0.4)" : "rgba(0, 150, 255, 0.4)" }}>
                     {message.role === "user" ? "U" : "AI"}
                   </div>
                   <span style={{ fontSize: "0.72rem", fontWeight: 700, color: message.role === "user" ? "#ff9f43" : "#8be9fd", textTransform: "uppercase" }}>

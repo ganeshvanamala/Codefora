@@ -333,7 +333,7 @@ export function PlaygroundPage() {
               padding: '0 12px',
               borderRadius: '6px 6px 0 0',
               cursor: 'pointer',
-              background: activeName === f.name ? 'rgba(249, 115, 22, 0.1)' : 'transparent',
+              background: activeName === f.name ? 'rgba(var(--primary-rgb), 0.1)' : 'transparent',
               color: activeName === f.name ? 'var(--primary-orange)' : 'var(--text-muted)',
               border: activeName === f.name ? '1px solid var(--glass-border)' : '1px solid transparent',
               borderBottom: activeName === f.name ? '2px solid var(--primary-orange)' : '1px solid transparent'

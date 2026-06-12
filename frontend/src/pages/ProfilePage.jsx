@@ -407,8 +407,8 @@ export function ProfilePage() {
                           fontSize: '10px', 
                           fontWeight: '800', 
                           textTransform: 'uppercase',
-                          background: work.type === 'playground' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 115, 22, 0.1)',
-                          color: work.type === 'playground' ? '#3b82f6' : '#f97316'
+                          background: work.type === 'playground' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(var(--primary-rgb), 0.1)',
+                          color: work.type === 'playground' ? '#3b82f6' : 'var(--primary-color)'
                         }}>
                           {work.type}
                         </div>
@@ -553,14 +553,14 @@ export function ProfilePage() {
           flex: 1;
         }
         .community-btn.sider {
-          background: rgba(var(--primary-rgb), 0.1);
-          color: var(--primary-color);
-          border-color: rgba(var(--primary-rgb), 0.3);
+          background: rgba(255, 122, 24, 0.1);
+          color: #FF7A18;
+          border-color: rgba(255, 122, 24, 0.3);
         }
         .community-btn.sider.active {
-          background: var(--primary-color);
+          background: #FF7A18;
           color: white;
-          box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
+          box-shadow: 0 0 15px rgba(255, 122, 24, 0.5);
           animation: orange-glow 2s infinite alternate;
         }
         .community-btn.loop {
@@ -574,8 +574,8 @@ export function ProfilePage() {
           box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
         }
         @keyframes orange-glow {
-          from { box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.4); }
-          to { box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.8); }
+          from { box-shadow: 0 0 5px rgba(255, 122, 24, 0.4); }
+          to { box-shadow: 0 0 20px rgba(255, 122, 24, 0.8); }
         }
       `}</style>
     </main>

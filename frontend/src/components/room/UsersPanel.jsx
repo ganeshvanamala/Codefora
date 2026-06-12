@@ -311,7 +311,7 @@ export function UsersPanel({
         style={{ 
           margin: "0 16px 16px", 
           padding: "16px", 
-          border: "1px solid rgba(249, 115, 22, 0.4)", 
+          border: "1px solid rgba(var(--primary-rgb), 0.4)", 
           background: "transparent", 
           borderRadius: "12px", 
           display: "flex", 

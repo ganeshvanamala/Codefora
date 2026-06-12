@@ -218,7 +218,7 @@ export function RoomsPage() {
                 <option value="Most Popular">Most Popular</option>
                 <option value="Least Full">Least Full</option>
               </select>
-              <button className="button button-primary tour-create-room" onClick={() => setShowCreateModal(true)} style={{ backgroundColor: '#FF7F3F', borderColor: '#FF7F3F', color: '#fff' }}>
+              <button className="button button-primary tour-create-room" onClick={() => setShowCreateModal(true)} style={{ backgroundColor: 'var(--primary-color)', borderColor: 'var(--primary-color)', color: '#fff' }}>
                 <Plus size={18} /> Create Room
               </button>
             </div>

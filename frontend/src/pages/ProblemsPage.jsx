@@ -459,7 +459,7 @@ export function ProblemsPage() {
                 setRoomName(`Problem Room: ${selectedProblem.title}`);
                 setShowRoomModal(true);
               }}
-              style={{ width: "100%", marginTop: "12px", marginBottom: "12px", backgroundColor: "#FF7F3F", borderColor: "#FF7F3F" }}
+              style={{ width: "100%", marginTop: "12px", marginBottom: "12px", backgroundColor: "var(--primary-color)", borderColor: "var(--primary-color)" }}
             >
               <Users size={18} style={{ marginRight: "8px" }} /> Collaborate & Solve
             </button>

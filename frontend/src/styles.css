@@ -23,7 +23,7 @@
 
 .animated-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.3);
 }
 
 .animated-button .arrow-container {
@@ -119,6 +119,7 @@
   /* Legacy aliases to new dynamic colors */
   --primary: var(--primary-color);
   --primary-hover: var(--primary-accent);
+  --primary-orange: var(--primary-color);
   
   --text: #e0e0e0;
   --heading: #ffffff;
@@ -142,6 +143,7 @@
   --primary-accent: #33edff;
   --primary: var(--primary-color);
   --primary-hover: var(--primary-accent);
+  --primary-orange: var(--primary-color);
   --focus-ring: rgba(var(--primary-rgb), 0.26);
   --card-hover-border: rgba(var(--primary-rgb), 0.5);
 }
@@ -1041,9 +1043,9 @@ label {
   position: absolute;
   width: 6px;
   height: 6px;
-  background: rgba(249, 115, 22, 0.72);
+  background: rgba(var(--primary-rgb), 0.72);
   border-radius: 999px;
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.55);
+  box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.55);
   animation: floatParticle 16s linear infinite;
 }
 
@@ -1255,14 +1257,14 @@ label {
 
 .filter-pill:hover {
   transform: translateY(-1px);
-  border-color: rgba(249, 115, 22, 0.45);
+  border-color: rgba(var(--primary-rgb), 0.45);
 }
 
 .filter-pill.active {
   color: #1b1020;
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   border-color: transparent;
-  box-shadow: 0 14px 28px rgba(249, 115, 22, 0.24);
+  box-shadow: 0 14px 28px rgba(var(--primary-rgb), 0.24);
 }
 
 .difficulty-progress-card,
@@ -1311,7 +1313,7 @@ label {
 
 .progress-fill--easy { background: linear-gradient(90deg, #38bdf8, #67e8f9); }
 .progress-fill--medium { background: linear-gradient(90deg, var(--primary), #fb923c); }
-.progress-fill--hard { background: linear-gradient(90deg, #fb7185, #f97316); }
+.progress-fill--hard { background: linear-gradient(90deg, #fb7185, var(--primary-color)); }
 
 .daily-challenge-card {
   display: grid;
@@ -1580,8 +1582,8 @@ label {
 
 .problem-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(249, 115, 22, 0.55);
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.16), 0 22px 60px rgba(249, 115, 22, 0.12);
+  border-color: rgba(var(--primary-rgb), 0.55);
+  box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.16), 0 22px 60px rgba(var(--primary-rgb), 0.12);
 }
 
 .problem-card-main {
@@ -1633,9 +1635,9 @@ label {
 
 .problem-card:hover {
   transform: translateY(-2px) scale(1.005);
-  border-color: rgba(249, 115, 22, 0.5);
+  border-color: rgba(var(--primary-rgb), 0.5);
   background: linear-gradient(180deg, rgba(16, 30, 52, 0.98), rgba(2, 6, 23, 0.96));
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.15), 0 16px 40px rgba(249, 115, 22, 0.1);
+  box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.15), 0 16px 40px rgba(var(--primary-rgb), 0.1);
 }
 
 .problem-card-main {
@@ -1727,11 +1729,11 @@ label {
   min-width: 92px;
   min-height: 38px;
   border-radius: 12px;
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.12);
+  box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.12);
 }
 
 .problem-card-action .button:hover {
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.2), 0 0 18px rgba(249, 115, 22, 0.2);
+  box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.2), 0 0 18px rgba(var(--primary-rgb), 0.2);
 }
 
 .problems-empty-state {
@@ -1749,10 +1751,10 @@ label {
   width: 84px;
   height: 84px;
   color: var(--primary);
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.18), rgba(15, 23, 42, 0.7));
-  border: 1px solid rgba(249, 115, 22, 0.22);
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.18), rgba(15, 23, 42, 0.7));
+  border: 1px solid rgba(var(--primary-rgb), 0.22);
   border-radius: 999px;
-  box-shadow: 0 0 40px rgba(249, 115, 22, 0.14);
+  box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.14);
 }
 
 .problems-empty-state h3 {
@@ -7419,7 +7421,7 @@ label {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  background: linear-gradient(90deg, #3b82f6, #f97316);
+  background: linear-gradient(90deg, #3b82f6, var(--primary-color));
   z-index: 0;
   opacity: 0.8;
   filter: blur(8px);
@@ -7466,8 +7468,8 @@ label {
 }
 
 .default-codefora-avatar .bracket:last-child {
-  color: #f97316;
-  text-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
+  color: var(--primary-color);
+  text-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
 }
 
 .profile-name {
@@ -7480,9 +7482,9 @@ label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(249, 115, 22, 0.1);
-  color: #f97316;
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-color);
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
   padding: 4px 12px;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -7527,8 +7529,8 @@ label {
 }
 
 .stat-icon.orange {
-  background: rgba(249, 115, 22, 0.1);
-  color: #f97316;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-color);
 }
 
 .stat-info {
@@ -7638,7 +7640,7 @@ label {
 }
 
 .banner-icon.blue { color: #3b82f6; opacity: 0.5; }
-.banner-icon.orange { color: #f97316; opacity: 0.5; }
+.banner-icon.orange { color: var(--primary-color); opacity: 0.5; }
 
 .banner-text {
   text-align: center;
@@ -7655,7 +7657,7 @@ label {
 }
 
 .banner-text h2 span:last-child {
-  color: #f97316;
+  color: var(--primary-color);
 }
 
 .banner-text p {
@@ -7698,9 +7700,9 @@ label {
 }
 
 .button-outline-orange {
-  background: rgba(249, 115, 22, 0.1);
-  color: #f97316;
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-color);
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -7713,8 +7715,8 @@ label {
 }
 
 .button-outline-orange:hover:not(:disabled) {
-  background: rgba(249, 115, 22, 0.2);
-  border-color: #f97316;
+  background: rgba(var(--primary-rgb), 0.2);
+  border-color: var(--primary-color);
 }
 
 .button-outline-orange:disabled {
@@ -7765,7 +7767,7 @@ label {
 }
 
 .input-with-icon input:focus {
-  border-color: #f97316;
+  border-color: var(--primary-color);
 }
 
 .input-icon {
@@ -7795,7 +7797,7 @@ label {
 }
 
 .textarea-wrapper textarea:focus {
-  border-color: #f97316;
+  border-color: var(--primary-color);
 }
 
 .char-count {
@@ -7955,7 +7957,7 @@ label {
 }
 
 .text-blue { color: #3b82f6; }
-.text-orange { color: #f97316; }
+.text-orange { color: var(--primary-color); }
 
 .chart-placeholder {
   flex: 1;
@@ -8036,7 +8038,7 @@ label {
 
 .bg-green { background: #10b981; }
 .bg-blue { background: #3b82f6; }
-.bg-orange { background: #f97316; }
+.bg-orange { background: var(--primary-color); }
 .bg-purple { background: #8b5cf6; }
 
 .activity-content {
@@ -8133,7 +8135,7 @@ label {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary-orange, #f97316);
+  background: var(--primary-orange, var(--primary-color));
   cursor: pointer;
   border: 2px solid #0f172a;
   box-shadow: 0 0 4px rgba(0,0,0,0.5);
@@ -8143,7 +8145,7 @@ label {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary-orange, #f97316);
+  background: var(--primary-orange, var(--primary-color));
   cursor: pointer;
   border: 2px solid #0f172a;
   box-shadow: 0 0 4px rgba(0,0,0,0.5);
