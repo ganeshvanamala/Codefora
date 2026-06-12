@@ -17,6 +17,7 @@ export default function SignInPage() {
   const [authForm, setAuthForm] = useState({ username: "", email: "", password: "", confirmPassword: "" });
   const [authStatus, setAuthStatus] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -64,6 +65,7 @@ export default function SignInPage() {
   function updateAuthField(field, value) {
     setAuthForm((current) => ({ ...current, [field]: value }));
     setAuthStatus("");
+    setShowResend(false);
   }
 
   function finishManualAuth(account) {
@@ -81,6 +83,7 @@ export default function SignInPage() {
 
     setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
     setAuthStatus("");
+    setShowResend(false);
 
     if (isAdmin) navigate('/admin');
     else navigate('/home');
@@ -93,11 +96,38 @@ export default function SignInPage() {
     }
     setAuthBusy(true);
     setAuthStatus("");
+    setShowResend(false);
     try {
       await sendPasswordResetEmail(auth, authForm.email);
       setAuthStatus("Password reset email sent! Please check your inbox (and spam folder).");
     } catch (error) {
       setAuthStatus(error.message || "Failed to send reset email.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!authForm.email || !authForm.password) {
+      setAuthStatus("Please enter your email and password to resend the verification link.");
+      return;
+    }
+    setAuthBusy(true);
+    setAuthStatus("");
+    try {
+      // Sign them in temporarily just to get the user object to send the email
+      const userCredential = await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
+      await sendEmailVerification(userCredential.user);
+      await signOut(auth); // Sign them back out immediately
+      
+      setAuthStatus("A new verification email has been sent! Please check your inbox and spam folder.");
+      setShowResend(false);
+    } catch (error) {
+      if (error.code === 'auth/too-many-requests') {
+        setAuthStatus("Please wait a few minutes before requesting another email.");
+      } else {
+        setAuthStatus("Failed to resend email. Make sure your password is correct.");
+      }
     } finally {
       setAuthBusy(false);
     }
@@ -114,6 +144,7 @@ export default function SignInPage() {
 
     setAuthBusy(true);
     setAuthStatus("");
+    setShowResend(false);
 
     try {
       if (authTab === "signup") {
@@ -121,13 +152,14 @@ export default function SignInPage() {
         await updateProfile(userCredential.user, { displayName: authForm.username });
         await sendEmailVerification(userCredential.user);
         
-        setAuthStatus("Account created successfully! Please check your email inbox (and spam folder) to verify your account before logging in.");
+        setAuthStatus("Account created successfully! IMPORTANT: Please check your email inbox AND YOUR SPAM FOLDER to verify your account before logging in. If you don't verify, you cannot log in.");
         await signOut(auth); // Force them to verify before actually getting access
         setAuthTab("login");
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
         if (!userCredential.user.emailVerified) {
-          setAuthStatus("Please verify your email address before logging in. Check your inbox (and spam folder).");
+          setAuthStatus("Please verify your email address before logging in. Check your inbox and spam folder.");
+          setShowResend(true);
           await signOut(auth);
           setAuthBusy(false);
           return;
@@ -362,7 +394,15 @@ export default function SignInPage() {
 
               {authStatus && <p className="auth-modal-status" style={{ color: '#00E5FF', textAlign: 'center', marginTop: '15px', padding: '10px', background: 'rgba(0, 229, 255, 0.1)', borderRadius: '8px', border: '1px solid rgba(0, 229, 255, 0.2)' }}>{authStatus}</p>}
 
-              {authTab === "login" && (
+              {showResend && (
+                <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                  <button type="button" onClick={handleResendVerification} disabled={authBusy} style={{ background: 'none', border: 'none', color: '#00E5FF', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}>
+                    Didn't receive it? Click here to resend.
+                  </button>
+                </div>
+              )}
+
+              {authTab === "login" && !showResend && (
                 <div style={{ textAlign: 'right', marginTop: '10px' }}>
                   <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#FF9100', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}>
                     Forgot Password?
