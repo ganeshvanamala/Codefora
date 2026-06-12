@@ -36,6 +36,11 @@ export function RoomPage() {
   const [showNotes, setShowNotes] = useState(false);
   const [showTimeTravel, setShowTimeTravel] = useState(false);
 
+  // Tell TourManager when chat opens so it can dynamically inject chat-related tour steps!
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('chat-toggled', { detail: { isOpen: isChatOpen } }));
+  }, [isChatOpen]);
+
   const isBypassingBlocker = useRef(false);
 
   const {

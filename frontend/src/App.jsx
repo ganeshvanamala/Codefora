@@ -44,10 +44,10 @@ function LoaderManager({ children }) {
 
   return (
     <>
-      <TourManager />
       <Loader visible={loading} />
       {children}
       {showFooter && <Footer />}
+      <TourManager />
     </>
   );
 }

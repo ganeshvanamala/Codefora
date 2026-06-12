@@ -46,6 +46,13 @@ export const TourManager = () => {
   const [domReady, setDomReady] = useState(true);
   const [mountJoyride, setMountJoyride] = useState(false);
   const [tourViewVersion, setTourViewVersion] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    const handleChatToggle = (e) => setChatOpen(e.detail?.isOpen);
+    window.addEventListener('chat-toggled', handleChatToggle);
+    return () => window.removeEventListener('chat-toggled', handleChatToggle);
+  }, []);
 
   const getPageName = (path) => {
     if (path.startsWith('/code/')) return 'code_room';
@@ -530,9 +537,13 @@ export const TourManager = () => {
   }
 
   // CRITICAL FIX: Only include steps where the target element actually exists in the DOM right now!
-  // This prevents react-joyride from crashing if a button is hidden (like the End Room button for non-hosts)
-  // or if a panel is closed (like the Chat panel attachments).
+  // This prevents react-joyride from crashing if a button is hidden (like the End Room button for non-hosts).
   currentSteps = currentSteps.filter(step => {
+    // Explicitly exclude chat internal steps if chat is closed, because they exist in DOM but are off-screen!
+    if (!chatOpen && (step.target === '.tour-chat-attachment' || step.target === '.tour-chat-ai')) {
+      return false;
+    }
+
     // Joyride uses body for some global steps, so body always exists
     if (step.target === 'body') return true;
     try {
