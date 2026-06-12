@@ -97,7 +97,8 @@ export const TourManager = () => {
       fetch(`${API_URL}/api/profiles/${user.uid}/tour-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pageName, status })
+        body: JSON.stringify({ pageName, status }),
+        keepalive: true
       }).catch(console.error);
     };
 
@@ -655,7 +656,8 @@ export const TourManager = () => {
         fetch(`${API_URL}/api/profiles/${user.uid}/tour-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pageName, status: true })
+          body: JSON.stringify({ pageName, status: true }),
+          keepalive: true
         }).catch(console.error);
         
         // Also save to local storage as a robust fallback
