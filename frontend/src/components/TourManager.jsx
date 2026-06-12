@@ -37,8 +37,6 @@ const AutoClickBeacon = React.forwardRef((props, forwardedRef) => {
 });
 
 export const TourManager = () => {
-  // Master switch to completely bypass the entire component and suppress all logs without deleting the code
-  if (true) return null;
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -76,6 +74,13 @@ export const TourManager = () => {
     if (loading) return; // wait for auth to completely resolve
 
     const checkTourStatus = async () => {
+      // Only allow tour on requested pages
+      const allowedPages = ['rooms', 'code_room', 'problems'];
+      if (!allowedPages.includes(pageName)) {
+        setRun(false);
+        return; // Silently exit, no logs, no tour
+      }
+
       console.log(`[TourManager] Checking status for page: ${pageName}`);
       
       // Prevent showing the tour again if they hit 'Back' to a page they already completed in this session
