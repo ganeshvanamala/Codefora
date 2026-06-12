@@ -73,6 +73,16 @@ export const TourMascotTooltip = ({
             if (typeof window.setTourToggleState === 'function') window.setTourToggleState(false);
             const cb = document.getElementById('tour-toggle-checkbox');
             if (cb) cb.checked = false;
+            
+            // Brutal override: violently force localStorage memory
+            try {
+              const pathPage = window.location.pathname.startsWith('/code/') ? 'code_room' : 'rooms';
+              localStorage.setItem(`codefora_tour_guest_${pathPage}`, 'true');
+              if (window.currentUserUid) {
+                localStorage.setItem(`codefora_tour_${window.currentUserUid}_${pathPage}`, 'true');
+              }
+            } catch(err) {}
+
             if (skipProps && skipProps.onClick) skipProps.onClick(e);
           }}
           style={{
@@ -111,6 +121,15 @@ export const TourMascotTooltip = ({
                 if (typeof window.setTourToggleState === 'function') window.setTourToggleState(false);
                 const cb = document.getElementById('tour-toggle-checkbox');
                 if (cb) cb.checked = false;
+                
+                // Brutal override: violently force localStorage memory
+                try {
+                  const pathPage = window.location.pathname.startsWith('/code/') ? 'code_room' : 'rooms';
+                  localStorage.setItem(`codefora_tour_guest_${pathPage}`, 'true');
+                  if (window.currentUserUid) {
+                    localStorage.setItem(`codefora_tour_${window.currentUserUid}_${pathPage}`, 'true');
+                  }
+                } catch(err) {}
               }
               if (primaryProps && primaryProps.onClick) primaryProps.onClick(e);
             }}

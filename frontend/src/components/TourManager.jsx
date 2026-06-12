@@ -48,6 +48,12 @@ export const TourManager = () => {
   const [tourViewVersion, setTourViewVersion] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
 
+  // Expose user ID to global scope for brutal overrides in tooltip
+  useEffect(() => {
+    if (user) window.currentUserUid = user.uid;
+    else window.currentUserUid = null;
+  }, [user]);
+
   useEffect(() => {
     const handleChatToggle = (e) => setChatOpen(e.detail?.isOpen);
     window.addEventListener('chat-toggled', handleChatToggle);
