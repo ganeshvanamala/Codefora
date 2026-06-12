@@ -5,6 +5,7 @@ import { TourMascotTooltip } from './TourMascotTooltip';
 import { useAuth } from '../hooks/useAuth';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { API_URL } from '../config';
 
 const AutoClickBeacon = React.forwardRef((props, forwardedRef) => {
   const localRef = React.useRef(null);
@@ -93,8 +94,7 @@ export const TourManager = () => {
   useEffect(() => {
     const saveTourStatusToApi = (status) => {
       if (!user) return;
-      const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-      fetch(`${VITE_BACKEND_URL}/api/profiles/${user.uid}/tour-status`, {
+      fetch(`${API_URL}/api/profiles/${user.uid}/tour-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageName, status })
@@ -165,8 +165,7 @@ export const TourManager = () => {
 
       if (user && !isManualUser) {
         try {
-          const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-          const response = await fetch(`${VITE_BACKEND_URL}/api/profiles/${user.uid}/tour-status/${pageName}`);
+          const response = await fetch(`${API_URL}/api/profiles/${user.uid}/tour-status/${pageName}`);
           
           if (response.ok) {
             const data = await response.json();
@@ -653,8 +652,7 @@ export const TourManager = () => {
       if (user && !isManualUser) {
         console.log(`[TourManager] Saving completion to API for user ${user.uid}`);
         // Sync completion for THIS SPECIFIC PAGE permanently to database via API
-        const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-        fetch(`${VITE_BACKEND_URL}/api/profiles/${user.uid}/tour-status`, {
+        fetch(`${API_URL}/api/profiles/${user.uid}/tour-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pageName, status: true })
