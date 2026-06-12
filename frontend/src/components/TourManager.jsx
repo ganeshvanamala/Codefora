@@ -76,9 +76,11 @@ export const TourManager = () => {
     }
   }, [location.pathname]);
 
-  // Broadcast tour state whenever it changes so UI toggles can sync
+  // Bulletproof sync: Directly flip the toggle in the UI via the global setter!
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent('tour-state-broadcast', { detail: { isRunning: run } }));
+    if (typeof window.setTourToggleState === 'function') {
+      window.setTourToggleState(run);
+    }
   }, [run]);
 
   // Listen for manual tour controls from UI
@@ -619,6 +621,9 @@ export const TourManager = () => {
     if (isTourEnding) {
       console.log(`[TourManager] Tour completed or skipped on ${pageName}. Status: ${status}, Action: ${action}, Type: ${type}`);
       setRun(false);
+      if (typeof window.setTourToggleState === 'function') {
+        window.setTourToggleState(false);
+      }
       
       const isManualUser = user?.providerId === 'manual';
       

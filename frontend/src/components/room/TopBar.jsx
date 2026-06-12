@@ -10,31 +10,13 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
   const [isTourRunning, setIsTourRunning] = useState(false);
   const settingsRef = useRef(null);
 
-  // Primary event-based sync
+  // Bulletproof sync: TourManager will directly call this function to update the toggle!
   useEffect(() => {
-    const handleTourState = (e) => {
-      console.log("[TopBar] Received tour-state-broadcast:", e.detail?.isRunning);
-      setIsTourRunning(e.detail?.isRunning || false);
+    window.setTourToggleState = setIsTourRunning;
+    return () => {
+      delete window.setTourToggleState;
     };
-    window.addEventListener('tour-state-broadcast', handleTourState);
-    return () => window.removeEventListener('tour-state-broadcast', handleTourState);
   }, []);
-
-  // Foolproof safety net: If sessionStorage marks it completed, force toggle OFF!
-  useEffect(() => {
-    if (!isTourRunning) return;
-    const interval = setInterval(() => {
-      try {
-        const pathPageName = window.location.pathname.startsWith('/code/') ? 'code_room' : 'rooms';
-        const isCompleted = window.sessionStorage.getItem(`tourCompleted_${pathPageName}`) === 'true';
-        if (isCompleted) {
-          console.log("[TopBar] Safety net triggered: Tour is completed in session, forcing toggle OFF");
-          setIsTourRunning(false);
-        }
-      } catch(e) {}
-    }, 500);
-    return () => clearInterval(interval);
-  }, [isTourRunning]);
 
   useEffect(() => {
     setLocalMaxMembers(room?.max || 7);
