@@ -58,6 +58,8 @@ export default function SignInPage() {
       // ignore
     }
 
+    localStorage.setItem("codefora_community", "sider");
+    document.documentElement.dataset.community = "sider";
     saveUsername("Guest");
     navigate('/home');
   }
@@ -272,7 +274,7 @@ export default function SignInPage() {
                   fontWeight: '800',
                   borderRadius: '50px',
                   border: 'none',
-                  background: 'var(--primary-accent)',
+                  background: '#FF9100',
                   color: '#1a0e00',
                   cursor: 'pointer',
                   boxShadow: '0 8px 25px rgba(255, 145, 0, 0.4)',
@@ -282,7 +284,7 @@ export default function SignInPage() {
                   gap: '10px'
                 }}
                   onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(255, 145, 0, 0.6)'; e.currentTarget.style.background = '#ffa32a'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 145, 0, 0.4)'; e.currentTarget.style.background = 'var(--primary-accent)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 145, 0, 0.4)'; e.currentTarget.style.background = '#FF9100'; }}
                 >
                   Get Started <span style={{ fontSize: '1.3rem' }}>→</span>
                 </button>
