@@ -39,19 +39,14 @@ function LoaderManager({ children }) {
       document.documentElement.dataset.community = "sider";
       return;
     }
-    const isManualUser = user.providerId === "manual";
-    if (!isManualUser) {
-      fetch(`${API_URL}/api/profiles/${user.uid}`)
-        .then(r => r.json())
-        .then(profile => {
-          const comm = profile.community || "sider";
-          document.documentElement.dataset.community = comm;
-          localStorage.setItem("codefora_community", comm);
-        })
-        .catch(console.error);
-    } else {
-      document.documentElement.dataset.community = "sider";
-    }
+    fetch(`${API_URL}/api/profiles/${user.uid}`)
+      .then(r => r.json())
+      .then(profile => {
+        const comm = profile.community || "sider";
+        document.documentElement.dataset.community = comm;
+        localStorage.setItem("codefora_community", comm);
+      })
+      .catch(console.error);
   }, [user]);
 
   useEffect(() => {
