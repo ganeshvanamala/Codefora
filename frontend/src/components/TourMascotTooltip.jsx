@@ -71,6 +71,8 @@ export const TourMascotTooltip = ({
           {...skipProps}
           onClick={(e) => {
             if (typeof window.setTourToggleState === 'function') window.setTourToggleState(false);
+            const cb = document.getElementById('tour-toggle-checkbox');
+            if (cb) cb.checked = false;
             if (skipProps && skipProps.onClick) skipProps.onClick(e);
           }}
           style={{
@@ -105,8 +107,10 @@ export const TourMascotTooltip = ({
           <button
             {...primaryProps}
             onClick={(e) => {
-              if (isLastStep && typeof window.setTourToggleState === 'function') {
-                window.setTourToggleState(false);
+              if (isLastStep) {
+                if (typeof window.setTourToggleState === 'function') window.setTourToggleState(false);
+                const cb = document.getElementById('tour-toggle-checkbox');
+                if (cb) cb.checked = false;
               }
               if (primaryProps && primaryProps.onClick) primaryProps.onClick(e);
             }}

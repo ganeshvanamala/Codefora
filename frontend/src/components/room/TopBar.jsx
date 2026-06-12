@@ -481,6 +481,7 @@ export function TopBar({ room, users, files, runFile, setRunFile, micOn, permiss
                 <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "bold" }}>Your Preferences</label>
                 <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "12px", color: "#fff" }}>
                   <input
+                    id="tour-toggle-checkbox"
                     type="checkbox"
                     checked={isTourRunning}
                     onChange={(e) => {
