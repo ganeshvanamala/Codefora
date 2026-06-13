@@ -1,6 +1,51 @@
 import { Globe2, Loader2, Play, Terminal, Keyboard } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
+// Double buffered iframe prevents the white flash when updating srcDoc
+function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
+  const [activeIframe, setActiveIframe] = useState(0);
+  const [docs, setDocs] = useState([srcDoc, '']);
+
+  useEffect(() => {
+    setDocs(prev => {
+      const next = [...prev];
+      next[1 - activeIframe] = srcDoc;
+      return next;
+    });
+  }, [srcDoc, activeIframe]);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <iframe
+        className={className}
+        title={`${title} 0`}
+        sandbox={sandbox}
+        srcDoc={docs[0]}
+        onLoad={() => { if (docs[0] === srcDoc) setActiveIframe(0); }}
+        style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          opacity: activeIframe === 0 ? 1 : 0,
+          pointerEvents: activeIframe === 0 ? 'auto' : 'none',
+          transition: 'opacity 0.1s ease-in-out'
+        }}
+      />
+      <iframe
+        className={className}
+        title={`${title} 1`}
+        sandbox={sandbox}
+        srcDoc={docs[1]}
+        onLoad={() => { if (docs[1] === srcDoc) setActiveIframe(1); }}
+        style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          opacity: activeIframe === 1 ? 1 : 0,
+          pointerEvents: activeIframe === 1 ? 'auto' : 'none',
+          transition: 'opacity 0.1s ease-in-out'
+        }}
+      />
+    </div>
+  );
+}
+
 export function ConsolePanel({ 
   output, 
   preview, 
@@ -25,33 +70,6 @@ export function ConsolePanel({
   const panelMode = externalPanelMode !== undefined ? externalPanelMode : localPanelMode;
   const setPanelMode = externalSetPanelMode || setLocalPanelMode;
   const [showInput, setShowInput] = useState(true); // Default to showing input side-by-side for better onboarding
-  const iframeRef = useRef(null);
-
-  useEffect(() => {
-    // Seamlessly update the iframe's DOM without causing a white flash!
-    // Using srcDoc normally causes the browser to clear the iframe and redraw it, causing a blink.
-    // By directly manipulating the documentElement, we bypass the clear-and-redraw cycle!
-    if (iframeRef.current && preview?.previewDoc) {
-      try {
-        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
-        if (doc) {
-          // If the iframe is completely empty, write the initial doc
-          if (doc.documentElement.innerHTML === "<head></head><body></body>" || doc.documentElement.innerHTML === "") {
-            doc.open();
-            doc.write(preview.previewDoc);
-            doc.close();
-          } else {
-            // If it already has content, just seamlessly replace the innerHTML to prevent flashing!
-            const newDoc = new DOMParser().parseFromString(preview.previewDoc, 'text/html');
-            doc.documentElement.innerHTML = newDoc.documentElement.innerHTML;
-          }
-        }
-      } catch (error) {
-        // Fallback for cross-origin issues, though sandbox shouldn't cause this for srcDoc
-        console.warn("Could not seamlessly update iframe:", error);
-      }
-    }
-  }, [preview?.previewDoc]);
 
   const renderFormattedOutput = (rawOutput) => {
     if (!rawOutput) return <span style={{ color: 'var(--text-muted)' }}>Ready.</span>;
@@ -223,12 +241,12 @@ export function ConsolePanel({
             </div>
           )
         ) : preview?.showPreview ? (
-          <div className="preview-container">
-            <iframe 
-              ref={iframeRef}
+          <div className="preview-container" style={{ width: '100%', height: '100%' }}>
+            <DoubleBufferedIframe 
               className="preview-iframe" 
               title="Web preview" 
               sandbox="allow-scripts allow-modals" 
+              srcDoc={preview.previewDoc}
             />
           </div>
         ) : (
