@@ -37,7 +37,7 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           opacity: activeIframe === 0 ? 1 : 0,
           pointerEvents: activeIframe === 0 ? 'auto' : 'none',
-          transition: 'opacity 0.1s ease-in-out'
+          visibility: activeIframe === 0 ? 'visible' : 'hidden'
         }}
       />
       <iframe
@@ -50,7 +50,7 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           opacity: activeIframe === 1 ? 1 : 0,
           pointerEvents: activeIframe === 1 ? 'auto' : 'none',
-          transition: 'opacity 0.1s ease-in-out'
+          visibility: activeIframe === 1 ? 'visible' : 'hidden'
         }}
       />
     </div>
