@@ -99,8 +99,8 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       const isOwner = requestUserId && room.ownerUserId && requestUserId === room.ownerUserId;
       const isAuthorizedHost = hostToken === room.hostToken || isOwner;
       
-      // A user is a Host if they are authorized OR if they were already the host before refresh
-      const isHost = isAuthorizedHost || (room.users.length === 0 && cleanName === room.hostName);
+      // A user is a Host if they are authorized OR if they are the first user to join the empty room
+      const isHost = isAuthorizedHost || room.users.length === 0;
       
       const authKey = requestUserId || requestSessionId;
       let role;
@@ -485,6 +485,15 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       }
       
       room.users = room.users.filter((user) => user.socketId !== socket.id);
+      
+      // If the disconnecting user was NOT a Host, and there is exactly 1 user left, they should become the Host.
+      // (If the disconnecting user WAS a Host, the 3-second grace period below handles the transfer).
+      if (disconnectingUser?.role !== "Host" && room.users.length === 1 && room.users[0].role !== "Host") {
+        room.users[0].role = "Host";
+        room.users[0].color = "#FF7A18";
+        room.hostName = room.users[0].name;
+        console.log(`[Host Promotion] Only one user left in ${roomId}, promoting to Host`);
+      }
       
       // GRACE PERIOD: Wait 3 seconds before transferring host role
       // This prevents losing the host role during a quick page refresh
