@@ -334,6 +334,14 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         const b = yjsRefs.current.binding;
         const d = yjsRefs.current.doc;
         
+        // IMPORTANT: Clear the refs instantly so that if the user rapidly switches tabs, 
+        // the NEW tab doesn't accidentally instantly assassinate this OLD provider before it flushes!
+        yjsRefs.current.provider = null;
+        yjsRefs.current.binding = null;
+        yjsRefs.current.doc = null;
+        clearTimeout(yjsRefs.current.saveTimeout);
+        yjsRefs.current.saveTimeout = null;
+
         // IMPORTANT: Destroy the Monaco binding IMMEDIATELY to prevent duplicate keystroke listeners
         // if the user switches back to this tab before the 1500ms timeout finishes!
         try {
@@ -355,7 +363,6 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
           }
         }, 1500);
         
-        clearTimeout(yjsRefs.current.saveTimeout);
         yjsRefs.current = { doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null };
       }
     };
