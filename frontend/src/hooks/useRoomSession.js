@@ -362,13 +362,11 @@ export function useRoomSession(roomId, usernameOverride = "", userIdOverride = "
     if (!activeFile || remoteUpdate.current || !canEdit) return;
     const code = value ?? "";
     setFiles((items) => items.map((file) => file.name === activeFile.name ? { ...file, code } : file));
-    socket.emit("file:update", { roomId: activeRoomId, fileName: activeFile.name, code });
   }
 
   function updateFileCode(fileName, code) {
     if (!fileName || !canEdit) return;
     setFiles((items) => items.map((file) => file.name === fileName ? { ...file, code } : file));
-    socket.emit("file:update", { roomId: activeRoomId, fileName, code });
   }
 
   function sendChat(text) {

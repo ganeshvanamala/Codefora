@@ -260,12 +260,6 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       });
 
       yjsRefs.current = { doc, provider, binding, saveTimeout: yjsRefs.current.saveTimeout, boundFile: activeFile.name };
-
-      provider.on('synced', (isSynced) => {
-        if (isSynced && type.toString() === "" && activeFile.code) {
-          type.insert(0, activeFile.code);
-        }
-      });
     };
 
     // Try to bind immediately
