@@ -191,10 +191,15 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
   const yjsRefs = useRef({ doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null });
   const onChangeRef = useRef(onChange);
+  const onUpdateFileCodeRef = useRef(onUpdateFileCode);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onUpdateFileCodeRef.current = onUpdateFileCode;
+  }, [onUpdateFileCode]);
 
   useEffect(() => {
     return () => {
@@ -319,8 +324,10 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       
       if (yjsRefs.current.provider) {
         // Flush any pending text to React state before destroying the Yjs connection
-        if (yjsRefs.current.saveTimeout && onChangeRef.current) {
-          onChangeRef.current(editorInstance.getValue());
+        // We MUST use onUpdateFileCode with the exact boundFile, otherwise rapidly switching tabs
+        // causes the old file to be overwritten with the new file's text!
+        if (yjsRefs.current.saveTimeout && onUpdateFileCodeRef.current && yjsRefs.current.boundFile) {
+          onUpdateFileCodeRef.current(yjsRefs.current.boundFile, yjsRefs.current.doc.getText("monaco").toString());
         }
         
         // Delay provider destruction to allow pending Yjs WebRTC/WebSocket messages to flush to the server
