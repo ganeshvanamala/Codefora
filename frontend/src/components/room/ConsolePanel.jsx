@@ -251,11 +251,12 @@ export function ConsolePanel({
           )
         ) : preview?.showPreview ? (
           <div className="preview-container" style={{ width: '100%', height: '100%' }}>
-            <DoubleBufferedIframe 
-              className="preview-iframe" 
-              title="Web preview" 
-              sandbox="allow-scripts allow-modals" 
+            <iframe
+              className="preview-iframe"
+              title="Web preview"
+              sandbox="allow-scripts allow-modals allow-popups allow-forms allow-same-origin"
               srcDoc={preview.previewDoc}
+              style={{ width: '100%', height: '100%', border: 'none' }}
             />
           </div>
         ) : (
