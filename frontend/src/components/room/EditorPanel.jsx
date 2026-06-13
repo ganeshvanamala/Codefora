@@ -202,7 +202,9 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       editorDisposables.current = [];
       if (yjsRefs.current.provider) {
         yjsRefs.current.provider.destroy();
-        yjsRefs.current.binding.destroy();
+        try {
+          yjsRefs.current.binding.destroy();
+        } catch (error) {}
         yjsRefs.current.doc.destroy();
         clearTimeout(yjsRefs.current.saveTimeout);
       }
