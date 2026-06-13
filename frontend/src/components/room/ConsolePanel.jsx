@@ -1,5 +1,5 @@
 import { Globe2, Loader2, Play, Terminal, Keyboard } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function ConsolePanel({ 
   output, 
@@ -25,6 +25,33 @@ export function ConsolePanel({
   const panelMode = externalPanelMode !== undefined ? externalPanelMode : localPanelMode;
   const setPanelMode = externalSetPanelMode || setLocalPanelMode;
   const [showInput, setShowInput] = useState(true); // Default to showing input side-by-side for better onboarding
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    // Seamlessly update the iframe's DOM without causing a white flash!
+    // Using srcDoc normally causes the browser to clear the iframe and redraw it, causing a blink.
+    // By directly manipulating the documentElement, we bypass the clear-and-redraw cycle!
+    if (iframeRef.current && preview?.previewDoc) {
+      try {
+        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+        if (doc) {
+          // If the iframe is completely empty, write the initial doc
+          if (doc.documentElement.innerHTML === "<head></head><body></body>" || doc.documentElement.innerHTML === "") {
+            doc.open();
+            doc.write(preview.previewDoc);
+            doc.close();
+          } else {
+            // If it already has content, just seamlessly replace the innerHTML to prevent flashing!
+            const newDoc = new DOMParser().parseFromString(preview.previewDoc, 'text/html');
+            doc.documentElement.innerHTML = newDoc.documentElement.innerHTML;
+          }
+        }
+      } catch (error) {
+        // Fallback for cross-origin issues, though sandbox shouldn't cause this for srcDoc
+        console.warn("Could not seamlessly update iframe:", error);
+      }
+    }
+  }, [preview?.previewDoc]);
 
   const renderFormattedOutput = (rawOutput) => {
     if (!rawOutput) return <span style={{ color: 'var(--text-muted)' }}>Ready.</span>;
@@ -198,10 +225,10 @@ export function ConsolePanel({
         ) : preview?.showPreview ? (
           <div className="preview-container">
             <iframe 
+              ref={iframeRef}
               className="preview-iframe" 
               title="Web preview" 
               sandbox="allow-scripts allow-modals" 
-              srcDoc={preview.previewDoc} 
             />
           </div>
         ) : (
