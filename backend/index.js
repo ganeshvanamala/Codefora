@@ -35,7 +35,8 @@ setPersistence({
     if (match) {
       const roomId = match[1];
       const fileNameStr = match[2];
-      const room = roomRepository.findById(roomId);
+      let room = await roomRepository.fetchById(roomId);
+      if (!room) room = await roomRepository.fetchByInviteCode(roomId);
       if (room) {
         // Find matching file (case-insensitive and stripped of non-alphanumeric just in case)
         const file = room.files.find(f => f.name.replace(/[^a-zA-Z0-9-.]/g, '') === fileNameStr);
@@ -47,10 +48,11 @@ setPersistence({
         }
       }
 
-      ydoc.on('update', () => {
+      ydoc.on('update', async () => {
         const type = ydoc.getText("monaco");
         const code = type.toString();
-        const room = roomRepository.findById(roomId);
+        let room = await roomRepository.fetchById(roomId);
+        if (!room) room = await roomRepository.fetchByInviteCode(roomId);
         if (room) {
           const file = room.files.find(f => f.name.replace(/[^a-zA-Z0-9-.]/g, '') === fileNameStr);
           if (file && file.code !== code) {

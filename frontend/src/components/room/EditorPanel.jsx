@@ -254,12 +254,6 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       const docRoomName = `room-${roomId}-file-${activeFile.name.replace(/[^a-zA-Z0-9-.]/g, '')}`;
       const provider = new WebsocketProvider(wsUrl, docRoomName, doc);
       const type = doc.getText("monaco");
-      
-      // Prevent Yjs from wiping the editor if the server sync is slow.
-      // Pre-fill the local CRDT with the React state so that MonacoBinding sees the text immediately.
-      if (activeFile && activeFile.code && type.toString() === "") {
-        type.insert(0, activeFile.code);
-      }
 
       const binding = new MonacoBinding(type, model, new Set([editorInstance]), provider.awareness);
 
