@@ -30,8 +30,8 @@ const io = new Server(server, { cors: { origin: allowedOrigins(), methods: ["GET
 // Bind Yjs persistence directly to the backend database
 setPersistence({
   bindState: async (docName, ydoc) => {
-    // docName: room-123-file-mainjs
-    const match = docName.match(/^room-(.+?)-file-(.+)$/);
+    // docName: yjs/room-123-file-mainjs or room-123-file-mainjs
+    const match = docName.match(/^(?:yjs\/)?room-(.+?)-file-(.+)$/);
     if (match) {
       const roomId = match[1];
       const fileNameStr = match[2];
