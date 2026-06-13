@@ -740,7 +740,21 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         </div>
       </div>
 
-      <div className="editor-wrap tour-code-editor">
+      <div 
+        className="editor-wrap tour-code-editor"
+        onKeyDownCapture={(e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onRun && !isRunningCode) onRun();
+          }
+          if ((e.ctrlKey || e.metaKey) && e.key === "'") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onSubmit && canSubmit && !isSubmittingCode) onSubmit();
+          }
+        }}
+      >
         <Editor
           height="100%"
           theme={theme === "dark" ? "vs-dark" : "light"}
