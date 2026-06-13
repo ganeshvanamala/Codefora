@@ -189,7 +189,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
   const otherUsers = users.filter((user) => user.socketId !== socket.id);
 
-  const yjsRefs = useRef({ doc: null, provider: null, binding: null, saveTimeout: null });
+  const yjsRefs = useRef({ doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null });
 
   useEffect(() => {
     return () => {
@@ -207,52 +207,69 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   useEffect(() => {
     if (!editorInstance || !activeFile || !roomId) return;
 
-    // Destroy old Yjs instance
-    if (yjsRefs.current.provider) {
-      yjsRefs.current.provider.destroy();
-      yjsRefs.current.binding.destroy();
-      yjsRefs.current.doc.destroy();
-      clearTimeout(yjsRefs.current.saveTimeout);
-    }
+    let modelChangeDisposable = null;
 
-    const doc = new Y.Doc();
-    
-    // Connect to the backend Yjs WebSocket server
-    const wsUrl = API_URL.replace(/^http/, 'ws') + '/yjs';
-    
-    // Use a unique room name for this file in this room
-    const docRoomName = `room-${roomId}-file-${activeFile.name.replace(/[^a-zA-Z0-9-.]/g, '')}`;
-    const provider = new WebsocketProvider(wsUrl, docRoomName, doc);
-    
-    const type = doc.getText("monaco");
-    
-    const binding = new MonacoBinding(type, editorInstance.getModel(), new Set([editorInstance]), provider.awareness);
+    const bindYjs = () => {
+      const model = editorInstance.getModel();
+      if (!model) return;
 
-    // Assign user color and name to the cursor initially
-    const currentUser = users.find(u => u.socketId === socket.id);
-    const color = currentUser?.color || (currentUser?.role === "Host" ? "#ffb000" : "#8b5cf6");
-    provider.awareness.setLocalStateField('user', {
-      name: currentUser?.name || 'Anonymous',
-      color: color
-    });
-
-    // Automatically emit `onChange` (which triggers file:update) after 1.5s of no typing to persist to the database.
-    type.observe(() => {
-      clearTimeout(yjsRefs.current.saveTimeout);
-      yjsRefs.current.saveTimeout = setTimeout(() => {
-        if (onChange) onChange(type.toString());
-      }, 1500);
-    });
-
-    yjsRefs.current = { doc, provider, binding, saveTimeout: yjsRefs.current.saveTimeout };
-
-    // Set initial target code if the Yjs doc is empty but the active file has content
-    // Actually, Yjs will handle syncing if the doc exists. We'll wait for sync.
-    provider.on('synced', (isSynced) => {
-      if (isSynced && type.toString() === "" && activeFile.code) {
-        // If we are the first one joining and Yjs is empty, seed it with the database code
-        type.insert(0, activeFile.code);
+      const modelPath = model.uri.path;
+      // We only bind if the current Monaco model matches the active file tab
+      // model.uri.path is usually something like "/main.js"
+      if (!modelPath.endsWith(activeFile.name)) {
+        return; // The model hasn't swapped yet, wait for onDidChangeModel
       }
+
+      // If already bound to this exact file, do nothing
+      if (yjsRefs.current.boundFile === activeFile.name && yjsRefs.current.provider) {
+        return;
+      }
+
+      // Destroy old Yjs instance before binding new one
+      if (yjsRefs.current.provider) {
+        yjsRefs.current.provider.destroy();
+        yjsRefs.current.binding.destroy();
+        yjsRefs.current.doc.destroy();
+        clearTimeout(yjsRefs.current.saveTimeout);
+      }
+
+      const doc = new Y.Doc();
+      const wsUrl = API_URL.replace(/^http/, 'ws') + '/yjs';
+      const docRoomName = `room-${roomId}-file-${activeFile.name.replace(/[^a-zA-Z0-9-.]/g, '')}`;
+      const provider = new WebsocketProvider(wsUrl, docRoomName, doc);
+      const type = doc.getText("monaco");
+      
+      const binding = new MonacoBinding(type, model, new Set([editorInstance]), provider.awareness);
+
+      const currentUser = users.find(u => u.socketId === socket.id);
+      const color = currentUser?.color || (currentUser?.role === "Host" ? "#ffb000" : "#8b5cf6");
+      provider.awareness.setLocalStateField('user', {
+        name: currentUser?.name || 'Anonymous',
+        color: color
+      });
+
+      type.observe(() => {
+        clearTimeout(yjsRefs.current.saveTimeout);
+        yjsRefs.current.saveTimeout = setTimeout(() => {
+          if (onChange) onChange(type.toString());
+        }, 1500);
+      });
+
+      yjsRefs.current = { doc, provider, binding, saveTimeout: yjsRefs.current.saveTimeout, boundFile: activeFile.name };
+
+      provider.on('synced', (isSynced) => {
+        if (isSynced && type.toString() === "" && activeFile.code) {
+          type.insert(0, activeFile.code);
+        }
+      });
+    };
+
+    // Try to bind immediately
+    bindYjs();
+
+    // Also bind whenever Monaco's model changes
+    modelChangeDisposable = editorInstance.onDidChangeModel(() => {
+      bindYjs();
     });
 
     // Track local cursor movements to broadcast so the UsersPanel can show "typing in main.js:4"
@@ -291,12 +308,14 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       disposables.forEach((disposable) => disposable.dispose());
+      if (modelChangeDisposable) modelChangeDisposable.dispose();
+      
       if (yjsRefs.current.provider) {
         yjsRefs.current.provider.destroy();
         yjsRefs.current.binding.destroy();
         yjsRefs.current.doc.destroy();
         clearTimeout(yjsRefs.current.saveTimeout);
-        yjsRefs.current = { doc: null, provider: null, binding: null, saveTimeout: null };
+        yjsRefs.current = { doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null };
       }
     };
   }, [editorInstance, activeFile?.name, roomId]);
