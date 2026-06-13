@@ -317,13 +317,17 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
           onChange(yjsRefs.current.doc.getText("monaco").toString());
         }
         
-        // Delay destruction to allow pending Yjs WebRTC/WebSocket messages to flush to the server
+        // Delay provider destruction to allow pending Yjs WebRTC/WebSocket messages to flush to the server
         const p = yjsRefs.current.provider;
         const b = yjsRefs.current.binding;
         const d = yjsRefs.current.doc;
+        
+        // IMPORTANT: Destroy the Monaco binding IMMEDIATELY to prevent duplicate keystroke listeners
+        // if the user switches back to this tab before the 1500ms timeout finishes!
+        b.destroy();
+        
         setTimeout(() => {
           p.destroy();
-          b.destroy();
           d.destroy();
         }, 1500);
         
