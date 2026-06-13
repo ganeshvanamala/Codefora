@@ -252,6 +252,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         clearTimeout(yjsRefs.current.saveTimeout);
         yjsRefs.current.saveTimeout = setTimeout(() => {
           if (onChange) onChange(type.toString());
+          yjsRefs.current.saveTimeout = null;
         }, 1500);
       });
 
@@ -311,6 +312,11 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       if (modelChangeDisposable) modelChangeDisposable.dispose();
       
       if (yjsRefs.current.provider) {
+        // Flush any pending text to React state before destroying the Yjs connection
+        if (yjsRefs.current.saveTimeout && onChange) {
+          onChange(yjsRefs.current.doc.getText("monaco").toString());
+        }
+        
         yjsRefs.current.provider.destroy();
         yjsRefs.current.binding.destroy();
         yjsRefs.current.doc.destroy();
