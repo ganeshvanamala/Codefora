@@ -190,6 +190,11 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   const otherUsers = users.filter((user) => user.socketId !== socket.id);
 
   const yjsRefs = useRef({ doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null });
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     return () => {
@@ -255,7 +260,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       type.observe(() => {
         clearTimeout(yjsRefs.current.saveTimeout);
         yjsRefs.current.saveTimeout = setTimeout(() => {
-          if (onChange) onChange(type.toString());
+          if (onChangeRef.current) onChangeRef.current(type.toString());
           yjsRefs.current.saveTimeout = null;
         }, 1500);
       });
@@ -317,8 +322,8 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       
       if (yjsRefs.current.provider) {
         // Flush any pending text to React state before destroying the Yjs connection
-        if (yjsRefs.current.saveTimeout && onChange) {
-          onChange(yjsRefs.current.doc.getText("monaco").toString());
+        if (yjsRefs.current.saveTimeout && onChangeRef.current) {
+          onChangeRef.current(yjsRefs.current.doc.getText("monaco").toString());
         }
         
         // Delay provider destruction to allow pending Yjs WebRTC/WebSocket messages to flush to the server
