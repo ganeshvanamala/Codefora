@@ -290,7 +290,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
             onChangeRef.current(editorInstance.getValue());
           }
           yjsRefs.current.saveTimeout = null;
-        }, 1500);
+        }, 300);
       }),
       editorInstance.onKeyDown(() => {
         setTimeout(() => {
