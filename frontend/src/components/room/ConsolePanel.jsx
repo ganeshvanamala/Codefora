@@ -36,8 +36,7 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
         style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           opacity: activeIframe === 0 ? 1 : 0,
-          pointerEvents: activeIframe === 0 ? 'auto' : 'none',
-          visibility: activeIframe === 0 ? 'visible' : 'hidden'
+          pointerEvents: activeIframe === 0 ? 'auto' : 'none'
         }}
       />
       <iframe
@@ -49,8 +48,7 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
         style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           opacity: activeIframe === 1 ? 1 : 0,
-          pointerEvents: activeIframe === 1 ? 'auto' : 'none',
-          visibility: activeIframe === 1 ? 'visible' : 'hidden'
+          pointerEvents: activeIframe === 1 ? 'auto' : 'none'
         }}
       />
     </div>
