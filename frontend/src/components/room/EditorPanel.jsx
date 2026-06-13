@@ -225,6 +225,12 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       const model = editorInstance.getModel();
       if (!model) return;
 
+      // CRITICAL FIX: Monaco defaults to CRLF (\r\n) on Windows. 
+      // y-monaco maps strictly by string length. If Y.Text uses \n but Monaco uses \r\n, 
+      // indices will drift and text will insert on the wrong lines for other users!
+      // Forcing LF (0) eliminates this exact desync issue.
+      model.setEOL(0);
+
       const modelPath = model.uri.path;
       // We only bind if the current Monaco model matches the active file tab
       // model.uri.path is usually something like "/main.js"
