@@ -6,13 +6,24 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
   const [activeIframe, setActiveIframe] = useState(0);
   const [docs, setDocs] = useState([srcDoc, '']);
 
+  const activeIframeRef = useRef(0);
+
   useEffect(() => {
     setDocs(prev => {
+      const inactiveIdx = 1 - activeIframeRef.current;
+      if (prev[inactiveIdx] === srcDoc) return prev;
       const next = [...prev];
-      next[1 - activeIframe] = srcDoc;
+      next[inactiveIdx] = srcDoc;
       return next;
     });
-  }, [srcDoc, activeIframe]);
+  }, [srcDoc]);
+
+  const handleLoad = (idx, currentDoc) => {
+    if (currentDoc === srcDoc) {
+      activeIframeRef.current = idx;
+      setActiveIframe(idx);
+    }
+  };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -21,7 +32,7 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
         title={`${title} 0`}
         sandbox={sandbox}
         srcDoc={docs[0]}
-        onLoad={() => { if (docs[0] === srcDoc) setActiveIframe(0); }}
+        onLoad={() => handleLoad(0, docs[0])}
         style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           opacity: activeIframe === 0 ? 1 : 0,
@@ -34,7 +45,7 @@ function DoubleBufferedIframe({ srcDoc, className, title, sandbox }) {
         title={`${title} 1`}
         sandbox={sandbox}
         srcDoc={docs[1]}
-        onLoad={() => { if (docs[1] === srcDoc) setActiveIframe(1); }}
+        onLoad={() => handleLoad(1, docs[1])}
         style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           opacity: activeIframe === 1 ? 1 : 0,
