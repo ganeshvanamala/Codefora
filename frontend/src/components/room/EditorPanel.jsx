@@ -335,6 +335,10 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         // if the user switches back to this tab before the 1500ms timeout finishes!
         try {
           b.destroy();
+          // Instantly clear awareness so the user's "phantom cursor" disappears on tab switch!
+          if (p.awareness) {
+            p.awareness.setLocalState(null);
+          }
         } catch (error) {
           console.warn("Binding cleanup warning:", error);
         }
