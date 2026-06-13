@@ -629,7 +629,8 @@
     margin-top: auto;
   }
 
-  .chat-input-area input {
+  .chat-input-area input,
+  .chat-input-area textarea {
     flex: 1;
     height: 38px;
     border: 1px solid #1b2b45;
@@ -641,11 +642,13 @@
     outline: none;
   }
 
-  .chat-input-area input:focus {
+  .chat-input-area input:focus,
+  .chat-input-area textarea:focus {
     border-color: #ff7b00;
   }
 
-  .chat-input-area input::placeholder {
+  .chat-input-area input::placeholder,
+  .chat-input-area textarea::placeholder {
     color: #7a8a9a;
   }
 
@@ -1035,7 +1038,8 @@
     flex-shrink: 0;
   }
 
-  .send-row input {
+  .send-row input,
+  .send-row textarea {
     flex: 1;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
@@ -2188,7 +2192,8 @@
     color: #ffffff !important;
   }
 
-  .chat-input-area input, .ai-box .send-row input {
+  .chat-input-area input, .ai-box .send-row input,
+  .chat-input-area textarea, .ai-box .send-row textarea {
     background: transparent !important;
     border: none !important;
     height: 36px !important;
@@ -2198,7 +2203,8 @@
     outline: none !important;
   }
 
-  .chat-input-area input::placeholder, .ai-box .send-row input::placeholder {
+  .chat-input-area input::placeholder, .ai-box .send-row input::placeholder,
+  .chat-input-area textarea::placeholder, .ai-box .send-row textarea::placeholder {
     color: #5b6973 !important;
   }
 

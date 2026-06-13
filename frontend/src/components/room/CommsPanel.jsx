@@ -214,13 +214,20 @@ export function CommsPanel({
                 </div>
               )}
             </div>
-            <input
+            <textarea
               disabled={!permissions.canChat}
               value={chatText}
               onChange={(event) => setChatText(event.target.value)}
-              onKeyDown={(event) => event.key === "Enter" && sendChat()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  sendChat();
+                }
+              }}
               onFocus={onClearNotifications}
               placeholder={permissions.canChat ? "Type a message..." : "Chat disabled"}
+              rows={1}
+              style={{ resize: "none", overflowY: "auto" }}
             />
             <button
               className="chat-send-btn-cyber"
@@ -276,12 +283,19 @@ export function CommsPanel({
             <div className="chat-tool-btn-cyber" style={{ opacity: 0.5 }}>
               <Sparkles size={16} />
             </div>
-            <input
+            <textarea
               disabled={!permissions.canUseAi}
               value={aiPrompt}
               onChange={(event) => setAiPrompt(event.target.value)}
-              onKeyDown={(event) => event.key === "Enter" && askAi()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  askAi();
+                }
+              }}
               placeholder={permissions.canUseAi ? "Ask AI a coding doubt..." : "Chat only"}
+              rows={1}
+              style={{ resize: "none", overflowY: "auto" }}
             />
             <button
               className="chat-send-btn-cyber"
