@@ -317,9 +317,16 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
           onChange(yjsRefs.current.doc.getText("monaco").toString());
         }
         
-        yjsRefs.current.provider.destroy();
-        yjsRefs.current.binding.destroy();
-        yjsRefs.current.doc.destroy();
+        // Delay destruction to allow pending Yjs WebRTC/WebSocket messages to flush to the server
+        const p = yjsRefs.current.provider;
+        const b = yjsRefs.current.binding;
+        const d = yjsRefs.current.doc;
+        setTimeout(() => {
+          p.destroy();
+          b.destroy();
+          d.destroy();
+        }, 1500);
+        
         clearTimeout(yjsRefs.current.saveTimeout);
         yjsRefs.current = { doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null };
       }
