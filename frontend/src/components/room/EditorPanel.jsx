@@ -227,9 +227,13 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
       // Destroy old Yjs instance before binding new one
       if (yjsRefs.current.provider) {
-        yjsRefs.current.provider.destroy();
-        yjsRefs.current.binding.destroy();
-        yjsRefs.current.doc.destroy();
+        try {
+          yjsRefs.current.provider.destroy();
+          yjsRefs.current.binding.destroy();
+          yjsRefs.current.doc.destroy();
+        } catch (error) {
+          console.warn("Yjs cleanup warning:", error);
+        }
         clearTimeout(yjsRefs.current.saveTimeout);
       }
 
@@ -324,11 +328,19 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         
         // IMPORTANT: Destroy the Monaco binding IMMEDIATELY to prevent duplicate keystroke listeners
         // if the user switches back to this tab before the 1500ms timeout finishes!
-        b.destroy();
+        try {
+          b.destroy();
+        } catch (error) {
+          console.warn("Binding cleanup warning:", error);
+        }
         
         setTimeout(() => {
-          p.destroy();
-          d.destroy();
+          try {
+            p.destroy();
+            d.destroy();
+          } catch (error) {
+            console.warn("Provider cleanup warning:", error);
+          }
         }, 1500);
         
         clearTimeout(yjsRefs.current.saveTimeout);
