@@ -113,6 +113,8 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
           const isPublicRoom = room.visibility === "public" || room.isPublic === true;
           role = isPublicRoom ? "Viewer" : "Member"; // Downgrade if the host role was already transferred away
         }
+      } else if (room.userRoles && authKey && room.userRoles[authKey] === "Member") {
+        role = "Member";
       } else {
         const isPublicRoom = room.visibility === "public" || room.isPublic === true;
         role = isPublicRoom ? "Viewer" : "Member";
