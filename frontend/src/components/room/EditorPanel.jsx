@@ -259,14 +259,6 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         color: color
       });
 
-      type.observe(() => {
-        clearTimeout(yjsRefs.current.saveTimeout);
-        yjsRefs.current.saveTimeout = setTimeout(() => {
-          if (onChangeRef.current) onChangeRef.current(type.toString());
-          yjsRefs.current.saveTimeout = null;
-        }, 1500);
-      });
-
       yjsRefs.current = { doc, provider, binding, saveTimeout: yjsRefs.current.saveTimeout, boundFile: activeFile.name };
 
       provider.on('synced', (isSynced) => {
@@ -286,6 +278,15 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
 
     // Track local cursor movements to broadcast so the UsersPanel can show "typing in main.js:4"
     const disposables = [
+      editorInstance.onDidChangeModelContent(() => {
+        clearTimeout(yjsRefs.current.saveTimeout);
+        yjsRefs.current.saveTimeout = setTimeout(() => {
+          if (onChangeRef.current) {
+            onChangeRef.current(editorInstance.getValue());
+          }
+          yjsRefs.current.saveTimeout = null;
+        }, 1500);
+      }),
       editorInstance.onKeyDown(() => {
         setTimeout(() => {
           const position = editorInstance.getPosition();
@@ -325,7 +326,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       if (yjsRefs.current.provider) {
         // Flush any pending text to React state before destroying the Yjs connection
         if (yjsRefs.current.saveTimeout && onChangeRef.current) {
-          onChangeRef.current(yjsRefs.current.doc.getText("monaco").toString());
+          onChangeRef.current(editorInstance.getValue());
         }
         
         // Delay provider destruction to allow pending Yjs WebRTC/WebSocket messages to flush to the server
