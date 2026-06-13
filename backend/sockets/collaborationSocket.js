@@ -279,9 +279,8 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
         if (!room || !user || user.role === "Viewer") return;
         const file = room.files.find((item) => item.name === fileName);
         if (!file) return;
-        file.code = code;
-        roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
-        // We do NOT broadcast file:update anymore. Yjs handles text synchronization.
+        // Broadcast the update so users viewing other files receive the changes in the background
+        socket.to(roomId).emit("file:update", { fileName, code });
       });
 
     socket.on("file:create", ({ roomId, fileName, language, code }) => {
