@@ -1,93 +1,85 @@
 # Codefora
 
 <p align="center">
-  <em>A unified, real-time collaborative coding environment for pair programming, technical interviews, and competitive coding.</em>
+  <em>A unified, browser-based collaborative coding environment purpose-built for technical interviews, pair programming, and competitive coding.</em>
 </p>
 
 <p align="center">
-  <a href="https://codefora.online/"><strong>View Live Demo</strong></a> ·
+  <a href="https://codefora.online/"><strong>Live Demo</strong></a> ·
   <a href="#getting-started">Getting Started</a> ·
+  <a href="#architecture--design-decisions">Architecture</a> ·
   <a href="#roadmap">Roadmap</a>
 </p>
 
 ---
 
-<!-- SUGGESTION: Replace this placeholder with a high-quality GIF showing two users typing simultaneously while on a voice call, or showing the live HTML preview updating in real-time. -->
-![Codefora Interface Preview](https://via.placeholder.com/1000x500.png?text=Codefora+Real-Time+Collaboration+Interface)
+<!-- SUGGESTION: Insert a clean, high-resolution screenshot or GIF showing the Monaco editor, the canvas scratchpad, and the real-time preview updating simultaneously. -->
+![Codefora Interface Preview](https://via.placeholder.com/1000x500.png?text=Codefora+Workspace+Preview)
 
-## The Problem
+## Why Codefora?
 
-Traditionally, collaborative coding is a highly fragmented experience. When developers want to pair program, conduct a technical interview, or solve algorithms together, they are forced to juggle multiple disjointed tools:
-- **VS Code Live Share** for code synchronization (requiring heavy local IDEs and extensions).
-- **Discord, Zoom, or Google Meet** for voice communication.
-- **Excalidraw or Miro** for architectural whiteboarding.
-- **LeetCode or HackerRank** for problem statements and test validations.
+Traditional collaborative coding often requires developers to assemble a fragmented toolchain: an IDE plugin for code synchronization (like VS Code Live Share), a separate app for voice communication (Discord/Zoom), a digital whiteboard (Excalidraw), and an external platform for problem statements (LeetCode). 
 
-Setting up this environment introduces immense friction. It is slow to boot, requires all participants to install the same local software, and often suffers from host-dependency lag.
+While local IDEs remain the undisputed standard for daily software engineering, this fragmented approach introduces unnecessary setup overhead for ephemeral, focused sessions like technical interviews, algorithmic pair programming, or hackathons.
 
-## The Codefora Solution
+**Codefora solves this by reducing the "time to first line of code" to zero.** It provides a fully unified, cloud-based workspace accessible via a single URL. By combining a code editor, real-time synchronization, voice chat, whiteboarding, and secure remote execution into one platform, Codefora allows developers to focus entirely on problem-solving rather than environment configuration.
 
-Codefora was built to unify the collaborative coding workflow. It provides an instant-access, cloud-based environment where everything happens in a single browser tab. 
+### The Unified Workflow
 
-We combine sub-millisecond CRDT-based code synchronization, multi-file project support, isolated remote code execution, and WebRTC voice chat into one cohesive platform. There is no setup, no installation, and zero friction.
-
-### Codefora vs. Traditional Workflows
-
-| Capability | Traditional Workflow | Codefora |
+| Capability | Fragmented Workflow | Codefora Unified Workspace |
 | :--- | :--- | :--- |
-| **Workspace** | Heavy local IDE + Live Share | Instant, lightweight browser-based Monaco editor |
-| **Communication** | External App (Discord, Zoom) | Built-in WebRTC Voice Chat |
-| **Whiteboarding** | External App (Excalidraw, Miro) | Integrated, synchronized Canvas Scratchpad |
-| **Execution** | Local runtime & dependencies required | Secure, isolated cloud execution via Judge0 |
-| **State Sync** | Centralized Operational Transformation (OT) | Decentralized CRDTs (Yjs) for zero-lag sync |
+| **Code Editing** | Local IDE + Extension + Auth | Browser-based Monaco Editor |
+| **Communication** | External Voice/Video App | Built-in WebRTC Audio |
+| **Whiteboarding** | External Browser Tab | Integrated Canvas Scratchpad |
+| **Code Execution** | Local runtimes & dependencies | Isolated cloud execution via Judge0 API |
+| **State Sync** | Centralized Operational Transformation | Decentralized CRDTs (Yjs) |
 
 ## Core Features
 
-*   **Sub-Millisecond Synchronization:** Powered by Yjs (Conflict-free Replicated Data Types), keystrokes are mathematically resolved across clients instantly, ensuring flawless sync even on high-latency networks.
-*   **Multi-File Architecture:** Create, edit, and manage full directory structures (HTML, CSS, JS, Python, Java, C++, Rust). WebSocket connections are dynamically bound to the active file to drastically reduce bandwidth consumption.
-*   **Instant Web Previews:** A live rendering engine instantly previews frontend projects as you type, without requiring manual page reloads or external bundlers.
-*   **Isolated Remote Execution:** Backend languages are executed safely in the cloud via the Judge0 API. It supports custom `stdin` inputs and streams `stdout` back to the room in real-time.
-*   **Integrated WebRTC Voice:** Seamless, built-in peer-to-peer audio communication eliminates the need for third-party calling apps.
-*   **Canvas Scratchpad:** A synchronized HTML5 drawing tool allows teams to sketch system architectures and algorithm data structures directly alongside their code.
-*   **Competitive Problem Library:** Built-in algorithm problems with automated test-case validations and submissions.
-*   **Groq Llama-3 AI Assistant:** An integrated, ultra-low latency AI assistant that has full context of the room, code, and problem statement to provide hints and debugging help.
-*   **Granular Room Controls:** Robust host permissions to manage room visibility, moderate participants, toggle AI access, and prevent copy/pasting during interviews.
+*   **Real-Time Collaborative Editing:** Utilizes Yjs (Conflict-free Replicated Data Types) for decentralized, conflict-free document synchronization, optimized for reliability across diverse network conditions.
+*   **Multi-File Projects:** Support for full directory structures. WebSocket connections dynamically subscribe to active files, optimizing bandwidth and local memory usage.
+*   **Live Web Previews:** An integrated rendering engine that previews frontend projects (HTML/CSS/JS) as they are typed, without requiring external bundlers.
+*   **Sandboxed Remote Execution:** Backend languages (Python, Java, C++, Rust, etc.) are compiled and executed safely in the cloud via the Judge0 API, supporting custom standard input (`stdin`) and streaming output (`stdout`).
+*   **Integrated WebRTC Audio:** Built-in peer-to-peer voice communication directly inside the room.
+*   **Canvas Scratchpad:** A synchronized HTML5 drawing canvas designed for sketching system architectures and algorithm data structures.
+*   **Problem Library & Auto-Grader:** Built-in algorithm problem sets with automated test-case validation.
+*   **Context-Aware AI Assistant:** Integrated Groq Llama-3 assistant that reads the current room state, code, and problem statement to provide targeted hints and debugging suggestions.
+*   **Granular Room Controls:** Host-level permissions to manage room visibility, moderate participants, restrict AI usage, and disable copy/pasting for strict interview environments.
 
 ---
 
-## Technical Architecture
+## Architecture & Design Decisions
 
-<!-- SUGGESTION: Add a mermaid.js or image diagram here showing the flow between the React Frontend, Node/Express Backend, Firebase Auth, Socket.io, and the Judge0/Groq APIs. -->
+<!-- SUGGESTION: Insert a Mermaid.js diagram illustrating the data flow between the React Client, Y-Websocket server, Firebase, and External APIs. -->
 
-Codefora is built using a modern, scalable JavaScript ecosystem designed for real-time performance.
+Codefora is engineered for real-time performance and horizontal scalability. 
 
-*   **Frontend:** React 18, Vite, and Monaco Editor.
-*   **State & Sync:** Yjs (`y-monaco`, `y-websocket`) handles document state, while `Socket.io-client` broadcasts ephemeral events (presence, typing indicators, cursors). We explicitly override Windows CRLF line-endings to standard LF to prevent cross-platform CRDT index drifting.
-*   **Backend:** Node.js & Express.js.
-*   **Database & Auth:** Firebase Admin SDK & Firestore handle persistent storage of user profiles, room configurations, and historical data.
-*   **External APIs:** 
-    *   `Judge0 API` for secure, sandboxed code compilation.
-    *   `Groq API` (Llama 3) for the contextual AI assistant.
+*   **Frontend (React 18, Vite):** The UI is built around the Monaco Editor. We specifically override Monaco's native Windows CRLF line-endings to standard LF to prevent cross-platform CRDT index drifting—a common pitfall in browser-based collaborative editors.
+*   **Synchronization (Yjs & WebSockets):** We chose CRDTs over traditional Operational Transformation (OT) to eliminate centralized locking mechanisms. `y-websocket` handles document state replication, while ephemeral events (cursors, typing indicators, presence) are broadcasted via `Socket.io`.
+*   **Persistence & Auth (Firebase):** Firebase Admin SDK and Firestore manage user authentication, room metadata, and historical session data.
+*   **External Integrations:** 
+    *   **Judge0 API:** Provides secure, isolated execution environments for arbitrary code compilation.
+    *   **Groq API:** Powers the Llama-3 AI assistant for contextual inference.
 
 ---
 
 ## Roadmap
 
-Codefora is actively evolving. We are not trying to build a broad social network; our immediate focus is engineering the absolute best real-time collaborative coding room experience.
+Our vision is to build the premier platform for competitive collaborative coding.
 
-### 📍 Current Focus
-- Stabilizing the core CRDT synchronization for massive files.
-- Expanding the built-in competitive problem library.
-- Enhancing the WebRTC audio infrastructure for larger room capacities.
+### 📍 Phase 1: The Core Collaborative Room (Current Focus)
+- Stabilize CRDT synchronization for large, multi-file projects.
+- Expand the built-in competitive problem library and test suites.
+- Optimize WebRTC audio infrastructure for stability across various NAT configurations.
 
-### 🚀 Next Phase
-- **Room vs. Room Competitions:** Enabling competitive formats where teams can race to solve problem sets.
-- **Team-Based Coding Challenges:** Shared test-case passing metrics across multiple room participants.
-- **Enhanced Whiteboarding:** Adding shapes, text boxes, and export functionality to the Canvas Scratchpad.
+### 🚀 Phase 2: Room vs. Room Competitions
+- Introduce competitive formats where isolated teams can race to solve problem sets.
+- Implement shared test-case passing metrics and team-level leaderboards.
+- Expand the Canvas Scratchpad with structured tools (shapes, text boxes, exports).
 
-### 🔭 Long-Term Vision
-- **Competitive Collaboration:** Establishing Codefora as the premier platform for team-based hackathons and community-driven algorithm events.
-- **Interview Replays:** Full DVR-style playback of coding sessions for technical interview reviews.
+### 🔭 Phase 3: The Competitive Ecosystem
+- Establish Codefora as a host for team-based hackathons and algorithmic tournaments.
+- Implement "Interview Replays"—DVR-style playback of coding sessions for technical interview reviews and post-mortems.
 
 ---
 
@@ -145,7 +137,7 @@ Codefora is actively evolving. We are not trying to build a broad social network
 
 ## Contributing
 
-We welcome contributions from the community! Whether it's fixing bugs, improving documentation, or proposing new features, your help is appreciated. 
+We welcome contributions from the community! Whether it's fixing bugs, optimizing CRDT performance, or expanding the problem library, your help is appreciated. 
 
 1. Fork the repository.
 2. Create a feature branch (`git checkout -b feature/amazing-feature`).
