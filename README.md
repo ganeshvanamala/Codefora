@@ -40,7 +40,7 @@ Codefora is built using a modern, scalable JavaScript/TypeScript ecosystem.
 *   **Node.js & Express.js:** The core server runtime and REST API framework.
 *   **Socket.io:** WebSocket server for broadcasting ephemeral events (presence, typing, cursor locations).
 *   **y-websocket:** The Yjs connection provider that manages the CRDT document state across the network.
-*   **MongoDB & Mongoose:** NoSQL database for persistent storage of user profiles, room configurations, file contents, and history.
+*   **Firebase & Firestore:** Cloud infrastructure and NoSQL database for persistent storage of user profiles, room configurations, file contents, and history.
 *   **Piston API:** An open-source remote code execution engine used to safely compile and run user-submitted code in isolated Docker containers.
 
 ---
@@ -65,7 +65,7 @@ For frontend development, Codefora implements a custom parsing engine that inter
 
 ### Prerequisites
 *   Node.js (v18+)
-*   MongoDB (Local or Atlas URI)
+*   Firebase Project (for Firestore)
 
 ### Installation
 
@@ -83,7 +83,9 @@ For frontend development, Codefora implements a custom parsing engine that inter
    Create a `.env` file in the `backend` directory:
    ```env
    PORT=5000
-   MONGODB_URI=your_mongodb_connection_string
+   FIREBASE_PROJECT_ID=your_project_id
+   FIREBASE_PRIVATE_KEY=your_private_key
+   FIREBASE_CLIENT_EMAIL=your_client_email
    JWT_SECRET=your_jwt_secret
    ```
    Start the backend server:
