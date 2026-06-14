@@ -13,7 +13,7 @@ The primary aim of Codefora is to bridge the gap between simple text-sharing bin
 *   **Real-Time Collaborative Editing:** Sub-millisecond synchronization of keystrokes across multiple users using CRDTs (Conflict-free Replicated Data Types).
 *   **Multi-File Architecture:** Support for entire project structures. Create, edit, and manage multiple files (HTML, CSS, JS, Python, Java, C++, Rust, etc.) in a single room.
 *   **Instant Web Previews:** A live rendering engine that instantly previews HTML/CSS/JS projects as you type, without page reloads.
-*   **Remote Code Execution:** Execute backend languages safely in the cloud via the Piston API with support for custom `stdin` inputs and real-time `stdout` logs.
+*   **Remote Code Execution:** Execute backend languages safely in the cloud via the Judge0 API with support for custom `stdin` inputs and real-time `stdout` logs.
 *   **Live Presence & Cursors:** See exactly where your peers are typing with real-time cursor tracking and name tags.
 *   **Integrated Voice Chat:** Built-in WebRTC voice communication directly inside the coding rooms.
 *   **Shared Scratchpad:** A synchronized HTML5 Canvas drawing tool and text notes area for diagramming system architectures or solving algorithmic problems together.
@@ -40,7 +40,7 @@ Codefora is built using a modern, scalable JavaScript ecosystem.
 *   **y-websocket:** The Yjs connection provider that manages the CRDT document state across the network.
 *   **Firebase & Firestore:** Cloud infrastructure and NoSQL database for persistent storage of user profiles, room configurations, file contents, and history.
 *   **Google Gemini AI:** Backend service providing intelligent programming hints and problem breakdowns.
-*   **Piston API:** An open-source remote code execution engine used to safely compile and run user-submitted code in isolated Docker containers.
+*   **Judge0 API:** A robust, open-source online code execution system used to safely compile and run user-submitted code for various languages.
 
 ---
 
@@ -53,7 +53,7 @@ Instead of relying on central-server Operational Transformation (OT), Codefora u
 Codefora supports full multi-file editing. To achieve this, the Yjs document (`Y.Doc`) is dynamically bound and unbound to the Monaco Editor instance as the user switches tabs. A `y-websocket` provider specifically connects to a dynamic WebSocket room `yjs/room-ID-file-NAME`, ensuring that users only download the CRDT state for the exact file they are currently viewing, saving massive amounts of bandwidth.
 
 ### 3. Safe Remote Execution
-Running untrusted code is dangerous. Codefora mitigates this by proxying code execution requests through the backend to a **Piston API** instance. Piston executes the code inside ephemeral, tightly locked-down Docker containers with strict memory and CPU limits, returning the `stdout` and execution time safely to the user.
+Running untrusted code is dangerous. Codefora mitigates this by proxying code execution requests through the backend to a **Judge0 API** instance. Judge0 executes the code inside ephemeral, tightly locked-down environments, returning the `stdout` and execution time safely to the user.
 
 ### 4. Interactive Scratchpad
 Instead of integrating a heavy 3rd-party iframe tool for whiteboarding, Codefora uses a highly-optimized, synchronized `<canvas>` element allowing users to draw architectural diagrams directly within the application state alongside their code.
@@ -87,7 +87,6 @@ Instead of integrating a heavy 3rd-party iframe tool for whiteboarding, Codefora
    FIREBASE_PRIVATE_KEY=your_private_key
    FIREBASE_CLIENT_EMAIL=your_client_email
    GEMINI_API_KEY=your_gemini_api_key
-   PISTON_EXECUTE_URL=https://emkc.org/api/v2/piston/execute
    ```
    Start the backend server:
    ```bash
