@@ -15,7 +15,7 @@ The primary aim of Codefora is to bridge the gap between simple text-sharing bin
 *   **Instant Web Previews:** A live, double-buffered rendering engine that instantly previews HTML/CSS/JS projects as you type, without page reloads.
 *   **Remote Code Execution:** Execute backend languages safely in the cloud via the Piston API with support for custom `stdin` inputs and real-time `stdout` logs.
 *   **Live Presence & Cursors:** See exactly where your peers are typing with real-time cursor tracking and name tags.
-*   **Voice & Video Calls:** Integrated WebRTC-based voice chat, video calls, and screen sharing built directly into the coding rooms.
+*   **Integrated Voice Chat:** Built-in WebRTC voice communication directly inside the coding rooms.
 *   **Collaborative Whiteboard:** Embedded Excalidraw whiteboards for diagramming system architectures or solving algorithmic problems together.
 *   **Competitive Problem Solving:** Built-in problem statements, test-case validations, and submissions.
 *   **Host Permissions:** Robust room management allowing hosts to lock rooms, kick users, manage read/write permissions, and toggle AI access.
