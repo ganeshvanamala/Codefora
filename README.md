@@ -18,7 +18,7 @@ The primary aim of Codefora is to bridge the gap between simple text-sharing bin
 *   **Integrated Voice Chat:** Built-in WebRTC voice communication directly inside the coding rooms.
 *   **Shared Scratchpad:** A synchronized HTML5 Canvas drawing tool and text notes area for diagramming system architectures or solving algorithmic problems together.
 *   **Competitive Problem Solving:** Built-in problem statements, test-case validations, and code submissions.
-*   **AI Problem Assistant:** Integrated Google Gemini AI to ask for hints, edge cases, and code explanations directly within the problem editor.
+*   **AI Problem Assistant:** Integrated Groq Llama 3 AI to ask for hints, edge cases, and code explanations directly within the problem editor.
 *   **Host Permissions:** Robust room management allowing hosts to lock rooms, kick users, manage read/write permissions, toggle AI access, and prevent copy/pasting.
 
 ---
@@ -39,7 +39,7 @@ Codefora is built using a modern, scalable JavaScript ecosystem.
 *   **Socket.io:** WebSocket server for broadcasting ephemeral events (presence, typing, cursor locations).
 *   **y-websocket:** The Yjs connection provider that manages the CRDT document state across the network.
 *   **Firebase & Firestore:** Cloud infrastructure and NoSQL database for persistent storage of user profiles, room configurations, file contents, and history.
-*   **Google Gemini AI:** Backend service providing intelligent programming hints and problem breakdowns.
+*   **Groq Llama 3 AI:** Backend service providing intelligent, ultra-low latency programming hints and problem breakdowns.
 *   **Judge0 API:** A robust, open-source online code execution system used to safely compile and run user-submitted code for various languages.
 
 ---
@@ -65,7 +65,7 @@ Instead of integrating a heavy 3rd-party iframe tool for whiteboarding, Codefora
 ### Prerequisites
 *   Node.js (v18+)
 *   Firebase Project (for Authentication and Firestore)
-*   Google Gemini API Key (optional, for AI features)
+*   Groq API Key (optional, for AI features)
 
 ### Installation
 
@@ -86,7 +86,7 @@ Instead of integrating a heavy 3rd-party iframe tool for whiteboarding, Codefora
    FIREBASE_PROJECT_ID=your_project_id
    FIREBASE_PRIVATE_KEY=your_private_key
    FIREBASE_CLIENT_EMAIL=your_client_email
-   GEMINI_API_KEY=your_gemini_api_key
+   GROQ_API_KEY=your_groq_api_key
    ```
    Start the backend server:
    ```bash
