@@ -83,11 +83,11 @@ Instead of integrating a heavy 3rd-party iframe tool for whiteboarding, Codefora
    Create a `.env` file in the `backend` directory:
    ```env
    PORT=5000
-   FIREBASE_PROJECT_ID=your_project_id
-   FIREBASE_PRIVATE_KEY=your_private_key
-   FIREBASE_CLIENT_EMAIL=your_client_email
+   AI_PROVIDER=groq
    GROQ_API_KEY=your_groq_api_key
    ```
+   Add your Firebase Admin SDK service account file as `firebase-key.json` in the root directory.
+
    Start the backend server:
    ```bash
    npm run dev
