@@ -110,6 +110,4 @@ Instead of integrating a heavy 3rd-party iframe tool for whiteboarding, Codefora
 4. **Open your browser**
    Navigate to `http://localhost:5173` to see Codefora in action!
 
-## 📜 License
 
-This project is licensed under the MIT License.
