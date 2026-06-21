@@ -1,4 +1,5 @@
 import { cryptoId } from "../utils/id.js";
+import { globalOnlineUsers } from "../utils/presenceTracker.js";
 
 const MEMBER_COLORS = ["#00E5FF", "#FF9100", "#FF007F", "#B400FF", "#00FF00", "#FFEA00", "#FF0000", "#00FFCC"];
 const assignUserColor = (role, existingUsers = []) => {
@@ -24,6 +25,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
   const broadcastRooms = () => io.emit("rooms:update", roomRepository.allPublicSummaries((room) => roomService.publicRoom(room)));
 
   io.on("connection", (socket) => {
+    socket.on("user:presence", (userId) => {
+      if (!userId) return;
+      socket.globalUserId = userId;
+      if (!globalOnlineUsers.has(userId)) {
+        globalOnlineUsers.set(userId, new Set());
+      }
+      globalOnlineUsers.get(userId).add(socket.id);
+    });
     socket.onAny((event, ...args) => {
       const activeEvents = ["room:join", "file:update", "file:create", "file:delete", "typing", "cursor:update", "chat:send", "mic:update", "voice:signal", "role:update"];
       if (activeEvents.includes(event)) {
@@ -474,6 +483,14 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
     });
 
     socket.on("disconnect", () => {
+      if (socket.globalUserId && globalOnlineUsers.has(socket.globalUserId)) {
+        const userSockets = globalOnlineUsers.get(socket.globalUserId);
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          globalOnlineUsers.delete(socket.globalUserId);
+        }
+      }
+
       const roomId = socketUsers.get(socket.id);
       const room = roomId && roomRepository.findById(roomId);
       socketUsers.delete(socket.id);

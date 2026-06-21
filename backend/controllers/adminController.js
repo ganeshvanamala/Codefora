@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createAuth, createFirestore } from "../config/firebase.js";
+import { globalOnlineUsers } from "../utils/presenceTracker.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const localProblemsPath = path.join(__dirname, "../data/problems.json");
@@ -38,13 +39,9 @@ export function createAdminController(roomRepository) {
           totalUsers = listUsersResult.users.length;
         }
 
-        // Calculate online users (users in rooms)
-        const onlineUserIds = new Set();
-        rooms.forEach(r => (r.users || []).forEach(u => onlineUserIds.add(u.userId || u.socketId)));
-
         return response.json({
           totalUsers,
-          onlineUsers: onlineUserIds.size,
+          onlineUsers: globalOnlineUsers.size,
           activeRooms: rooms.length,
           totalProblems: problems.length,
           mostSolved: "N/A"
@@ -84,12 +81,6 @@ export function createAdminController(roomRepository) {
           });
         }
 
-        const rooms = roomRepository.listAll();
-        const onlineUserIds = new Set();
-        rooms.forEach(r => (r.users || []).forEach(u => {
-          if (u.userId) onlineUserIds.add(u.userId);
-        }));
-
         const users = authUsers.map(user => {
           const profile = profilesMap[user.uid] || {};
           return {
@@ -100,7 +91,7 @@ export function createAdminController(roomRepository) {
             photoURL: user.photoURL || profile.photoURL || "",
             rating: profile.rating || 1500,
             solved: profile.solvedCount || 0,
-            status: onlineUserIds.has(user.uid) ? "Online" : "Offline",
+            status: globalOnlineUsers.has(user.uid) ? "Online" : "Offline",
             role: profile.role || "user",
             createdAt: user.metadata.creationTime
           };

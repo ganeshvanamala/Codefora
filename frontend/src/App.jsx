@@ -21,6 +21,8 @@ import { trackPageView } from "./lib/analytics";
 import { useAuth } from "./hooks/useAuth";
 import { API_URL } from "./config";
 
+import { socket } from "./lib/socket";
+
 function LoaderManager({ children }) {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
@@ -34,11 +36,16 @@ function LoaderManager({ children }) {
   }, []);
 
   useEffect(() => {
-    // Global Community Theme Sync
+    // Global Community Theme Sync & Online Presence
     if (!user) {
       document.documentElement.dataset.community = "sider";
       return;
     }
+    
+    // Connect socket for global online presence tracking
+    socket.connect();
+    socket.emit("user:presence", user.uid);
+
     fetch(`${API_URL}/api/profiles/${user.uid}`)
       .then(r => r.json())
       .then(profile => {
