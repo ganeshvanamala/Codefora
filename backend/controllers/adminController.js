@@ -84,6 +84,12 @@ export function createAdminController(roomRepository) {
           });
         }
 
+        const rooms = roomRepository.listAll();
+        const onlineUserIds = new Set();
+        rooms.forEach(r => (r.users || []).forEach(u => {
+          if (u.userId) onlineUserIds.add(u.userId);
+        }));
+
         const users = authUsers.map(user => {
           const profile = profilesMap[user.uid] || {};
           return {
@@ -94,7 +100,7 @@ export function createAdminController(roomRepository) {
             photoURL: user.photoURL || profile.photoURL || "",
             rating: profile.rating || 1500,
             solved: profile.solvedCount || 0,
-            status: "Offline", // Real-time status would require more logic
+            status: onlineUserIds.has(user.uid) ? "Online" : "Offline",
             role: profile.role || "user",
             createdAt: user.metadata.creationTime
           };

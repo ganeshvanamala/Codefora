@@ -537,7 +537,7 @@ export default function AdminDashboardPage() {
                             </td>
                             <td>{u.rating}</td>
                             <td>{u.solved}</td>
-                            <td><span className={`status-badge offline`}>{u.status}</span></td>
+                            <td><span className={`status-badge ${u.status.toLowerCase()}`}>{u.status}</span></td>
                             <td>
                               <div className="admin-table-actions">
                                 <button className="admin-action-btn" title="View"><Eye size={12} /></button>
