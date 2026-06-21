@@ -431,7 +431,9 @@ export default function AdminDashboardPage() {
                                 </button>
                                 <button className="admin-action-btn danger" title="Delete Problem" onClick={() => {
                                   if (window.confirm("Delete problem?")) {
-                                    api.request(`/api/admin/problems/${prob.id}`, { method: 'DELETE' }).then(() => fetchData());
+                                    api.request(`/api/admin/problems/${prob.id}`, { method: 'DELETE' })
+                                      .then(() => fetchData())
+                                      .catch(err => alert("Delete failed: " + err.message));
                                   }
                                 }}><Trash2 size={14} /></button>
                               </div>
