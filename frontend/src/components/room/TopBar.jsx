@@ -1,5 +1,5 @@
-import React from 'react';
-import { Play, Send, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Send, Users, Timer, Square } from 'lucide-react';
 
 export function TopBar({ 
   room, 
@@ -10,8 +10,33 @@ export function TopBar({
   onSubmit, 
   isRunningCode, 
   isSubmittingCode, 
-  canSubmit 
+  canSubmit,
+  timer,
+  permissions,
+  actions
 }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!timer?.isRunning || (!timer.endTime && !timer.startTime)) {
+      setTimeLeft("");
+      return;
+    }
+    const interval = setInterval(() => {
+      const now = Date.now();
+      let diff = timer.mode === "stopwatch" ? now - timer.startTime : timer.endTime - now;
+      if (timer.mode !== "stopwatch" && diff <= 0) {
+        setTimeLeft("00:00");
+        clearInterval(interval);
+        return;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer?.isRunning, timer?.endTime, timer?.startTime, timer?.mode]);
   return (
     <header className="topbar" style={{ height: "52px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1000 }}>
       {/* Room details */}
@@ -41,7 +66,24 @@ export function TopBar({
             {users?.length || 0} online • Host: {room?.hostName || "N/A"}
           </span>
         </div>
+        </div>
       </div>
+
+      {timer?.isRunning && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '4px 12px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <Timer size={14} style={{ color: "var(--primary-orange)" }} />
+          <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', color: '#fff', letterSpacing: '1px' }}>{timeLeft}</span>
+          {permissions?.isHost && (
+            <button 
+              onClick={actions?.stopTimer}
+              style={{ background: 'transparent', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Stop Timer"
+            >
+              <Square size={12} fill="currentColor" style={{ color: "#ef4444" }} />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Right Side Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

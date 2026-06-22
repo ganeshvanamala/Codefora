@@ -16,6 +16,7 @@ import { NotesModal } from "../components/room/NotesModal";
 import { TimeTravelModal } from "../components/room/TimeTravelModal";
 import { LeftNavBar } from "../components/room/LeftNavBar";
 import { FooterBar } from "../components/room/FooterBar";
+import { SettingsPanel } from "../components/room/SettingsPanel";
 import { WebPreviewFull } from "../components/room/WebPreviewFull";
 import { problems } from "../data/problems";
 import { getUsername, saveUsername } from "../lib/navigation";
@@ -368,17 +369,17 @@ export function RoomPage() {
           setActiveSidebarTab(null);
           setActiveMainTab(activeMainTab === 'notes' ? 'editor' : 'notes');
         }}
-        showPreviewButton={preview.showPreview}
+        showPreviewButton={preview?.showPreview}
         onShowFullPreview={() => {
           setActiveSidebarTab(null);
           setActiveMainTab(activeMainTab === 'preview' ? 'editor' : 'preview');
         }}
+        onShowInfo={() => setShowInfoModal(true)}
+        onShowSettings={() => setActiveSidebarTab(activeSidebarTab === 'settings' ? null : 'settings')}
         room={room}
         users={users}
-        timer={timer}
         permissions={permissions}
         actions={actions}
-        onShowInfo={() => setShowInfoModal(true)}
       />
 
       {activeSidebarTab && (
@@ -558,6 +559,22 @@ export function RoomPage() {
                   onSaveWork={actions.saveWork}
                 />
               </div>
+            ) : activeSidebarTab === "settings" ? (
+              <div style={{ height: "100%", position: 'relative' }}>
+                <button 
+                  onClick={() => setActiveSidebarTab(null)}
+                  style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', zIndex: 10, padding: '4px' }}
+                >
+                  <X size={14} />
+                </button>
+                <SettingsPanel
+                  room={room}
+                  users={users}
+                  timer={timer}
+                  permissions={permissions}
+                  actions={actions}
+                />
+              </div>
             ) : null}
           </div>
           <button
@@ -624,6 +641,9 @@ export function RoomPage() {
           isRunningCode={compiler.isRunningCode}
           isSubmittingCode={compiler.isSubmittingCode}
           canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
+          timer={timer}
+          permissions={permissions}
+          actions={actions}
         />
 
         <div
