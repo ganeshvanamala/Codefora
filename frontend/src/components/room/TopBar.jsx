@@ -66,7 +66,6 @@ export function TopBar({
             {users?.length || 0} online • Host: {room?.hostName || "N/A"}
           </span>
         </div>
-        </div>
       </div>
 
       {timer?.isRunning && (
