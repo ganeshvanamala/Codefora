@@ -8194,25 +8194,108 @@ label {
 }
 
 .left-nav-bar.expanded {
-  width: 180px;
+  width: 240px;
   align-items: stretch;
   padding: 16px 12px;
 }
 
-.nav-logo {
-  margin-bottom: 24px;
-  cursor: pointer;
+.nav-logo-container {
   display: flex;
   align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  height: 40px;
+  transition: all 0.3s ease;
+}
+
+.left-nav-bar:not(.expanded) .nav-logo-container {
   justify-content: center;
+}
+
+.left-nav-bar.expanded .nav-logo-container {
+  justify-content: space-between;
+}
+
+.nav-expand-btn {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  color: var(--primary-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.nav-expand-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+
+.left-nav-bar:not(.expanded) .nav-expand-btn {
   background: rgba(255, 122, 24, 0.1);
   border: 1px solid rgba(255, 122, 24, 0.2);
-  transition: all 0.2s ease;
-  align-self: center;
+  color: var(--primary-orange);
+}
+
+.left-nav-bar:not(.expanded) .nav-expand-btn:hover {
+  background: rgba(255, 122, 24, 0.2);
+}
+
+.nav-room-details {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.left-nav-bar.expanded .nav-room-details {
+  display: flex;
+}
+
+.nav-timer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--glass-border);
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.left-nav-bar.expanded .nav-timer-container {
+  width: 100%;
+  justify-content: space-between;
+  padding: 0 12px;
+}
+
+.nav-timer-container.running {
+  background: rgba(255,122,24,0.1);
+  border-color: rgba(255,122,24,0.3);
+}
+
+.nav-timer-text {
+  display: none;
+  font-family: "Cascadia Code", "Fira Code", monospace;
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.left-nav-bar.expanded .nav-timer-text {
+  display: block;
 }
 
 .nav-logo:hover {

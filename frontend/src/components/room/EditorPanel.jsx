@@ -44,9 +44,10 @@ export const BOILERPLATES = {
   css: "/* write your css here */\nbody {\n    margin: 0;\n    padding: 0;\n    font-family: sans-serif;\n}"
 };
 
-export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onUpdateFileCode, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork, onRun, onSubmit, isRunningCode, isSubmittingCode, canSubmit }) {
+export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeName, setActiveName, users, typing, typingCursors, permissions, onChange, onUpdateFileCode, onCreateFile, onExpectActiveName, onDeleteFile, onChangeLanguage, onSaveWork }) {
   const [languageCache, setLanguageCache] = useState({});
   const [editorInstance, setEditorInstance] = useState(null);
+  const [portalTarget, setPortalTarget] = useState(null);
   const { theme } = useTheme();
   const editorDisposables = useRef([]);
   const activeFileNameRef = useRef(activeFile?.name);
@@ -302,126 +303,69 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
     };
   }, [users]);
 
+  useEffect(() => {
+    const target = document.getElementById("topbar-language-selector");
+    if (target) {
+      setPortalTarget(target);
+    } else {
+      const interval = setInterval(() => {
+        const t = document.getElementById("topbar-language-selector");
+        if (t) {
+          setPortalTarget(t);
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
   return (
     <section className="editor-panel tour-editor">
 
-
-      <div className="file-tools" style={{ 
-        display: 'flex', 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        padding: '6px 12px',
-        width: '100%',
-        justifyContent: 'space-between',
-        position: 'relative',
-        zIndex: 100,
-        overflow: 'visible',
-        background: '#0a0e17',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-      }}>
-        {/* Left Side: Language Selector for active file */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <select
-            className="file-type-select"
-            disabled={!permissions.canEdit}
-            value={activeFile?.language || "javascript"}
-            onChange={(event) => {
-              const lang = event.target.value;
-              if (onChangeLanguage && activeFile) {
-                const baseName = activeFile.name.includes(".") ? activeFile.name.substring(0, activeFile.name.lastIndexOf(".")) : activeFile.name;
-                
-                // Now that we have the latest cache, we can look up the new code
-                const cachedCode = languageCache[baseName]?.[lang];
-                const newCode = cachedCode !== undefined ? cachedCode : (BOILERPLATES[lang] || "");
-                
-                // Cache current code (pure state update)
-                setLanguageCache(prev => ({
-                  ...prev,
-                  [baseName]: {
-                    ...(prev[baseName] || {}),
-                    [activeFile.language]: activeFile.code
-                  }
-                }));
-                
-                // Send both rename and new code in one shot (outside state updater)
-                onChangeLanguage(activeFile.name, lang, newCode);
-              }
-            }}
-            style={{
-              background: '#121822',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '6px',
-              color: '#fff',
-              fontSize: '12px',
-              padding: '4px 10px',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
-          >
-            {FILE_TYPES.map((type) => (
-              <option key={type.language} value={type.language}>
-                {type.label === "Java" ? "Java (17)" : type.label === "Python" ? "Python (3)" : type.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Right Side: Run Code, Submit */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-
-          {/* Run Code Button */}
-          <button 
-            className="button compact secondary tour-run-button"
-            style={{
-              height: '30px',
-              borderRadius: '6px',
-              background: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: isRunningCode ? 'not-allowed' : 'pointer',
-              padding: '0 12px',
-              opacity: isRunningCode ? 0.6 : 1
-            }}
-            onClick={onRun}
-            disabled={isRunningCode}
-            title="Run Code"
-          >
-            <Play size={13} />
-            <span>{isRunningCode ? "Running..." : "Run Code"}</span>
-          </button>
-
-          {/* Submit Button */}
-          <button 
-            className="button compact tour-submit-button"
-            style={{
-              height: '30px',
-              borderRadius: '6px',
-              background: 'var(--primary-orange)',
-              border: 'none',
-              color: '#000',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              cursor: (!canSubmit || isSubmittingCode) ? 'not-allowed' : 'pointer',
-              padding: '0 14px',
-              opacity: isSubmittingCode ? 0.6 : 1
-            }}
-            onClick={onSubmit}
-            disabled={!canSubmit || isSubmittingCode}
-            title="Submit Code"
-          >
-            <Send size={13} style={{ color: '#000' }} />
-            <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
-          </button>
-        </div>
-      </div>
+      {portalTarget && createPortal(
+        <select
+          className="file-type-select"
+          disabled={!permissions.canEdit}
+          value={activeFile?.language || "javascript"}
+          onChange={(event) => {
+            const lang = event.target.value;
+            if (onChangeLanguage && activeFile) {
+              const baseName = activeFile.name.includes(".") ? activeFile.name.substring(0, activeFile.name.lastIndexOf(".")) : activeFile.name;
+              
+              const cachedCode = languageCache[baseName]?.[lang];
+              const newCode = cachedCode !== undefined ? cachedCode : (BOILERPLATES[lang] || "");
+              
+              setLanguageCache(prev => ({
+                ...prev,
+                [baseName]: {
+                  ...(prev[baseName] || {}),
+                  [activeFile.language]: activeFile.code
+                }
+              }));
+              
+              onChangeLanguage(activeFile.name, lang, newCode);
+            }
+          }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: '6px',
+            color: '#fff',
+            fontSize: '12px',
+            padding: '4px 10px',
+            cursor: 'pointer',
+            outline: 'none',
+            height: '32px'
+          }}
+        >
+          {FILE_TYPES.map((type) => (
+            <option key={type.language} value={type.language} style={{ background: '#0f172a', color: '#fff' }}>
+              {type.label === "Java" ? "Java (17)" : type.label === "Python" ? "Python (3)" : type.label}
+            </option>
+          ))}
+        </select>,
+        portalTarget
+      )}
 
       <div 
         className="editor-wrap tour-code-editor"

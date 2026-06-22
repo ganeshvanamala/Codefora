@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, useBlocker } from "react-router-dom";
+import { useParams, useNavigate, useBlocker, useLocation } from "react-router-dom";
 import { Loader2, AlertTriangle, MessageSquare, X, ArrowLeft } from "lucide-react";
 import { useRoomSession } from "../hooks/useRoomSession";
 import { TopBar } from "../components/room/TopBar";
@@ -38,7 +38,11 @@ export function RoomPage() {
   const [showNotes, setShowNotes] = useState(false);
   const [showTimeTravel, setShowTimeTravel] = useState(false);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
-  const [activeMainTab, setActiveMainTab] = useState("editor");
+  const [activeMainTab, setActiveMainTab] = useState("editor"); // "editor", "preview", "notes"
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isNotesView = searchParams.get("view") === "notes";
 
   const [problemSearch, setProblemSearch] = useState("");
   const [problemDifficulty, setProblemDifficulty] = useState("All");
@@ -133,8 +137,6 @@ export function RoomPage() {
     const feedbackUrl = `/rooms?feedback=true&username=${encodeURIComponent(joinName)}`;
     if (blocker.state === "blocked") {
       blocker.proceed();
-      // blocker.proceed() might not handle search params if we just proceed, 
-      // but usually we want to navigate explicitly if we want params.
       navigate(feedbackUrl);
     } else {
       navigate(feedbackUrl);
@@ -165,14 +167,12 @@ export function RoomPage() {
 
   const activeProblem = getActiveProblem();
 
-  // Auto-populate stdin with the first sample testcase's input when problem is loaded
   useEffect(() => {
     if (activeProblem && activeProblem.tests && activeProblem.tests[0]) {
       setStdin(activeProblem.tests[0].input);
     }
   }, [activeProblem]);
 
-  // --- Tab Close Protection ---
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault();
@@ -181,9 +181,7 @@ export function RoomPage() {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
-  // -------------------------------------
 
-  // --- Anti-Cheat Copy/Paste Protection ---
   useEffect(() => {
     if (room?.allowCopyPaste === false) {
       const handleCopyPaste = (e) => {
@@ -268,17 +266,15 @@ export function RoomPage() {
     };
   }, [isResizing, isResizingUsers, isDraggingUsersModal]);
 
-  // Handle floating messages
   useEffect(() => {
     if (messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
-      // Only float messages from others
       if (lastMsg.user !== permissions.me?.name) {
         const id = Math.random();
         setFloatingMsgs(prev => [...prev, { ...lastMsg, floatId: id }]);
         setTimeout(() => {
           setFloatingMsgs(prev => prev.filter(m => m.floatId !== id));
-        }, 6000); // 6 seconds
+        }, 6000);
       }
     }
   }, [messages, permissions.me?.name]);
@@ -287,12 +283,10 @@ export function RoomPage() {
     setFloatingMsgs(prev => prev.filter(m => m.floatId !== id));
   };
 
-  // Persist username locally (used by session hook)
   useEffect(() => {
     if (joinName && joinName.trim()) saveUsername(joinName.trim());
   }, [joinName]);
 
-  // Show Info Modal on first join
   useEffect(() => {
     if (room && !infoShownRef.current) {
       setShowInfoModal(true);
@@ -300,7 +294,6 @@ export function RoomPage() {
     }
   }, [room]);
 
-  /* ── Loading state ── */
   if (!room && !joinError) {
     return (
       <div className="room-loading">
@@ -310,7 +303,6 @@ export function RoomPage() {
     );
   }
 
-  /* ── Error state ── */
   if (joinError) {
     if (joinError.reason === "already_in_room") {
       return (
@@ -335,12 +327,28 @@ export function RoomPage() {
     );
   }
 
+  if (isNotesView) {
+    return (
+      <div style={{ height: "100vh", width: "100vw", background: "var(--bg-primary)", display: "flex", flexDirection: "column" }}>
+        <NotesModal 
+          isOpen={true} 
+          onClose={() => window.close()} 
+          notes={notes} 
+          onUpdateText={actions.updateNotes} 
+          onDraw={actions.drawNote} 
+          permissions={permissions} 
+          inline={true} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'hidden', background: 'var(--bg-primary)' }}>
       {(isResizing || isResizingUsers) && <div style={{ position: 'fixed', inset: 0, zIndex: 9999, cursor: isResizing ? 'row-resize' : 'col-resize' }} />}
       
       <LeftNavBar 
-        activeTab={activeMainTab === 'preview' ? 'preview' : activeSidebarTab}
+        activeTab={activeMainTab === 'preview' ? 'preview' : activeMainTab === 'notes' ? 'notes' : activeSidebarTab}
         micOn={micOn}
         onToggleMic={actions.toggleMic}
         onLeave={handleLeaveRequest}
@@ -356,15 +364,23 @@ export function RoomPage() {
           setActiveMainTab('editor');
           setActiveSidebarTab(activeSidebarTab === 'users' ? null : 'users');
         }}
-        onShowNotes={() => setShowNotes(true)}
+        onShowNotes={() => {
+          setActiveSidebarTab(null);
+          setActiveMainTab(activeMainTab === 'notes' ? 'editor' : 'notes');
+        }}
         showPreviewButton={preview.showPreview}
         onShowFullPreview={() => {
           setActiveSidebarTab(null);
           setActiveMainTab(activeMainTab === 'preview' ? 'editor' : 'preview');
         }}
+        room={room}
+        users={users}
+        timer={timer}
+        permissions={permissions}
+        actions={actions}
+        onShowInfo={() => setShowInfoModal(true)}
       />
 
-      {/* Collapsible Sidebar Area */}
       {activeSidebarTab && (
         <>
           <div 
@@ -555,7 +571,6 @@ export function RoomPage() {
         </>
       )}
 
-      {/* Main Content Area */}
       <div className="workspace layout-v2" style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <div ref={audioHost} style={{ display: "none" }} />
 
@@ -572,34 +587,6 @@ export function RoomPage() {
           onClose={() => setShowInfoModal(false)} 
         />
 
-        <TopBar 
-          room={room}
-          users={users}
-          files={files}
-          runFile={runFile}
-          setRunFile={setRunFile}
-          micOn={micOn}
-          permissions={permissions}
-          onMic={actions.toggleMic}
-          actions={actions}
-          onLeaveRequest={handleLeaveRequest}
-          onShowInfo={() => setShowInfoModal(true)}
-          onShowNotes={() => setShowNotes(true)}
-          onShowProblem={() => setActiveSidebarTab(activeSidebarTab === 'problem' ? null : 'problem')}
-          onShowUsersModal={() => setActiveSidebarTab(activeSidebarTab === 'users' ? null : 'users')}
-          timer={timer}
-          hasProblem={!!room.problemId}
-        />
-
-        <NotesModal 
-          isOpen={showNotes}
-          onClose={() => setShowNotes(false)}
-          notes={notes}
-          onUpdateText={actions.updateNotes}
-          onDraw={actions.drawNote}
-          permissions={permissions}
-        />
-
         {showTimeTravel && (
           <TimeTravelModal 
             isOpen={showTimeTravel}
@@ -609,6 +596,35 @@ export function RoomPage() {
           />
         )}
 
+        <TopBar 
+          room={room}
+          users={users}
+          onShowUsersModal={() => setActiveSidebarTab(activeSidebarTab === 'users' ? null : 'users')}
+          hasProblem={!!room.problemId}
+          onRun={() => {
+            if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
+              if (activeFile.name.endsWith('.html')) {
+                actions.setPreviewTarget(activeFile.name);
+              }
+              if (preview?.showPreview) {
+                setConsoleMode("preview");
+                setIsConsoleOpen(true);
+                return;
+              }
+            }
+            setConsoleMode("output");
+            setIsConsoleOpen(true);
+            actions.runCode(stdin);
+          }}
+          onSubmit={() => {
+            setIsConsoleOpen(true);
+            actions.submitCode(activeProblem);
+            setShowTimeTravel(true);
+          }}
+          isRunningCode={compiler.isRunningCode}
+          isSubmittingCode={compiler.isSubmittingCode}
+          canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
+        />
 
         <div
           className={`workspace-main-v3`}
@@ -619,6 +635,16 @@ export function RoomPage() {
               <WebPreviewFull 
                 previewDoc={preview.previewDoc} 
                 onClose={() => setActiveMainTab('editor')} 
+              />
+            ) : activeMainTab === 'notes' ? (
+              <NotesModal 
+                isOpen={true} 
+                onClose={() => setActiveMainTab('editor')} 
+                notes={notes} 
+                onUpdateText={actions.updateNotes} 
+                onDraw={actions.drawNote} 
+                permissions={permissions} 
+                inline={true} 
               />
             ) : (
               <>
@@ -662,7 +688,7 @@ export function RoomPage() {
                   }}
                   isRunningCode={compiler.isRunningCode}
                   isSubmittingCode={compiler.isSubmittingCode}
-                  canSubmit={!!activeProblem && compiler.compilerStatus === "Ready"}
+                  canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
                 />
                 {isConsoleOpen && (
                   <ConsolePanel
