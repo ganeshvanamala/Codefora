@@ -216,6 +216,19 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       broadcastRooms();
     });
 
+    socket.on("room:set_problem", ({ roomId, problemId }) => {
+      const room = roomRepository.findById(roomId);
+      const user = room && roomService.findUser(room, socket.id);
+      const authorized = Boolean(room && ((user && user.role === "Host") || (user?.userId && room.ownerUserId && user.userId === room.ownerUserId)));
+      console.log(`room:set_problem -> roomId: ${roomId}, problemId: ${problemId}, user: ${user?.name}, role: ${user?.role}, authorized: ${authorized}`);
+      if (!room || !authorized) return;
+
+      room.problemId = problemId;
+      roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
+      io.to(roomId).emit("room:state", roomService.snapshot(room));
+      broadcastRooms();
+    });
+
 
     socket.on("role:update", ({ roomId, targetSocketId, role }) => {
       const room = roomRepository.findById(roomId);
