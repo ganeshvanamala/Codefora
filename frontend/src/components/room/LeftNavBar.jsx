@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Users, StickyNote, Info, Settings, MessageSquare, ArrowLeft, FileCode2, Target, PanelLeftClose, PanelLeftOpen, Monitor, Timer, Square, LogOut, Lock, Unlock, Copy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import loopsbg from '../../../assets/loopsbgimage.jpeg';
 
 export function LeftNavBar({ 
   activeTab,
@@ -28,13 +27,6 @@ export function LeftNavBar({
   return (
     <div 
       className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`}
-      style={{
-        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url(${loopsbg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        borderRight: '1px solid rgba(255, 255, 255, 0.05)'
-      }}
     >
       <div className="nav-logo-container">
         {isExpanded && (
@@ -44,15 +36,8 @@ export function LeftNavBar({
           </div>
         )}
         {!isExpanded && (
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%", justifyContent: "center" }}>
-            <img 
-              src="/codefora.png" 
-              alt="Codefora Logo" 
-              onClick={() => setIsExpanded(true)} 
-              title="Expand"
-              style={{ cursor: "pointer", height: "22px", width: "auto", objectFit: "contain", borderRadius: "4px" }} 
-            />
-            <button onClick={() => setIsExpanded(true)} className="nav-expand-btn" style={{ padding: "2px", height: "auto" }} title="Expand">
+          <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "center" }}>
+            <button onClick={() => setIsExpanded(true)} className="nav-expand-btn" style={{ padding: "4px", height: "auto" }} title="Expand">
               <PanelLeftOpen size={16} />
             </button>
           </div>

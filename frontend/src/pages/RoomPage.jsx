@@ -21,6 +21,7 @@ import { WebPreviewFull } from "../components/room/WebPreviewFull";
 import { problems } from "../data/problems";
 import { getUsername, saveUsername } from "../lib/navigation";
 import { useAuth } from "../hooks/useAuth";
+import loopsbg from "../assets/loopsbgimage.jpeg";
 
 export function RoomPage() {
   const { roomId } = useParams();
@@ -352,7 +353,7 @@ export function RoomPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'hidden', background: 'var(--bg-primary)' }}>
+    <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'hidden', backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url(${loopsbg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {(isResizing || isResizingUsers) && <div style={{ position: 'fixed', inset: 0, zIndex: 9999, cursor: isResizing ? 'row-resize' : 'col-resize' }} />}
       
       <LeftNavBar 
