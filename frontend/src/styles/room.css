@@ -27,16 +27,6 @@
     --console-bg: rgba(21, 21, 37, 0.5);
   }
 
-  .room-layout-wrapper .monaco-editor,
-  .room-layout-wrapper .monaco-editor-background,
-  .room-layout-wrapper .monaco-editor .inputarea.ime-input {
-    background-color: transparent !important;
-  }
-  
-  .room-layout-wrapper .monaco-editor .margin {
-    background-color: transparent !important;
-  }
-
   .workspace {
     height: 100vh;
     display: flex;
