@@ -33,7 +33,7 @@ export function LeftNavBar({
   }, [activeTab]);
 
   return (
-    <div className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`}>
+    <div className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`} style={{ background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)' }}>
       <div className="nav-logo-container">
         {isExpanded && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", userSelect: "none" }}>

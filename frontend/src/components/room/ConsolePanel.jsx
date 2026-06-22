@@ -238,7 +238,7 @@ export function ConsolePanel({
                 <div style={{ fontSize: '11px', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Custom Input (stdin)
                 </div>
-                <div style={{ flex: 1, background: 'var(--console-bg)', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', display: 'flex', minHeight: 0, backdropFilter: 'blur(12px)' }}>
+                <div style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', display: 'flex', minHeight: 0 }}>
                   <textarea 
                     style={{ 
                       flex: 1, 
@@ -262,7 +262,7 @@ export function ConsolePanel({
                 <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Output
                 </div>
-                <div style={{ flex: 1, background: 'var(--console-bg)', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '16px', overflowY: 'auto', boxSizing: 'border-box', minHeight: 0, backdropFilter: 'blur(12px)' }}>
+                <div style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '16px', overflowY: 'auto', boxSizing: 'border-box', minHeight: 0 }}>
                   {renderFormattedOutput(output)}
                 </div>
               </div>
