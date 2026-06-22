@@ -47,6 +47,61 @@ export function SettingsPanel({ room, users, timer, permissions, actions }) {
               Stop Watch
             </button>
           </div>
+          {permissions?.isHost && (
+            <div style={{ display: "flex", gap: "8px", marginTop: "12px", alignItems: "center" }}>
+              {(!timer?.mode || timer.mode === "timer") && (
+                <>
+                  <input 
+                    type="number" 
+                    id="timer-mins-input"
+                    placeholder="Minutes"
+                    min="1"
+                    max="60"
+                    defaultValue="5"
+                    disabled={timer?.isRunning}
+                    style={{ flex: 1, padding: "8px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: "6px", width: "60px" }}
+                  />
+                  {!timer?.isRunning ? (
+                    <button 
+                      onClick={() => {
+                        const mins = parseInt(document.getElementById("timer-mins-input").value) || 5;
+                        actions.startTimer(mins * 60);
+                      }}
+                      style={{ padding: "8px 16px", background: "var(--primary-orange)", border: "none", color: "#fff", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      Start Timer
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => actions.stopTimer()}
+                      style={{ padding: "8px 16px", background: "#ef4444", border: "none", color: "#fff", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      Stop
+                    </button>
+                  )}
+                </>
+              )}
+              {timer?.mode === "stopwatch" && (
+                <>
+                  {!timer?.isRunning ? (
+                    <button 
+                      onClick={() => actions.startTimer(0, "stopwatch")}
+                      style={{ width: "100%", padding: "8px 16px", background: "#3b82f6", border: "none", color: "#fff", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      Start Stopwatch
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => actions.stopTimer()}
+                      style={{ width: "100%", padding: "8px 16px", background: "#ef4444", border: "none", color: "#fff", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      Stop Stopwatch
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
