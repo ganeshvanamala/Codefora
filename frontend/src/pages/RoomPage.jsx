@@ -21,7 +21,7 @@ import { WebPreviewFull } from "../components/room/WebPreviewFull";
 import { problems } from "../data/problems";
 import { getUsername, saveUsername } from "../lib/navigation";
 import { useAuth } from "../hooks/useAuth";
-import loopsbg from "../assets/loopsbgimage.jpeg";
+import loopsbg from "../../assets/loopsbgimage.jpeg";
 
 export function RoomPage() {
   const { roomId } = useParams();
