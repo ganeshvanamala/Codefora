@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useBlocker, useLocation } from "react-router-dom";
-import { Loader2, AlertTriangle, MessageSquare, X, ArrowLeft } from "lucide-react";
+import { Loader2, AlertTriangle, MessageSquare, X, ArrowLeft, PanelLeftClose } from "lucide-react";
 import { useRoomSession } from "../hooks/useRoomSession";
 import { TopBar } from "../components/room/TopBar";
 import { EditorPanel } from "../components/room/EditorPanel";
@@ -402,7 +402,7 @@ export function RoomPage() {
                   onClick={() => setActiveSidebarTab(null)}
                   style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', zIndex: 10, padding: '4px' }}
                 >
-                  <X size={14} />
+                  <PanelLeftClose size={16} />
                 </button>
                 {activeProblem ? (
                   <>
@@ -534,7 +534,7 @@ export function RoomPage() {
                   onClick={() => setActiveSidebarTab(null)}
                   style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', zIndex: 10, padding: '4px' }}
                 >
-                  <X size={14} />
+                  <PanelLeftClose size={16} />
                 </button>
                 <UsersPanel
                   room={room}
@@ -551,7 +551,7 @@ export function RoomPage() {
                   onClick={() => setActiveSidebarTab(null)}
                   style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', zIndex: 10, padding: '4px' }}
                 >
-                  <X size={14} />
+                  <PanelLeftClose size={16} />
                 </button>
                 <FilesPanel
                   roomId={resolvedRoomId}
@@ -573,7 +573,7 @@ export function RoomPage() {
                   onClick={() => setActiveSidebarTab(null)}
                   style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', zIndex: 10, padding: '4px' }}
                 >
-                  <X size={14} />
+                  <PanelLeftClose size={16} />
                 </button>
                 <SettingsPanel
                   room={room}
