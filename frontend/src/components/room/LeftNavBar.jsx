@@ -25,9 +25,7 @@ export function LeftNavBar({
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div 
-      className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`}
-    >
+    <div className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`} style={{ backdropFilter: 'blur(16px)' }}>
       <div className="nav-logo-container">
         {isExpanded && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", userSelect: "none" }}>

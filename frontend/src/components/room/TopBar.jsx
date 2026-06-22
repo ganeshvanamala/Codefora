@@ -38,7 +38,7 @@ export function TopBar({
     return () => clearInterval(interval);
   }, [timer?.isRunning, timer?.endTime, timer?.startTime, timer?.mode]);
   return (
-    <header className="topbar" style={{ height: "52px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--glass-border)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1000 }}>
+    <header className="topbar" style={{ height: "52px", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1000 }}>
       {/* Room details */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: "2px" }}>

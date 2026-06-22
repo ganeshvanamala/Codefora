@@ -18,6 +18,15 @@
     --selection-bg: rgba(var(--primary-rgb), 0.2);
   }
 
+  .room-layout-wrapper {
+    --bg-primary: rgba(2, 8, 23, 0.3);
+    --bg-secondary: rgba(15, 23, 42, 0.4);
+    --bg-tertiary: rgba(30, 41, 59, 0.5);
+    --panel: rgba(11, 25, 40, 0.5);
+    --glass-bg: rgba(15, 23, 42, 0.5);
+    --console-bg: rgba(21, 21, 37, 0.5);
+  }
+
   .workspace {
     height: 100vh;
     display: flex;
