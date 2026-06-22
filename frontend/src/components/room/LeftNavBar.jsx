@@ -22,7 +22,15 @@ export function LeftNavBar({
   actions
 }) {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(!activeTab);
+
+  useEffect(() => {
+    if (activeTab) {
+      setIsExpanded(false);
+    } else {
+      setIsExpanded(true);
+    }
+  }, [activeTab]);
 
   return (
     <div className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`} style={{ backdropFilter: 'blur(16px)' }}>
