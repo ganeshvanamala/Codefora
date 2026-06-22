@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Users, StickyNote, Info, Settings, MessageSquare, ArrowLeft, FileCode2, Target, PanelLeftClose, PanelLeftOpen, Monitor, Timer, Square, LogOut, Lock, Unlock, Copy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import loopsbg from '../../../assets/loopsbgimage.jpeg';
 
 export function LeftNavBar({ 
   activeTab,
@@ -25,7 +26,16 @@ export function LeftNavBar({
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`}>
+    <div 
+      className={`left-nav-bar ${isExpanded ? 'expanded' : ''}`}
+      style={{
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url(${loopsbg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        borderRight: '1px solid rgba(255, 255, 255, 0.05)'
+      }}
+    >
       <div className="nav-logo-container">
         {isExpanded && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", userSelect: "none" }}>
