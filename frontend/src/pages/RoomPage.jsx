@@ -102,15 +102,22 @@ export function RoomPage() {
   const usersResizeStart = useRef({ x: 0, width: 250 });
 
   // Sidebar state
-  const [activeSidebarTab, setActiveSidebarTab] = useState(room?.problemId ? "problem" : null);
+  const [activeSidebarTab, setActiveSidebarTab] = useState(null);
 
   const prevProblemId = useRef(room?.problemId);
+  const hasInitializedSidebar = useRef(false);
+
   useEffect(() => {
-    if (room?.problemId && room.problemId !== prevProblemId.current) {
+    if (room && !hasInitializedSidebar.current) {
+      hasInitializedSidebar.current = true;
+      setActiveSidebarTab(room.problemId ? "problem" : "users");
+    }
+    
+    if (room?.problemId && room.problemId !== prevProblemId.current && hasInitializedSidebar.current) {
       setActiveSidebarTab("problem");
     }
     prevProblemId.current = room?.problemId;
-  }, [room?.problemId]);
+  }, [room]);
 
   // --- Leave Room Navigation Blocker ---
   const [showLeavePrompt, setShowLeavePrompt] = useState(false);
