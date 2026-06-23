@@ -165,40 +165,33 @@ export function FilesPanel({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Explorer</h3>
         
-        <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          {permissions.canEdit && (
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              title="Import File"
+              style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '4px' }}
+            >
+              <Upload size={14} />
+            </button>
+          )}
           <button 
-            onClick={() => setShowMoreMenu(!showMoreMenu)}
-            style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '4px' }}
+            onClick={handleExport}
+            title="Export All"
+            disabled={isExporting}
+            style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '4px', opacity: isExporting ? 0.5 : 1 }}
           >
-            <MoreHorizontal size={16} />
+            <Download size={14} />
           </button>
-
-          {showMoreMenu && (
-            <div style={{ position: 'absolute', right: 0, top: '100%', background: '#121822', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', padding: '8px', zIndex: 1000, width: '180px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <button 
-                onClick={() => { fileInputRef.current?.click(); setShowMoreMenu(false); }}
-                disabled={!permissions.canEdit}
-                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '6px 8px', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', width: '100%' }}
-              >
-                <Upload size={12} />
-                <span>Import File</span>
-              </button>
-              <button 
-                onClick={handleExport}
-                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '6px 8px', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', width: '100%' }}
-              >
-                <Download size={12} />
-                <span>Export All</span>
-              </button>
-              <button 
-                onClick={handleSaveWork}
-                disabled={isSaving}
-                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '6px 8px', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', width: '100%' }}
-              >
-                <Save size={12} />
-                <span>{isSaving ? "Saving..." : saveMessage || "Save Workspace"}</span>
-              </button>
-            </div>
+          {onSaveWork && permissions.canEdit && (
+            <button 
+              onClick={handleSaveWork}
+              title={isSaving ? "Saving..." : saveMessage || "Save Workspace"}
+              disabled={isSaving}
+              style={{ background: 'transparent', border: 'none', color: saveMessage === "Saved!" ? "var(--success)" : saveMessage === "Error" ? "var(--error)" : "rgba(255,255,255,0.7)", cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '4px', opacity: isSaving ? 0.5 : 1 }}
+            >
+              <Save size={14} />
+            </button>
           )}
           <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
         </div>
