@@ -12,7 +12,6 @@ import { PlaygroundPage } from "./pages/PlaygroundPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import Loader from "./components/Loader";
 import { Footer } from "./components/Footer";
-import { TourManager } from "./components/TourManager";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { TermsOfServicePage } from "./pages/TermsOfServicePage";
 import { CodeOfConductPage } from "./pages/CodeOfConductPage";
@@ -73,7 +72,6 @@ function LoaderManager({ children }) {
       <Loader visible={loading} />
       {children}
       {showFooter && <Footer />}
-      <TourManager />
     </>
   );
 }
