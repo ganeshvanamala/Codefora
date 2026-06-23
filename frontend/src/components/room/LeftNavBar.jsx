@@ -101,12 +101,7 @@ export function LeftNavBar({
           <span>Settings</span>
         </button>
 
-        {permissions?.isHost && (
-          <button className="nav-item" onClick={onEndRoom} title="End Room" style={{ color: '#ef4444', background: "rgba(239, 68, 68, 0.1)" }}>
-            <LogOut size={20} style={{ transform: "rotate(180deg)" }} />
-            <span>End Room</span>
-          </button>
-        )}
+
         <button className="nav-item leave-btn" onClick={onLeave} title="Leave Room">
           <ArrowLeft size={20} />
           <span>Leave</span>

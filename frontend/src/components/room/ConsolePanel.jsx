@@ -1,4 +1,4 @@
-import { Globe2, Loader2, Play, Terminal, Keyboard } from "lucide-react";
+import { Globe2, Loader2, Play, Terminal, Keyboard, PanelLeftClose, Monitor } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 // Double buffered iframe prevents the white flash when updating srcDoc
@@ -74,6 +74,8 @@ export function ConsolePanel({
   setStdin,
   panelMode: externalPanelMode,
   setPanelMode: externalSetPanelMode,
+  onOpenSplitPreview,
+  onOpenFullPreview,
   onClose
 }) {
   const [localPanelMode, setLocalPanelMode] = useState("output");
@@ -185,6 +187,56 @@ export function ConsolePanel({
             >
               {isSubmittingCode ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
               <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
+            </button>
+          )}
+
+          {panelMode === "preview" && onOpenSplitPreview && (
+            <button 
+              className="button secondary console-run-btn mobile-hidden" 
+              onClick={onOpenSplitPreview}
+              title="Open Split View"
+              style={{
+                height: '30px',
+                borderRadius: '6px',
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: '500',
+                fontSize: '12px',
+                cursor: 'pointer',
+                padding: '0 12px'
+              }}
+            >
+              <PanelLeftClose size={14} />
+              <span>Split Screen</span>
+            </button>
+          )}
+
+          {panelMode === "preview" && onOpenFullPreview && (
+            <button 
+              className="button secondary console-run-btn mobile-hidden" 
+              onClick={onOpenFullPreview}
+              title="Open Full Screen"
+              style={{
+                height: '30px',
+                borderRadius: '6px',
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: '500',
+                fontSize: '12px',
+                cursor: 'pointer',
+                padding: '0 12px'
+              }}
+            >
+              <Monitor size={14} />
+              <span>Full Screen</span>
             </button>
           )}
 

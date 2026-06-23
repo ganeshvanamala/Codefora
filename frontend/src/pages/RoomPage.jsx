@@ -826,6 +826,16 @@ export function RoomPage() {
                   isSubmittingCode={compiler.isSubmittingCode}
                   panelMode={consoleMode}
                   setPanelMode={setConsoleMode}
+                  onOpenSplitPreview={() => {
+                    setActiveMainTab('preview');
+                    setIsSplitView(true);
+                    setIsConsoleOpen(false);
+                  }}
+                  onOpenFullPreview={() => {
+                    setActiveMainTab('preview');
+                    setIsSplitView(false);
+                    setIsConsoleOpen(false);
+                  }}
                   onClose={() => setIsConsoleOpen(false)}
                   onRun={() => {
                     if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
