@@ -61,11 +61,11 @@ export function TopBar({
                 }}
               >
                 <Users size={12} /> 
-                <span>View Users</span>
+                <span className="mobile-hidden">View Users</span>
               </button>
             )}
           </div>
-          <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span className="mobile-hidden" style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {users?.length || 0} online • Host: {room?.hostName || "N/A"}
           </span>
         </div>
@@ -93,6 +93,7 @@ export function TopBar({
         {/* Split View Toggle */}
         {activeMainTab && activeMainTab !== 'editor' && (
           <button 
+            className="mobile-hidden"
             onClick={() => setIsSplitView(!isSplitView)}
             style={{
               height: '32px',
@@ -141,7 +142,7 @@ export function TopBar({
           title="Run Code"
         >
           <Play size={13} />
-          <span>{isRunningCode ? "Running..." : "Run Code"}</span>
+          <span className="mobile-hidden">{isRunningCode ? "Running..." : "Run Code"}</span>
         </button>
 
         <button 
@@ -166,7 +167,7 @@ export function TopBar({
           title="Submit Code"
         >
           <Send size={13} style={{ color: '#000' }} />
-          <span>{isSubmittingCode ? "Submitting..." : "Submit"}</span>
+          <span className="mobile-hidden">{isSubmittingCode ? "Submitting..." : "Submit"}</span>
         </button>
       </div>
     </header>
