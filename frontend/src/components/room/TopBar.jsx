@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Send, Users, Timer, Square } from 'lucide-react';
+import { Play, Send, Users, Timer, Square, PanelLeftClose } from 'lucide-react';
 
 export function TopBar({ 
   room, 
@@ -13,7 +13,10 @@ export function TopBar({
   canSubmit,
   timer,
   permissions,
-  actions
+  actions,
+  activeMainTab,
+  isSplitView,
+  setIsSplitView
 }) {
   const [timeLeft, setTimeLeft] = useState("");
 
@@ -87,6 +90,32 @@ export function TopBar({
       {/* Right Side Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         
+        {/* Split View Toggle */}
+        {activeMainTab && activeMainTab !== 'editor' && (
+          <button 
+            onClick={() => setIsSplitView(!isSplitView)}
+            style={{
+              height: '32px',
+              borderRadius: '6px',
+              background: isSplitView ? 'rgba(255,255,255,0.1)' : 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0 12px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            title="Toggle Split View"
+          >
+            <PanelLeftClose size={14} style={{ transform: isSplitView ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            {isSplitView ? "Full View" : "Split View"}
+          </button>
+        )}
+
         {/* Portal target for Language Selector */}
         <div id="topbar-language-selector"></div>
 

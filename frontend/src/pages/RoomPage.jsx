@@ -99,8 +99,12 @@ export function RoomPage() {
   const [isResizing, setIsResizing] = useState(false);
   const [isResizingUsers, setIsResizingUsers] = useState(false);
   const [consoleMode, setConsoleMode] = useState("output");
+  const [rightPanelWidth, setRightPanelWidth] = useState(400);
+  const [isResizingRightPanel, setIsResizingRightPanel] = useState(false);
+  const [isSplitView, setIsSplitView] = useState(false);
   const consoleResizeStart = useRef({ y: 0, height: 280 });
   const usersResizeStart = useRef({ x: 0, width: 250 });
+  const rightPanelResizeStart = useRef({ x: 0, width: 400 });
 
   // Sidebar state
   const [activeSidebarTab, setActiveSidebarTab] = useState(null);
@@ -223,8 +227,17 @@ export function RoomPage() {
     };
     setIsResizingUsers(true);
   };
+  const startRightResizing = (event) => {
+    event?.preventDefault?.();
+    rightPanelResizeStart.current = {
+      x: event?.clientX || 0,
+      width: rightPanelWidth
+    };
+    setIsResizingRightPanel(true);
+  };
   const stopResizing = () => setIsResizing(false);
   const stopUsersResizing = () => setIsResizingUsers(false);
+  const stopRightResizing = () => setIsResizingRightPanel(false);
   const resize = (e) => {
     if (isResizing) {
       const delta = e.clientY - consoleResizeStart.current.y;
@@ -241,6 +254,13 @@ export function RoomPage() {
         ...prev,
         [activeSidebarTab]: Math.min(Math.max(newWidth, 200), maxWidth)
       }));
+    }
+
+    if (isResizingRightPanel && activeMainTab !== 'editor') {
+      const delta = rightPanelResizeStart.current.x - e.clientX;
+      const newWidth = rightPanelResizeStart.current.width + delta;
+      const maxWidth = Math.min(800, window.innerWidth * 0.6);
+      setRightPanelWidth(Math.min(Math.max(newWidth, 250), maxWidth));
     }
 
     if (isDraggingUsersModal) {
@@ -266,14 +286,16 @@ export function RoomPage() {
     window.addEventListener("mousemove", resize);
     window.addEventListener("mouseup", stopResizing);
     window.addEventListener("mouseup", stopUsersResizing);
+    window.addEventListener("mouseup", stopRightResizing);
     window.addEventListener("mouseup", handleUsersModalDragEnd);
     return () => {
       window.removeEventListener("mousemove", resize);
       window.removeEventListener("mouseup", stopResizing);
       window.removeEventListener("mouseup", stopUsersResizing);
+      window.removeEventListener("mouseup", stopRightResizing);
       window.removeEventListener("mouseup", handleUsersModalDragEnd);
     };
-  }, [isResizing, isResizingUsers, isDraggingUsersModal]);
+  }, [isResizing, isResizingUsers, isResizingRightPanel, isDraggingUsersModal]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -352,6 +374,44 @@ export function RoomPage() {
     );
   }
 
+  const topBarComponent = (
+    <TopBar 
+      room={room}
+      users={users}
+      onShowUsersModal={() => setActiveSidebarTab(activeSidebarTab === 'users' ? null : 'users')}
+      hasProblem={!!room.problemId}
+      onRun={() => {
+        if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
+          if (activeFile.name.endsWith('.html')) {
+            actions.setPreviewTarget(activeFile.name);
+          }
+          if (preview?.showPreview) {
+            setConsoleMode("preview");
+            setIsConsoleOpen(true);
+            return;
+          }
+        }
+        setConsoleMode("output");
+        setIsConsoleOpen(true);
+        actions.runCode(stdin);
+      }}
+      onSubmit={() => {
+        setIsConsoleOpen(true);
+        actions.submitCode(activeProblem);
+        setShowTimeTravel(true);
+      }}
+      isRunningCode={compiler.isRunningCode}
+      isSubmittingCode={compiler.isSubmittingCode}
+      canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
+      timer={timer}
+      permissions={permissions}
+      actions={actions}
+      activeMainTab={activeMainTab}
+      isSplitView={isSplitView}
+      setIsSplitView={setIsSplitView}
+    />
+  );
+
   return (
     <div className="room-layout-wrapper" style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'hidden', backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.6)), url(${loopsbg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {(isResizing || isResizingUsers) && <div style={{ position: 'fixed', inset: 0, zIndex: 9999, cursor: isResizing ? 'row-resize' : 'col-resize' }} />}
@@ -382,6 +442,13 @@ export function RoomPage() {
           setActiveSidebarTab(null);
           setActiveMainTab(activeMainTab === 'preview' ? 'editor' : 'preview');
         }}
+        isConsoleOpen={isConsoleOpen}
+        onToggleConsole={() => {
+          setIsConsoleOpen(!isConsoleOpen);
+          if (!isConsoleOpen && activeMainTab !== 'editor' && !isSplitView) {
+            setActiveMainTab('editor'); // Auto switch to editor if we open console and it's full view
+          }
+        }}
         onShowInfo={() => setShowInfoModal(true)}
         onShowSettings={() => setActiveSidebarTab(activeSidebarTab === 'settings' ? null : 'settings')}
         room={room}
@@ -394,7 +461,7 @@ export function RoomPage() {
         <>
           <div 
             className={`workspace-sidebar ${isResizingUsers ? "is-resizing-users" : ""}`}
-            style={{ width: `${sidebarWidths[activeSidebarTab] || 250}px`, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: "1px solid var(--glass-border)", background: "var(--bg-secondary)" }}
+            style={{ width: `${sidebarWidths[activeSidebarTab] || 250}px`, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: "1px solid var(--glass-border)", background: "transparent" }}
           >
             {activeSidebarTab === "problem" ? (
               <div style={{ height: "100%", overflowY: "auto", position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -408,7 +475,7 @@ export function RoomPage() {
                   <>
                     <ProblemPanel problem={activeProblem} />
                     {permissions.isHost && (
-                      <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", background: 'var(--bg-secondary)', marginTop: 'auto' }}>
+                      <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", background: 'transparent', marginTop: 'auto' }}>
                         <button 
                           className="button secondary" 
                           style={{ width: "100%" }}
@@ -431,7 +498,7 @@ export function RoomPage() {
                     </div>
                     <ProblemPanel problem={previewProblem} />
                     {permissions.isHost && (
-                      <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", background: 'var(--bg-secondary)', marginTop: 'auto' }}>
+                      <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", background: 'transparent', marginTop: 'auto' }}>
                         <button 
                           className="button primary" 
                           style={{ width: "100%", background: 'var(--primary-orange)', color: '#000', fontWeight: 'bold' }}
@@ -596,7 +663,7 @@ export function RoomPage() {
         </>
       )}
 
-      <div className="workspace layout-v2" style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div className="workspace layout-v2" style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', minWidth: 0, gap: 0 }}>
         <div ref={audioHost} style={{ display: "none" }} />
 
         <div className="floating-notifications">
@@ -621,79 +688,77 @@ export function RoomPage() {
           />
         )}
 
-        <TopBar 
-          room={room}
-          users={users}
-          onShowUsersModal={() => setActiveSidebarTab(activeSidebarTab === 'users' ? null : 'users')}
-          hasProblem={!!room.problemId}
-          onRun={() => {
-            if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
-              if (activeFile.name.endsWith('.html')) {
-                actions.setPreviewTarget(activeFile.name);
-              }
-              if (preview?.showPreview) {
-                setConsoleMode("preview");
-                setIsConsoleOpen(true);
-                return;
-              }
-            }
-            setConsoleMode("output");
-            setIsConsoleOpen(true);
-            actions.runCode(stdin);
-          }}
-          onSubmit={() => {
-            setIsConsoleOpen(true);
-            actions.submitCode(activeProblem);
-            setShowTimeTravel(true);
-          }}
-          isRunningCode={compiler.isRunningCode}
-          isSubmittingCode={compiler.isSubmittingCode}
-          canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
-          timer={timer}
-          permissions={permissions}
-          actions={actions}
-        />
+        {/* Global TopBar if left side is completely hidden (Full screen Notes/Preview) */}
+        {!( (!activeMainTab || activeMainTab === 'editor' || isSplitView) ) && topBarComponent}
 
         <div
           className={`workspace-main-v3`}
-          style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', borderRadius: 0 }}
         >
-          <div className="middle-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            {activeMainTab === 'preview' ? (
-              <WebPreviewFull 
-                previewDoc={preview.previewDoc} 
-                onClose={() => setActiveMainTab('editor')} 
+          <div className="middle-column" style={{ flex: 1, display: 'flex', flexDirection: isSplitView ? 'row' : 'column', minHeight: 0 }}>
+            {/* Left side: Editor and Console */}
+            {(!activeMainTab || activeMainTab === 'editor' || isSplitView) && (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }}>
+                {topBarComponent}
+              <EditorPanel
+                roomId={resolvedRoomId}
+                allowCopyPaste={room?.allowCopyPaste}
+                files={files}
+                activeFile={activeFile}
+                activeName={activeName}
+                setActiveName={setActiveName}
+                users={users}
+                typing={typing}
+                typingCursors={typingCursors}
+                permissions={permissions}
+                onChange={actions.updateCode}
+                onUpdateFileCode={actions.updateFileCode}
+                onCreateFile={actions.createFile}
+                onExpectActiveName={actions.setExpectedActiveName}
+                onDeleteFile={actions.deleteActiveFile}
+                onChangeLanguage={actions.changeFileLanguage}
+                onSaveWork={actions.saveWork}
+                onRun={() => {
+                  if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
+                    if (activeFile.name.endsWith('.html')) {
+                      actions.setPreviewTarget(activeFile.name);
+                    }
+                    if (preview?.showPreview) {
+                      setConsoleMode("preview");
+                      setIsConsoleOpen(true);
+                      return;
+                    }
+                  }
+                  setConsoleMode("output");
+                  setIsConsoleOpen(true);
+                  actions.runCode(stdin);
+                }}
+                onSubmit={() => {
+                  setIsConsoleOpen(true);
+                  actions.submitCode(activeProblem);
+                  setShowTimeTravel(true);
+                }}
+                isRunningCode={compiler.isRunningCode}
+                isSubmittingCode={compiler.isSubmittingCode}
+                canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
               />
-            ) : activeMainTab === 'notes' ? (
-              <NotesModal 
-                isOpen={true} 
-                onClose={() => setActiveMainTab('editor')} 
-                notes={notes} 
-                onUpdateText={actions.updateNotes} 
-                onDraw={actions.drawNote} 
-                permissions={permissions} 
-                inline={true} 
-              />
-            ) : (
-              <>
-                <EditorPanel
-                  roomId={resolvedRoomId}
-                  allowCopyPaste={room?.allowCopyPaste}
+              {isConsoleOpen && (
+                <ConsolePanel
+                  output={output}
+                  preview={preview}
+                  stdin={stdin}
+                  setStdin={setStdin}
+                  style={{ height: `${consoleHeight}px`, flex: "0 0 auto", borderTop: "1px solid var(--glass-border)", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(10px)" }}
+                  onResizeStart={startResizing}
+                  onClear={actions.clearOutput}
                   files={files}
-                  activeFile={activeFile}
-                  activeName={activeName}
-                  setActiveName={setActiveName}
-                  users={users}
-                  typing={typing}
-                  typingCursors={typingCursors}
-                  permissions={permissions}
-                  onChange={actions.updateCode}
-                  onUpdateFileCode={actions.updateFileCode}
-                  onCreateFile={actions.createFile}
-                  onExpectActiveName={actions.setExpectedActiveName}
-                  onDeleteFile={actions.deleteActiveFile}
-                  onChangeLanguage={actions.changeFileLanguage}
-                  onSaveWork={actions.saveWork}
+                  runFile={runFile}
+                  setRunFile={setRunFile}
+                  isRunningCode={compiler.isRunningCode}
+                  isSubmittingCode={compiler.isSubmittingCode}
+                  panelMode={consoleMode}
+                  setPanelMode={setConsoleMode}
+                  onClose={() => setIsConsoleOpen(false)}
                   onRun={() => {
                     if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
                       if (activeFile.name.endsWith('.html')) {
@@ -701,61 +766,51 @@ export function RoomPage() {
                       }
                       if (preview?.showPreview) {
                         setConsoleMode("preview");
-                        setIsConsoleOpen(true);
                         return;
                       }
                     }
                     setConsoleMode("output");
-                    setIsConsoleOpen(true);
                     actions.runCode(stdin);
                   }}
                   onSubmit={() => {
-                    setIsConsoleOpen(true);
                     actions.submitCode(activeProblem);
                     setShowTimeTravel(true);
                   }}
-                  isRunningCode={compiler.isRunningCode}
-                  isSubmittingCode={compiler.isSubmittingCode}
-                  canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
+                  activeProblem={activeProblem}
+                  canSubmit={permissions.canEdit}
                 />
-                {isConsoleOpen && (
-                  <ConsolePanel
-                    output={output}
-                    preview={preview}
-                    stdin={stdin}
-                    setStdin={setStdin}
-                    style={{ height: `${consoleHeight}px`, flex: "0 0 auto", borderTop: "1px solid var(--glass-border)", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(10px)" }}
-                    onResizeStart={startResizing}
-                    onClear={actions.clearOutput}
-                    files={files}
-                    runFile={runFile}
-                    setRunFile={setRunFile}
-                    isRunningCode={compiler.isRunningCode}
-                    isSubmittingCode={compiler.isSubmittingCode}
-                    panelMode={consoleMode}
-                    setPanelMode={setConsoleMode}
-                    onClose={() => setIsConsoleOpen(false)}
-                    onRun={() => {
-                      if (activeFile && (activeFile.name.endsWith('.html') || activeFile.name.endsWith('.css'))) {
-                        if (activeFile.name.endsWith('.html')) {
-                          actions.setPreviewTarget(activeFile.name);
-                        }
-                        if (preview?.showPreview) {
-                          setConsoleMode("preview");
-                          return;
-                        }
-                      }
-                      setConsoleMode("output");
-                      actions.runCode(stdin);
-                    }}
-                    onSubmit={() => {
-                      actions.submitCode(activeProblem);
-                      setShowTimeTravel(true);
-                    }}
-                    activeProblem={activeProblem}
-                    canSubmit={permissions.canEdit}
+              )}
+            </div>
+            )}
+
+            {/* Right side: Preview or Notes */}
+            {activeMainTab !== 'editor' && (
+              <>
+                {isSplitView && (
+                  <div
+                    className="right-resize-handle"
+                    onMouseDown={startRightResizing}
+                    style={{ width: "8px", cursor: "col-resize", flexShrink: 0, zIndex: 20, background: "rgba(255,255,255,0.02)" }}
                   />
                 )}
+                <div className="right-panel" style={{ width: isSplitView ? `${rightPanelWidth}px` : '100%', flex: isSplitView ? '0 0 auto' : 1, display: 'flex', flexDirection: 'column', minHeight: 0, borderLeft: isSplitView ? "1px solid var(--glass-border)" : "none", background: "rgba(15, 23, 42, 0.3)", backdropFilter: "blur(8px)" }}>
+                  {activeMainTab === 'preview' ? (
+                    <WebPreviewFull 
+                      previewDoc={preview.previewDoc} 
+                      onClose={() => setActiveMainTab('editor')} 
+                    />
+                  ) : activeMainTab === 'notes' ? (
+                    <NotesModal 
+                      isOpen={true} 
+                      onClose={() => setActiveMainTab('editor')} 
+                      notes={notes} 
+                      onUpdateText={actions.updateNotes} 
+                      onDraw={actions.drawNote} 
+                      permissions={permissions} 
+                      inline={true} 
+                    />
+                  ) : null}
+                </div>
               </>
             )}
           </div>

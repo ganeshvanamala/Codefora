@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Users, StickyNote, Info, Settings, MessageSquare, ArrowLeft, FileCode2, Target, PanelLeftClose, PanelLeftOpen, Monitor, Timer, Square, LogOut, Lock, Unlock, Copy } from 'lucide-react';
+import { Mic, MicOff, Users, StickyNote, Info, Settings, MessageSquare, ArrowLeft, FileCode2, Target, PanelLeftClose, PanelLeftOpen, Monitor, Timer, Square, LogOut, Lock, Unlock, Copy, TerminalSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function LeftNavBar({ 
@@ -14,6 +14,8 @@ export function LeftNavBar({
   onShowNotes,
   showPreviewButton,
   onShowFullPreview,
+  isConsoleOpen,
+  onToggleConsole,
   onShowInfo,
   onShowSettings,
   room,
@@ -82,6 +84,10 @@ export function LeftNavBar({
             <span>Preview</span>
           </button>
         )}
+        <button className={`nav-item ${isConsoleOpen ? 'active' : ''}`} onClick={onToggleConsole} title="Console">
+          <div className="icon-wrapper"><TerminalSquare size={20} /></div>
+          <span>Console</span>
+        </button>
       </div>
 
       <div className="nav-items-bottom">

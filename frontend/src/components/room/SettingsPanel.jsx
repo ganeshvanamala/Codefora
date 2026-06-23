@@ -17,7 +17,7 @@ export function SettingsPanel({ room, users, timer, permissions, actions }) {
   }, []);
 
   return (
-    <div className="sidebar-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-secondary)', borderRight: '1px solid var(--glass-border)' }}>
+    <div className="sidebar-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', borderRight: '1px solid var(--glass-border)' }}>
       <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
         <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>Room Settings</h2>
       </div>

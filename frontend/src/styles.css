@@ -8421,7 +8421,28 @@ label {
 .room-layout-wrapper .workspace-sidebar,
 .room-layout-wrapper .console-panel-head {
   background-color: rgba(15, 23, 42, 0.3) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.room-layout-wrapper .workspace {
+  background: transparent !important;
+}
+
+.room-layout-wrapper .editor-panel {
+  background-color: #0a0a0a !important; /* Force opaque dark background */
+}
+
+.room-layout-wrapper .topbar {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+}
+
+.room-layout-wrapper .workspace-main-v3,
+.room-layout-wrapper .editor-panel,
+.room-layout-wrapper .editor-panel .monaco-editor {
+  border-radius: 0 !important;
 }
 
