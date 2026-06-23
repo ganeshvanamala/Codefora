@@ -319,6 +319,74 @@ export function RoomPage() {
   }, [joinName]);
 
   useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Ctrl + ` -> Run Code
+      if (e.ctrlKey && e.key === '`') {
+        e.preventDefault();
+        setConsoleMode("output");
+        setIsConsoleOpen(true);
+        actions.runCode(stdin);
+        return;
+      }
+      // Ctrl + Enter -> Submit Solution
+      if (e.ctrlKey && !e.shiftKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (activeProblem) {
+          setIsConsoleOpen(true);
+          actions.submitCode(activeProblem);
+          setShowTimeTravel(true);
+        }
+        return;
+      }
+      // Ctrl + Shift + Enter -> Run All Test Cases
+      if (e.ctrlKey && e.shiftKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (activeProblem) {
+          setIsConsoleOpen(true);
+          actions.submitCode(activeProblem);
+          setShowTimeTravel(true);
+        }
+        return;
+      }
+      // Ctrl + R -> Run Sample Test Cases
+      if (e.ctrlKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        setConsoleMode("output");
+        setIsConsoleOpen(true);
+        actions.runCode(stdin);
+        return;
+      }
+      // Ctrl + S -> Save Code
+      if (e.ctrlKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (actions.saveWork) actions.saveWork(`Project in ${room?.id || roomId}`);
+        return;
+      }
+      // Ctrl + Shift + M -> Mute / Unmute Mic
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        actions.toggleMic();
+        return;
+      }
+      // Ctrl + Shift + V -> Join / Leave Voice Chat (proxy to leave room for now or toggle mic)
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        handleLeaveRequest();
+        return;
+      }
+      // Ctrl + Shift + C -> Copy Room Invite Link
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        navigator.clipboard.writeText(window.location.href);
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
+  }, [actions, activeProblem, stdin, room, roomId]);
+
+  useEffect(() => {
     if (room && !infoShownRef.current) {
       setShowInfoModal(true);
       infoShownRef.current = true;
