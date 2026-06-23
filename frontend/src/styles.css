@@ -8414,3 +8414,16 @@ label {
   color: #ef4444;
 }
 
+
+ . r o o m - l a y o u t - w r a p p e r   . l e f t - n a v - b a r , 
+ . r o o m - l a y o u t - w r a p p e r   . t o p b a r , 
+ . r o o m - l a y o u t - w r a p p e r   . s i d e b a r - p a n e l , 
+ . r o o m - l a y o u t - w r a p p e r   . c o n s o l e - p a n e l , 
+ . r o o m - l a y o u t - w r a p p e r   . w o r k s p a c e - s i d e b a r , 
+ . r o o m - l a y o u t - w r a p p e r   . c o n s o l e - p a n e l - h e a d   { 
+     b a c k g r o u n d - c o l o r :   r g b a ( 1 5 ,   2 3 ,   4 2 ,   0 . 3 )   ! i m p o r t a n t ; 
+     b a c k d r o p - f i l t e r :   b l u r ( 1 6 p x )   ! i m p o r t a n t ; 
+     - w e b k i t - b a c k d r o p - f i l t e r :   b l u r ( 1 6 p x )   ! i m p o r t a n t ; 
+ } 
+  
+ 
