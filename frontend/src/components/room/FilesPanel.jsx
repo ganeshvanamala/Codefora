@@ -162,7 +162,7 @@ export function FilesPanel({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingRight: '32px' }}>
         <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Explorer</h3>
         
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
