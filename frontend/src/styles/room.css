@@ -31,8 +31,10 @@
   .room-layout-wrapper .topbar,
   .room-layout-wrapper .sidebar-panel,
   .room-layout-wrapper .console-panel,
-  .room-layout-wrapper .editor-panel {
+  .room-layout-wrapper .editor-panel,
+  .room-layout-wrapper .workspace-sidebar {
     background-color: rgba(15, 23, 42, 0.4) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
     backdrop-filter: blur(12px) !important;
   }
 
