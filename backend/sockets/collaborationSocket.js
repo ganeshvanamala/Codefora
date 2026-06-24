@@ -169,7 +169,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       }
 
       // Final cleanup to prevent duplicates
-      room.users = room.users.filter(u => u.socketId !== socket.id && (!requestUserId || u.userId !== requestUserId));
+      room.users = room.users.filter(u => u.socketId !== socket.id && (!requestUserId || u.userId !== requestUserId) && (!requestSessionId || u.sessionId !== requestSessionId));
 
       room.users.push(user);
       socket.emit("room:state", roomService.snapshot(room));
