@@ -475,6 +475,7 @@ export function RoomPage() {
       permissions={permissions}
       actions={actions}
       activeMainTab={activeMainTab}
+      activeFile={activeFile}
       isSplitView={isSplitView}
       setIsSplitView={setIsSplitView}
     />

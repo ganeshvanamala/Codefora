@@ -15,6 +15,7 @@ export function TopBar({
   permissions,
   actions,
   activeMainTab,
+  activeFile,
   isSplitView,
   setIsSplitView
 }) {
@@ -46,8 +47,13 @@ export function TopBar({
       <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: "2px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <h1 style={{ margin: 0, fontSize: "14px", fontWeight: "600", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "250px" }}>
-              {room?.name || "Room"} <span style={{ color: "var(--text-muted)", fontSize: "12px", marginLeft: "4px" }}>({room?.id})</span>
+            <h1 style={{ margin: 0, fontSize: "14px", fontWeight: "600", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "450px", display: "flex", alignItems: "center", gap: "10px" }}>
+              <span>{room?.name || "Room"} <span style={{ color: "var(--text-muted)", fontSize: "12px", marginLeft: "4px" }}>({room?.id})</span></span>
+              {activeFile && (
+                <span className="mobile-hidden" style={{ background: "rgba(255, 122, 24, 0.15)", border: "1px solid rgba(255, 122, 24, 0.3)", color: "var(--primary-orange)", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                  {activeFile.name}
+                </span>
+              )}
             </h1>
             {hasProblem && (
               <button 
