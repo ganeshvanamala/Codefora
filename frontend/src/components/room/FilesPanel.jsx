@@ -186,7 +186,7 @@ export function FilesPanel({
           {onSaveWork && permissions.canEdit && (
             <button 
               onClick={handleSaveWork}
-              title={isSaving ? "Saving..." : saveMessage || "Save Workspace"}
+              title={isSaving ? "Saving..." : saveMessage || "Save Workspace (Ctrl+S)"}
               disabled={isSaving}
               style={{ background: 'transparent', border: 'none', color: saveMessage === "Saved!" ? "var(--success)" : saveMessage === "Error" ? "var(--error)" : "rgba(255,255,255,0.7)", cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '4px', opacity: isSaving ? 0.5 : 1 }}
             >

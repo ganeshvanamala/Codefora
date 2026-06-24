@@ -58,7 +58,7 @@ export function LeftNavBar({
       </div>
 
       <div className="nav-items-top">
-        <button className={`nav-item ${!micOn ? 'mic-off' : ''}`} onClick={onToggleMic} title={micOn ? 'Mute Mic' : 'Unmute Mic'}>
+        <button className={`nav-item ${!micOn ? 'mic-off' : ''}`} onClick={onToggleMic} title={micOn ? 'Mute Mic (Ctrl+Shift+M)' : 'Unmute Mic (Ctrl+Shift+M)'}>
           {micOn ? <Mic size={20} /> : <MicOff size={20} />}
           <span>{micOn ? 'Mic On' : 'Mic Off'}</span>
         </button>
@@ -102,7 +102,7 @@ export function LeftNavBar({
         </button>
 
 
-        <button className="nav-item leave-btn" onClick={onLeave} title="Leave Room">
+        <button className="nav-item leave-btn" onClick={onLeave} title="Leave Room (Ctrl+Shift+V)">
           <ArrowLeft size={20} />
           <span>Leave</span>
         </button>

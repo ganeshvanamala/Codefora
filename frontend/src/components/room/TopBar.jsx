@@ -145,7 +145,7 @@ export function TopBar({
           }}
           onClick={onRun}
           disabled={isRunningCode}
-          title="Run Code"
+          title="Run Code (Ctrl+`)"
         >
           <Play size={13} />
           <span className="mobile-hidden">{isRunningCode ? "Running..." : "Run Code"}</span>
@@ -169,8 +169,8 @@ export function TopBar({
             opacity: isSubmittingCode ? 0.6 : 1
           }}
           onClick={onSubmit}
-          disabled={!canSubmit || isSubmittingCode}
-          title="Submit Code"
+          disabled={isSubmittingCode || !canSubmit}
+          title={!canSubmit ? "Viewers cannot submit solutions" : "Submit Code (Ctrl+Shift+Enter)"}
         >
           <Send size={13} style={{ color: '#000' }} />
           <span className="mobile-hidden">{isSubmittingCode ? "Submitting..." : "Submit"}</span>
