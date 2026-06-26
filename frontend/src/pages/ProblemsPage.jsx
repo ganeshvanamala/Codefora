@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { ArrowLeft, Bot, BookOpen, CheckCircle, Loader2, MessageCircle, MessageSquare, Play, Search, Send, Sparkles, Users, X, XCircle, Plus, Lock, Zap } from "lucide-react";
+import { ArrowLeft, Bot, BookOpen, CheckCircle, Loader2, MessageCircle, MessageSquare, Play, Search, Send, Sparkles, Users, X, XCircle, Plus, Lock, Zap, Filter, List, LayoutGrid, Bookmark, Star, ChevronRight, ChevronLeft, ChevronDown, Hash, Code } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { api } from "../api/client";
@@ -8,6 +8,7 @@ import { Navbar } from "../components/Navbar";
 import { trackEvent } from "../lib/analytics";
 import { saveUsername, saveHostToken, saveInviteCode } from "../lib/navigation";
 import { useAuth } from "../hooks/useAuth";
+import "../styles/problems-v2.css";
 
 const allTags = ["Arrays", "Graphs", "DP", "Trees", "Strings", "Patterns", "Greedy", "Binary Search", "Math"];
 const difficulties = ["Easy", "Medium", "Hard"];
@@ -37,6 +38,14 @@ export function ProblemsPage() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [sortBy, setSortBy] = useState("Trending");
   const [selectedProblemId, setSelectedProblemId] = useState(null);
+  const [viewMode, setViewMode] = useState("list");
+  const [activeTab, setActiveTab] = useState("All Problems");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDifficulty, selectedTags, sortBy]);
 
   const [showRoomModal, setShowRoomModal] = useState(false);
   const [roomName, setRoomName] = useState("");
@@ -123,6 +132,9 @@ export function ProblemsPage() {
         return b.acceptance - a.acceptance;
       });
   }, [problems, search, selectedDifficulty, selectedTags, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProblems.length / ITEMS_PER_PAGE));
+  const paginatedProblems = filteredProblems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   function toggleTag(tag) {
     setSelectedTags((current) =>
@@ -323,112 +335,254 @@ export function ProblemsPage() {
       <Navbar />
 
       {!selectedProblem ? (
-        <section className="problems-overview-layout">
-          <aside className="problem-list-panel problems-overview-filters">
-            <div className="problems-search-shell compact-search tour-problems-search">
+        <section className="problems-v2-layout">
+          {/* SIDEBAR */}
+          <aside className="problems-v2-sidebar">
+            <div className="problems-v2-search">
               <Search size={16} />
-              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search problems..." />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search problems..." />
+              <kbd>⌘K</kbd>
             </div>
 
-            <div className="filter-group tour-problems-difficulty">
-              <span className="filter-label">Difficulty</span>
-              <div className="filter-pills">
-                {["All", ...difficulties].map((difficulty) => (
-                  <button
-                    key={difficulty}
-                    type="button"
-                    className={`filter-pill ${selectedDifficulty === difficulty ? "active" : ""}`}
-                    onClick={() => setSelectedDifficulty(difficulty)}
-                  >
-                    {difficulty}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="filter-group tour-problems-tags">
-              <span className="filter-label">Tags</span>
-              <div className="filter-pills filter-pills--wrap">
-                {allTags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    className={`filter-pill ${selectedTags.includes(tag) ? "active" : ""}`}
-                    onClick={() => toggleTag(tag)}
-                  >
+            <div className="problems-v2-section">
+              <div className="problems-v2-section-title">Topics</div>
+              {allTags.slice(0, 10).map((tag) => (
+                <button
+                  key={tag}
+                  className={`problems-v2-filter-btn ${selectedTags.includes(tag) ? "active" : ""}`}
+                  onClick={() => toggleTag(tag)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Hash size={14} className="icon" />
                     {tag}
-                  </button>
-                ))}
-              </div>
+                  </div>
+                </button>
+              ))}
+              <button className="problems-v2-view-all">
+                View All Topics <ChevronRight size={14} />
+              </button>
             </div>
 
-            <label className="sort-mini tour-problems-sort">
-              Sort by
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-                {sortOptions.map((option) => <option key={option}>{option}</option>)}
-              </select>
-            </label>
+            <div className="problems-v2-section">
+              <div className="problems-v2-section-title">Sort By</div>
+              <div className="problems-v2-sort-wrapper">
+                <select className="problems-v2-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  {sortOptions.map((opt) => <option key={opt}>{opt}</option>)}
+                </select>
+                <ChevronDown size={14} className="chevron" />
+              </div>
+            </div>
           </aside>
 
-          <section className="problems-overview-panel">
-            <div className="problems-overview-head">
-              <div>
-                <span className="toolbar-eyebrow">Practice Library</span>
-                <h1>Choose a problem to solve</h1>
-              </div>
-              <strong>{filteredProblems.length} problems</strong>
+          {/* MAIN */}
+          <section className="problems-v2-main">
+            <div className="problems-v2-header">
+              <h1>Problems</h1>
+              <p>Sharpen your skills by solving curated problems across topics.</p>
             </div>
 
-            <div className="problems-overview-grid tour-problems-list">
-              {loadingProblems ? (
-                <div className="problems-empty-state">
-                  <Loader2 className="animate-spin" size={48} />
-                  <p>Loading problems...</p>
-                </div>
-              ) : error ? (
-                <div className="problems-empty-state error">
-                  <XCircle size={48} />
-                  <p>{error}</p>
-                  <button onClick={() => window.location.reload()} className="button secondary">Retry</button>
-                </div>
-              ) : filteredProblems.length === 0 ? (
-                <div className="problems-empty-state">
-                  <Search size={48} />
-                  <p>No problems found matching your criteria.</p>
-                </div>
-              ) : (
-                filteredProblems.map((problem, index) => (
-                  <button
-                    type="button"
-                    key={problem.id}
-                    className="problem-overview-card tour-problem-card"
-                    onClick={() => {
-                      setSelectedProblemId(problem.id);
-                      trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
-                      setRunOutput("Ready.");
-                      setJudgeStatus("idle");
-                    }}
+            <div className="problems-v2-controls">
+              <div className="problems-v2-tabs">
+                {["All Problems", "Easy", "Medium", "Hard"].map(tab => (
+                  <button 
+                    key={tab} 
+                    className={`problems-v2-tab ${activeTab === tab ? "active" : ""}`}
+                    onClick={() => { setActiveTab(tab); setSelectedDifficulty(tab === "All Problems" ? "All" : tab); }}
                   >
-                    <div className="problem-overview-card__top">
-                      <span>#{String(index + 1).padStart(2, "0")}</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {solvedProblems.includes(problem.id) && <CheckCircle size={14} color="#4ade80" title="Solved" />}
-                        <small className={`difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</small>
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <div className="problems-v2-view-toggles">
+                <button className="problems-v2-btn-secondary">
+                  <Filter size={14} /> Filter
+                </button>
+                <button className={`problems-v2-icon-btn ${viewMode === 'list' ? 'active' : ''}`} onClick={() => setViewMode('list')}>
+                  <List size={16} />
+                </button>
+                <button className={`problems-v2-icon-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>
+                  <LayoutGrid size={16} />
+                </button>
+              </div>
+            </div>
+
+            {loadingProblems ? (
+              <div className="problems-empty-state">
+                <Loader2 className="animate-spin" size={48} />
+                <p>Loading problems...</p>
+              </div>
+            ) : error ? (
+              <div className="problems-empty-state error">
+                <XCircle size={48} />
+                <p>{error}</p>
+                <button onClick={() => window.location.reload()} className="button secondary">Retry</button>
+              </div>
+            ) : filteredProblems.length === 0 ? (
+              <div className="problems-empty-state">
+                <Search size={48} />
+                <p>No problems found matching your criteria.</p>
+              </div>
+            ) : viewMode === 'list' ? (
+              <>
+                <table className="problems-v2-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Problem</th>
+                      <th>Difficulty</th>
+                      <th>Acceptance</th>
+                      <th>Solved</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedProblems.map((problem, idx) => (
+                      <tr key={problem.id}>
+                        <td>{String((currentPage - 1) * ITEMS_PER_PAGE + idx + 1).padStart(2, "0")}</td>
+                        <td>
+                          <div className="title-cell">
+                            <span className="title-text">{problem.title}</span>
+                            {problem.tags[0] && <span className="problems-v2-tag">{problem.tags[0]}</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`problems-v2-pill ${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</span>
+                        </td>
+                        <td>
+                          <div className="problems-v2-meta-cell star">
+                            <Star size={14} fill="#F59E0B" /> {problem.acceptance}%
+                          </div>
+                        </td>
+                        <td>
+                          <div className="problems-v2-meta-cell">
+                            <Users size={14} /> {Math.floor(problem.acceptance * 3.4)}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="problems-v2-actions">
+                            <button className="problems-v2-btn-solve" onClick={() => {
+                              setSelectedProblemId(problem.id);
+                              trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
+                              setRunOutput("Ready.");
+                              setJudgeStatus("idle");
+                            }}>
+                              <Code size={14} /> Solve
+                            </button>
+                            <button className="problems-v2-btn-create" onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProblemId(problem.id);
+                              setShowRoomModal(true);
+                            }}>
+                              <Users size={14} /> Create Room
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="problems-v2-pagination">
+                  <button 
+                    className="problems-v2-page-btn" 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(c => Math.max(1, c - 1))}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const page = i + 1;
+                    if (totalPages > 7) {
+                      if (page !== 1 && page !== totalPages && Math.abs(currentPage - page) > 1) {
+                        if (page === 2 && currentPage > 3) return <span key={i} style={{ color: 'rgba(255,255,255,0.5)' }}>...</span>;
+                        if (page === totalPages - 1 && currentPage < totalPages - 2) return <span key={i} style={{ color: 'rgba(255,255,255,0.5)' }}>...</span>;
+                        return null;
+                      }
+                    }
+                    return (
+                      <button 
+                        key={i} 
+                        className={`problems-v2-page-btn ${currentPage === page ? 'active' : ''}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                  <button 
+                    className="problems-v2-page-btn" 
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(c => Math.min(totalPages, c + 1))}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="problems-v2-grid-wrapper">
+                <div className="problems-v2-grid">
+                  {paginatedProblems.map((problem, idx) => (
+                    <div key={problem.id} className="problems-v2-card">
+                      <div className="problems-v2-card-header">
+                        <span className="problems-v2-card-number">#{String((currentPage - 1) * ITEMS_PER_PAGE + idx + 1).padStart(2, "0")}</span>
+                      <span className={`problems-v2-pill ${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</span>
+                    </div>
+                    <h3 className="problems-v2-card-title">{problem.title}</h3>
+                    <div className="problems-v2-card-tags">
+                      {problem.tags.map(t => <span key={t} className="problems-v2-tag">{t}</span>)}
+                    </div>
+                    <div className="problems-v2-card-footer">
+                      <div className="problems-v2-meta-cell star"><Star size={14} fill="#F59E0B" /> {problem.acceptance}%</div>
+                      <div className="problems-v2-actions">
+                        <button className="problems-v2-btn-solve" onClick={() => {
+                          setSelectedProblemId(problem.id);
+                          trackEvent("problem_open", { problem_id: problem.id, title: problem.title });
+                          setRunOutput("Ready.");
+                          setJudgeStatus("idle");
+                        }}>
+                          Solve
+                        </button>
                       </div>
                     </div>
-                    <h2>{problem.title}</h2>
-                    <p>{problem.statement}</p>
-                    <div className="problem-tags">
-                      {problem.tags.map((tag) => <span key={tag}>{tag}</span>)}
-                    </div>
-                    <div className="problem-overview-card__meta">
-                      <span>{problem.acceptance}% acceptance</span>
-                      <span>{problem.tests?.length || 0} samples</span>
-                    </div>
+                  </div>
+                ))}
+                </div>
+                <div className="problems-v2-pagination">
+                  <button 
+                    className="problems-v2-page-btn" 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(c => Math.max(1, c - 1))}
+                  >
+                    <ChevronLeft size={16} />
                   </button>
-                ))
-              )}
-            </div>
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const page = i + 1;
+                    if (totalPages > 7) {
+                      if (page !== 1 && page !== totalPages && Math.abs(currentPage - page) > 1) {
+                        if (page === 2 && currentPage > 3) return <span key={i} style={{ color: 'rgba(255,255,255,0.5)' }}>...</span>;
+                        if (page === totalPages - 1 && currentPage < totalPages - 2) return <span key={i} style={{ color: 'rgba(255,255,255,0.5)' }}>...</span>;
+                        return null;
+                      }
+                    }
+                    return (
+                      <button 
+                        key={i} 
+                        className={`problems-v2-page-btn ${currentPage === page ? 'active' : ''}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                  <button 
+                    className="problems-v2-page-btn" 
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(c => Math.min(totalPages, c + 1))}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         </section>
       ) : (
