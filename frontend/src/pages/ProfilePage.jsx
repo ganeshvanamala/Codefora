@@ -93,6 +93,8 @@ export function ProfilePage() {
       setProfileData(nextProfile);
       document.documentElement.dataset.community = selectedCommunity;
       localStorage.setItem("codefora_community", selectedCommunity);
+      localStorage.setItem("codefora_username", nextProfile.displayName);
+      window.dispatchEvent(new Event("profileUpdated"));
     }
     setIsSaving(false);
     setSaveStatus(ok ? "Saved." : "Could not save profile.");

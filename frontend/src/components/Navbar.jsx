@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { BrandButton } from "./BrandButton";
 import { logoutUser } from "../lib/firebase";
@@ -6,6 +7,23 @@ import { useAuth } from "../hooks/useAuth";
 export function Navbar() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState("");
+
+  useEffect(() => {
+    const updateName = () => {
+      const localName = localStorage.getItem("codefora_username");
+      if (localName) {
+        setDisplayName(localName);
+      } else if (user) {
+        setDisplayName(user.displayName || user.email?.split('@')[0] || "Guest");
+      } else {
+        setDisplayName("");
+      }
+    };
+    updateName();
+    window.addEventListener("profileUpdated", updateName);
+    return () => window.removeEventListener("profileUpdated", updateName);
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -49,7 +67,7 @@ export function Navbar() {
         {user ? (
           <>
             <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
-              {user.displayName || user.email?.split('@')[0]}
+              {displayName}
             </span>
             <button onClick={handleLogout} style={{ 
               padding: '8px 20px', fontSize: '14px', background: 'rgba(255,255,255,0.05)',

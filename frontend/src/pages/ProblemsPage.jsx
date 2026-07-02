@@ -16,14 +16,14 @@ const sortOptions = ["Difficulty", "Most Solved", "Newest", "Trending"];
 const difficultyWeights = { Easy: 1, Medium: 2, Hard: 3 };
 
 const LANGUAGE_OPTIONS = [
-  { label: "C", value: "c", file: "main.c", monaco: "c", template: "#include <stdio.h>\n\nint main(void) {\n  return 0;\n}\n" },
+  { label: "C", value: "c", file: "main.c", monaco: "c", template: "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n\nint main(void) {\n  return 0;\n}\n" },
   { label: "C++", value: "cpp", file: "main.cpp", monaco: "cpp", template: "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n  ios::sync_with_stdio(false);\n  cin.tie(nullptr);\n  return 0;\n}\n" },
-  { label: "Java", value: "java", file: "Main.java", monaco: "java", template: "import java.util.*;\n\nclass Main {\n  public static void main(String[] args) {\n    Scanner sc = new Scanner(System.in);\n  }\n}\n" },
-  { label: "Python", value: "python", file: "main.py", monaco: "python", template: "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n\nif __name__ == \"__main__\":\n    main()\n" },
+  { label: "Java", value: "java", file: "Main.java", monaco: "java", template: "import java.util.*;\nimport java.io.*;\n\nclass Main {\n  public static void main(String[] args) {\n    Scanner sc = new Scanner(System.in);\n  }\n}\n" },
+  { label: "Python", value: "python", file: "main.py", monaco: "python", template: "import sys\nimport math\nfrom collections import defaultdict, deque\n\ndef main():\n    data = sys.stdin.read().strip().split()\n\nif __name__ == \"__main__\":\n    main()\n" },
   { label: "JavaScript", value: "javascript", file: "main.js", monaco: "javascript", template: "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split(/\\s+/);\n" },
   { label: "TypeScript", value: "typescript", file: "main.ts", monaco: "typescript", template: "const fs = require('fs');\nconst input: string[] = fs.readFileSync(0, 'utf8').trim().split(/\\s+/);\n" },
-  { label: "Go", value: "go", file: "main.go", monaco: "go", template: "package main\n\nimport \"fmt\"\n\nfunc main() {\n  fmt.Println(\"\")\n}\n" },
-  { label: "Rust", value: "rust", file: "main.rs", monaco: "rust", template: "use std::io::{self, Read};\n\nfn main() {\n    let mut input = String::new();\n    io::stdin().read_to_string(&mut input).unwrap();\n}\n" }
+  { label: "Go", value: "go", file: "main.go", monaco: "go", template: "package main\n\nimport (\n\t\"fmt\"\n\t\"math\"\n\t\"strings\"\n)\n\nfunc main() {\n  fmt.Println(\"\")\n}\n" },
+  { label: "Rust", value: "rust", file: "main.rs", monaco: "rust", template: "use std::io::{self, Read};\nuse std::collections::{HashMap, HashSet};\nuse std::cmp;\n\nfn main() {\n    let mut input = String::new();\n    io::stdin().read_to_string(&mut input).unwrap();\n}\n" }
 ];
 
 function normalizeOutput(value) {
