@@ -68,10 +68,21 @@ export function FilesPanel({
 
   function createFile() {
     const isNewFileContext = newFileName.trim().length > 0;
-    const activeLanguage = isNewFileContext ? newFileType : (activeFile?.language || newFileType || "javascript");
-    const selectedType = FILE_TYPES.find((type) => type.language === activeLanguage) || FILE_TYPES[0];
     const cleanName = newFileName.trim();
     if (!cleanName) return;
+    
+    let determinedLanguage = isNewFileContext ? newFileType : (activeFile?.language || newFileType || "javascript");
+    
+    // If the user explicitly typed an extension, override the dropdown selection
+    if (cleanName.includes(".")) {
+      const ext = "." + cleanName.split(".").pop();
+      const typeMatch = FILE_TYPES.find(t => t.extension === ext);
+      if (typeMatch) {
+        determinedLanguage = typeMatch.language;
+      }
+    }
+    
+    const selectedType = FILE_TYPES.find((type) => type.language === determinedLanguage) || FILE_TYPES[0];
     const fileName = cleanName.includes(".") ? cleanName : `${cleanName}${selectedType.extension}`;
     const boilerplate = BOILERPLATES[selectedType.language] || "";
     onCreateFile(fileName, selectedType.language, boilerplate);

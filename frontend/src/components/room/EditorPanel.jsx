@@ -1,4 +1,4 @@
-import Editor from "@monaco-editor/react";
+import Editor, { useMonaco } from "@monaco-editor/react";
 import { Activity, Download, FileCode2, Plus, Upload, X, CheckCircle2, Save, AlignLeft, MoreHorizontal, Play, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -49,6 +49,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   const [editorInstance, setEditorInstance] = useState(null);
   const [portalTarget, setPortalTarget] = useState(null);
   const { theme } = useTheme();
+  const monaco = useMonaco();
   const editorDisposables = useRef([]);
   const activeFileNameRef = useRef(activeFile?.name);
   const typingCursorsRef = useRef(typingCursors);
@@ -62,6 +63,17 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   useEffect(() => {
     typingCursorsRef.current = typingCursors;
   }, [typingCursors]);
+
+  useEffect(() => {
+    if (!monaco || !editorInstance || !activeFile?.language) return;
+    const model = editorInstance.getModel();
+    if (!model) return;
+    
+    const currentLang = model.getLanguageId();
+    if (currentLang !== activeFile.language) {
+      monaco.editor.setModelLanguage(model, activeFile.language);
+    }
+  }, [monaco, editorInstance, activeFile?.language, activeFile?.name]);
 
   useEffect(() => {
     activeFileNameRef.current = activeFile?.name;
@@ -143,8 +155,6 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
       const provider = new WebsocketProvider(wsUrl, docRoomName, doc);
       const type = doc.getText("monaco");
 
-      const binding = new MonacoBinding(type, model, new Set([editorInstance]), provider.awareness);
-
       const currentUser = users.find(u => u.socketId === socket.id);
       const color = currentUser?.color || (currentUser?.role === "Host" ? "#ffb000" : "#8b5cf6");
       provider.awareness.setLocalStateField('user', {
@@ -152,7 +162,24 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         color: color
       });
 
-      yjsRefs.current = { doc, provider, binding, saveTimeout: yjsRefs.current.saveTimeout, boundFile: activeFile.name };
+      yjsRefs.current = { doc, provider, binding: null, saveTimeout: yjsRefs.current.saveTimeout, boundFile: activeFile.name };
+
+      const handleSync = (isSynced) => {
+        if (!isSynced || yjsRefs.current.boundFile !== activeFile.name || yjsRefs.current.binding) return;
+        
+        // If the server's document is empty, seed it with the database's code so it doesn't wipe the editor
+        if (type.length === 0 && model.getValue()) {
+          type.insert(0, model.getValue());
+        }
+
+        yjsRefs.current.binding = new MonacoBinding(type, model, new Set([editorInstance]), provider.awareness);
+      };
+
+      if (provider.synced) {
+        handleSync(true);
+      } else {
+        provider.once('sync', handleSync);
+      }
     };
 
     // Try to bind immediately
