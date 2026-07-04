@@ -327,13 +327,11 @@ export function createProfileController() {
         if (!db || db.isMock) return response.json({ ok: true }); 
         
         const senderDoc = await db.collection("users").doc(userId).get();
-        if (!senderDoc.exists) return response.status(404).json({ error: "Sender not found" });
-        const senderName = senderDoc.data().profile?.displayName || "Someone";
+        const senderName = senderDoc.exists ? (senderDoc.data().profile?.displayName || "Someone") : "Someone";
 
         const targetDoc = await db.collection("users").doc(targetUserId).get();
-        if (!targetDoc.exists) return response.status(404).json({ error: "User not found" });
         
-        const targetFriends = targetDoc.data().profile?.friends || [];
+        const targetFriends = targetDoc.exists ? (targetDoc.data().profile?.friends || []) : [];
         if (targetFriends.some(f => f.id === userId)) {
           return response.status(400).json({ error: "Already friends" });
         }
