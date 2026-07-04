@@ -24,6 +24,7 @@ export function Navbar() {
   const friendsRef = useRef(null);
   const [friendRequestId, setFriendRequestId] = useState("");
   const [requestStatus, setRequestStatus] = useState("");
+  const [searchedUser, setSearchedUser] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -92,18 +93,36 @@ export function Navbar() {
     }
   };
 
+  const handleSearchUser = async () => {
+    if (!friendRequestId.trim()) return;
+    setRequestStatus("Searching...");
+    setSearchedUser(null);
+    try {
+      const res = await api.searchProfile(friendRequestId.trim());
+      if (res.error) {
+        setRequestStatus(res.error);
+      } else {
+        setRequestStatus("");
+        setSearchedUser(res);
+      }
+    } catch (err) {
+      setRequestStatus(err.message || "User not found");
+    }
+  };
+
   const handleSendFriendRequest = async () => {
-    if (!user?.uid || !friendRequestId.trim()) return;
-    setRequestStatus("Sending...");
+    if (!user?.uid || !searchedUser) return;
+    setRequestStatus("Sending request...");
     try {
       const res = await api.request(`/api/profiles/${user.uid}/friends/request`, {
         method: "POST",
-        body: JSON.stringify({ targetUserId: friendRequestId.trim() })
+        body: JSON.stringify({ targetUserId: searchedUser.id })
       });
       if (res.error) {
         setRequestStatus(res.error);
       } else {
         setRequestStatus("Request Sent!");
+        setSearchedUser(null);
         setFriendRequestId("");
       }
     } catch (err) {
@@ -223,23 +242,54 @@ export function Navbar() {
                       View All
                     </button>
                   </div>
-                  {/* Add Friend Input */}
+                  {/* Search Friend Input */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                     <input 
                       type="text" 
-                      placeholder="Enter User ID..." 
+                      placeholder="Enter User ID to Search..." 
                       value={friendRequestId}
-                      onChange={e => { setFriendRequestId(e.target.value); setRequestStatus(""); }}
+                      onChange={e => { setFriendRequestId(e.target.value); setRequestStatus(""); setSearchedUser(null); }}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSearchUser(); }}
                       style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '6px 10px', color: 'white', fontSize: '12px', outline: 'none' }}
                     />
                     <button 
-                      onClick={handleSendFriendRequest}
+                      onClick={handleSearchUser}
                       style={{ background: 'var(--primary-accent)', border: 'none', color: 'white', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
                     >
-                      Add
+                      Search
                     </button>
                   </div>
                   {requestStatus && <div style={{ fontSize: '11px', color: requestStatus.includes('Sent') ? '#4ade80' : '#ef4444', marginBottom: '8px' }}>{requestStatus}</div>}
+                  
+                  {/* Searched User Banner */}
+                  {searchedUser && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--primary-accent)',
+                      borderRadius: '8px', padding: '10px', marginBottom: '12px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '36px', height: '36px', borderRadius: '50%', 
+                          background: 'rgba(255,255,255,0.1)', display: 'flex', 
+                          alignItems: 'center', justifyContent: 'center',
+                          color: 'var(--primary-accent)', fontWeight: 'bold', fontSize: '16px'
+                        }}>
+                          {searchedUser.name ? searchedUser.name[0].toUpperCase() : '?'}
+                        </div>
+                        <div style={{ overflow: 'hidden' }}>
+                          <div style={{ color: 'white', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{searchedUser.name}</div>
+                          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'monospace' }}>{searchedUser.id}</div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={handleSendFriendRequest}
+                        style={{ background: 'var(--primary-accent)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  )}
 
                   {friends.length > 0 ? (
                     friends.map((f, i) => (

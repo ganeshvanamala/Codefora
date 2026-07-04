@@ -317,6 +317,40 @@ export function createProfileController() {
       }
     },
 
+    searchUser: async (request, response) => {
+      const query = String(request.params.query || "").trim();
+      if (!query) return response.status(400).json({ error: "Missing query" });
+
+      try {
+        if (!db || db.isMock) {
+          const users = await readLocalUsers();
+          const target = users[query];
+          if (target) {
+            return response.json({
+              id: query,
+              name: target.profile?.displayName || "Someone",
+              emotionId: target.profile?.emotionId || "",
+              photoURL: target.profile?.photoURL || ""
+            });
+          }
+          return response.status(404).json({ error: "User not found" });
+        }
+
+        const targetDoc = await db.collection("users").doc(query).get();
+        if (targetDoc.exists) {
+          return response.json({
+            id: targetDoc.id,
+            name: targetDoc.data().profile?.displayName || "Someone",
+            emotionId: targetDoc.data().profile?.emotionId || "",
+            photoURL: targetDoc.data().profile?.photoURL || ""
+          });
+        }
+        return response.status(404).json({ error: "User not found" });
+      } catch (error) {
+        return response.status(500).json({ error: "Search failed" });
+      }
+    },
+
     sendFriendRequest: async (request, response) => {
       const userId = String(request.params.userId || "").trim();
       const { targetUserId } = request.body || {};
@@ -333,6 +367,10 @@ export function createProfileController() {
           if (alreadySent) return response.status(400).json({ error: "Friend request already sent" });
 
           const users = await readLocalUsers();
+          if (!users[targetUserId]) {
+            return response.status(404).json({ error: "User not found" });
+          }
+          
           const targetFriends = users[targetUserId]?.profile?.friends || [];
           if (targetFriends.some(f => f.id === userId)) {
             return response.status(400).json({ error: "Already friends" });
@@ -359,8 +397,11 @@ export function createProfileController() {
         const senderName = senderDoc.exists ? (senderDoc.data().profile?.displayName || "Someone") : "Someone";
 
         const targetDoc = await db.collection("users").doc(targetUserId).get();
+        if (!targetDoc.exists) {
+          return response.status(404).json({ error: "User not found" });
+        }
         
-        const targetFriends = targetDoc.exists ? (targetDoc.data().profile?.friends || []) : [];
+        const targetFriends = targetDoc.data().profile?.friends || [];
         if (targetFriends.some(f => f.id === userId)) {
           return response.status(400).json({ error: "Already friends" });
         }

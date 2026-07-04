@@ -16,6 +16,7 @@ export function createApiRoutes({ roomController, executionController, aiControl
   router.get("/problems/:id", problemController.get);
   // Profile routes
   if (profileController) {
+    router.get("/profiles/search/:query", profileController.searchUser);
     router.get("/profiles/:userId", profileController.get);
     router.post("/profiles/:userId", profileController.save);
     router.post("/profiles/:userId/save-work", profileController.saveWork);
