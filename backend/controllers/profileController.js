@@ -35,6 +35,29 @@ async function writeLocalWorks(works) {
   await fs.writeFile(localWorksPath, JSON.stringify(works, null, 2));
 }
 
+async function getNextFriendCode(db, userId) {
+  if (!db || db.isMock) {
+    const users = await readLocalUsers();
+    let max = 10000000;
+    for (const u of Object.values(users)) {
+      if (u.profile?.friendCode) max = Math.max(max, parseInt(u.profile.friendCode));
+    }
+    return (max + 1).toString();
+  }
+
+  const counterRef = db.collection('counters').doc('users');
+  return await db.runTransaction(async (t) => {
+    const doc = await t.get(counterRef);
+    let nextCode = 10000000;
+    if (doc.exists && doc.data().nextFriendCode) {
+      nextCode = doc.data().nextFriendCode;
+    }
+    t.set(counterRef, { nextFriendCode: nextCode + 1 }, { merge: true });
+    t.set(db.collection('friendCodes').doc(nextCode.toString()), { uid: userId });
+    return nextCode.toString();
+  });
+}
+
 export function createProfileController() {
   const db = createFirestore();
 
@@ -70,9 +93,9 @@ export function createProfileController() {
           } else {
             if (isNumericCode) return response.json({}); // Not found by code
             
-            const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
+            const newFriendCode = await getNextFriendCode(db, userId);
             const newProfile = {
-              profile: { displayName: "Someone", bio: "", theme: "dark", friends: [], friendCode: generateFriendCode() },
+              profile: { displayName: "Someone", bio: "", theme: "dark", friends: [], friendCode: newFriendCode },
               recentWorks: []
             };
             users[userId] = newProfile;
@@ -91,10 +114,17 @@ export function createProfileController() {
         let trueUserId = userId;
 
         if (isNumericCode) {
-          const snapshot = await db.collection("users").where("profile.friendCode", "==", userId).limit(1).get();
-          if (!snapshot.empty) {
-            docSnap = snapshot.docs[0];
-            trueUserId = docSnap.id;
+          const mappingSnap = await db.collection("friendCodes").doc(userId).get();
+          if (mappingSnap.exists) {
+            trueUserId = mappingSnap.data().uid;
+            docSnap = await db.collection("users").doc(trueUserId).get();
+          } else {
+            // Fallback for older codes not in the mapping
+            const snapshot = await db.collection("users").where("profile.friendCode", "==", userId).limit(1).get();
+            if (!snapshot.empty) {
+              docSnap = snapshot.docs[0];
+              trueUserId = docSnap.id;
+            }
           }
         } else {
           docSnap = await db.collection("users").doc(userId).get();
@@ -102,8 +132,8 @@ export function createProfileController() {
         if (docSnap && docSnap.exists) {
           const data = docSnap.data();
           if (!data.profile?.friendCode) {
-             const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
-             const updatedProfile = { ...data.profile, friendCode: generateFriendCode() };
+             const newFriendCode = await getNextFriendCode(db, trueUserId);
+             const updatedProfile = { ...data.profile, friendCode: newFriendCode };
              await db.collection("users").doc(trueUserId).set({ profile: updatedProfile }, { merge: true });
              data.profile = updatedProfile;
           }
@@ -118,9 +148,9 @@ export function createProfileController() {
           if (isNumericCode) return response.json({}); // Not found by code
 
           // Initialize new user profile
-          const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
+          const newFriendCode = await getNextFriendCode(db, userId);
           const newProfile = {
-            profile: { displayName: "", bio: "", theme: "dark", friends: [], friendCode: generateFriendCode() },
+            profile: { displayName: "", bio: "", theme: "dark", friends: [], friendCode: newFriendCode },
             recentWorks: []
           };
           await db.collection("users").doc(userId).set(newProfile);
