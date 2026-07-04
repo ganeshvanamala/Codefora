@@ -62,6 +62,7 @@ export function createApiRoutes({ roomController, executionController, aiControl
 
   if (notificationController) {
     router.get("/notifications/:userId", notificationController.getNotifications);
+    router.post("/notifications/invite", notificationController.sendRoomInvite);
     router.post("/notifications/:userId/read", notificationController.markAsRead);
   }
 

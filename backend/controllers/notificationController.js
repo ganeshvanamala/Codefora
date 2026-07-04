@@ -133,6 +133,43 @@ export function createNotificationController() {
         console.error("Failed to send announcement:", err);
         return response.status(500).json({ error: "Failed to send announcement" });
       }
+    },
+
+    sendRoomInvite: async (request, response) => {
+      try {
+        const { targetUserId, roomId, inviterName, inviterId } = request.body;
+        if (!targetUserId || !roomId || !inviterName) {
+          return response.status(400).json({ error: "Invalid payload" });
+        }
+        
+        const notifData = {
+          userId: targetUserId,
+          type: "room_invite",
+          message: `${inviterName} invited you to a room`,
+          roomId: roomId,
+          inviterId: inviterId,
+          inviterName: inviterName,
+          read: false,
+          createdAt: Date.now()
+        };
+
+        if (!db || db.isMock) {
+          const allNotifs = await readLocalNotifications();
+          allNotifs.push({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            ...notifData
+          });
+          await writeLocalNotifications(allNotifs);
+          return response.json({ success: true });
+        }
+
+        const docRef = db.collection("notifications").doc();
+        await docRef.set(notifData);
+        return response.json({ success: true });
+      } catch (err) {
+        console.error("Failed to send room invite:", err);
+        return response.status(500).json({ error: "Failed to send invite" });
+      }
     }
   };
 }

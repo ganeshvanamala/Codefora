@@ -518,6 +518,22 @@ export function Navbar() {
                           </button>
                         </div>
                       )}
+                      {n.type === 'room_invite' && !n.read && (
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleMarkAsRead(n.id); setShowNotifications(false); navigate(`/code/${n.roomId}`); }}
+                            style={{ flex: 1, padding: '6px', background: 'var(--primary-accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                          >
+                            Join Room
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleMarkAsRead(n.id); }}
+                            style={{ flex: 1, padding: '6px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                          >
+                            Ignore
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (

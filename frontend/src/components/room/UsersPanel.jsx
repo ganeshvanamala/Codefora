@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Check, Headphones, Mic, MicOff, MoreVertical, Shield, UserX, MessageSquare, Volume2 } from "lucide-react";
+import { Check, Headphones, Mic, MicOff, MoreVertical, Shield, UserX, MessageSquare, Volume2, Plus } from "lucide-react";
 import { getInviteCode } from "../../lib/navigation";
 import { API_URL } from "../../config";
+import { useAuth } from "../../hooks/useAuth";
+import { getProfile } from "../../api/client";
 
 export function UsersPanel({ 
   room, 
@@ -13,6 +15,59 @@ export function UsersPanel({
 }) {
   const [openMenuFor, setOpenMenuFor] = useState(null);
   const [expandedUser, setExpandedUser] = useState(null);
+
+  // Invite Friends State
+  const { user: currentUser } = useAuth();
+  const [onlineFriends, setOnlineFriends] = useState([]);
+  const [invitingFriendId, setInvitingFriendId] = useState(null);
+
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+    let active = true;
+    const fetchFriends = async () => {
+      try {
+        const myProfile = await getProfile(currentUser.uid);
+        if (!active || !myProfile?.friends) return;
+        
+        const friendsData = [];
+        for (const f of myProfile.friends) {
+          const profile = await getProfile(f.id).catch(() => null);
+          if (profile && (profile.presence === 'online' || profile.presence === 'in-room')) {
+            friendsData.push({ ...f, ...profile });
+          }
+        }
+        if (active) setOnlineFriends(friendsData);
+      } catch(e) {}
+    };
+    fetchFriends();
+    const intv = setInterval(fetchFriends, 15000);
+    return () => { active = false; clearInterval(intv); };
+  }, [currentUser]);
+
+  const handleInvite = async (friend) => {
+    if (friend.presence === 'in-room') {
+      alert("User is already in a room!");
+      return;
+    }
+    setInvitingFriendId(friend.id);
+    try {
+      await fetch(`${API_URL}/api/notifications/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUserId: friend.id,
+          roomId: roomId,
+          inviterId: currentUser.uid,
+          inviterName: currentUser.displayName || currentUser.email?.split('@')[0] || 'A friend'
+        })
+      });
+      alert("Invite sent!");
+    } catch(e) {
+      alert("Failed to send invite");
+    } finally {
+      setInvitingFriendId(null);
+    }
+  };
 
   useEffect(() => {
     const handlePointerDown = (event) => {
@@ -305,6 +360,98 @@ export function UsersPanel({
           </div>
         ))}
       </div>
+
+      {/* --- ONLINE FRIENDS SECTION --- */}
+      {currentUser && (
+        <>
+          <div 
+            className="section-title" 
+            style={{ 
+              padding: "8px 12px 4px", 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "8px", 
+              borderBottom: "1px solid rgba(255,255,255,0.03)",
+              borderTop: "1px solid rgba(255,255,255,0.03)",
+              flexShrink: 0
+            }}
+          >
+            <span style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
+              : ONLINE FRIENDS ({onlineFriends.length})
+            </span>
+          </div>
+
+          <div 
+            className="friends-list" 
+            style={{ 
+              padding: "6px 8px", 
+              display: "flex", 
+              flexDirection: "column", 
+              gap: "4px", 
+              maxHeight: "150px", 
+              overflowY: "auto",
+              flexShrink: 0,
+              marginBottom: "16px"
+            }}
+          >
+            {onlineFriends.map((friend) => (
+              <div
+                key={friend.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "6px 8px",
+                  background: "rgba(255,255,255,0.02)",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(255,255,255,0.05)"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", overflow: "hidden" }}>
+                  <div style={{ position: "relative", width: "24px", height: "24px", borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "bold", overflow: "hidden", flexShrink: 0 }}>
+                    {friend.photoURL ? (
+                      <img src={friend.photoURL} alt={friend.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : friend.emotionId ? (
+                      <img src={`${API_URL}/api/emotions/${friend.emotionId}/image`} alt={friend.name} style={{ width: "100%", height: "100%", objectFit: "cover", background: "rgba(255,255,255,0.1)", padding: "2px" }} />
+                    ) : (
+                      friend.name ? friend.name[0].toUpperCase() : '?'
+                    )}
+                    <div style={{ position: "absolute", bottom: 0, right: 0, width: "6px", height: "6px", borderRadius: "50%", background: friend.presence === 'in-room' ? '#3b82f6' : '#10b981', border: "1px solid #121822" }} />
+                  </div>
+                  <div style={{ fontSize: "12px", color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {friend.displayName || friend.name}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleInvite(friend)}
+                  disabled={invitingFriendId === friend.id}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--primary-accent)",
+                    cursor: "pointer",
+                    padding: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "4px"
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+                  onMouseOut={e => e.currentTarget.style.background = "transparent"}
+                  title="Invite to Room"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            ))}
+            {onlineFriends.length === 0 && (
+              <div style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "11px", padding: "10px 0" }}>
+                No friends online
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* --- PUBLIC ROOM PERMISSIONS CARD --- */}
       <div 
