@@ -571,11 +571,11 @@ export default function AdminDashboardPage() {
                           />
                         </th>
                         <th>User</th>
-                        <th>ID</th>
+                        <th>Friend Code</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {users.filter(u => !announcementSearch || (u.userId && u.userId.includes(announcementSearch)) || (u.name && u.name.toLowerCase().includes(announcementSearch.toLowerCase()))).map(u => (
+                      {users.filter(u => !announcementSearch || (u.friendCode && u.friendCode.includes(announcementSearch)) || (u.name && u.name.toLowerCase().includes(announcementSearch.toLowerCase()))).map(u => (
                         <tr key={u.userId} onClick={() => {
                           setSelectedAnnouncementUsers(prev => 
                             prev.includes(u.userId) ? prev.filter(id => id !== u.userId) : [...prev, u.userId]

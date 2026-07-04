@@ -30,7 +30,7 @@ function FriendProfileItem({ friend, navigate }) {
   const emotionImage = profile?.emotionId ? `${API_URL}/api/emotions/${profile.emotionId}/image` : null;
 
   return (
-    <div className="friend-item" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => navigate('/profile/' + friend.id)}>
+    <div className="friend-item" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => navigate('/profile/' + (profile?.friendCode || friend.friendCode || friend.id))}>
       <div className="friend-avatar" style={{ background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
         {emotionImage ? (
           <img src={emotionImage} alt={friend.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

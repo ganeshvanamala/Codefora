@@ -34,7 +34,7 @@ function FriendListItem({ f, navigate, setFriendToRemove }) {
       }}
       onClick={(e) => {
         if (e.target.closest('button')) return;
-        navigate('/profile/' + f.id);
+        navigate('/profile/' + (profile?.friendCode || f.friendCode || f.id));
       }}
     >
       <div style={{
@@ -185,18 +185,25 @@ export function Navbar() {
 
   const handleSearchUser = async () => {
     if (!friendRequestId.trim()) return;
+    
+    // Only allow 8-digit numeric friend codes
+    if (!/^\d{8}$/.test(friendRequestId.trim())) {
+      setRequestStatus("Invalid Friend Code (must be 8 digits)");
+      return;
+    }
+
     setRequestStatus("Searching...");
     setSearchedUser(null);
     try {
-      const res = await api.searchProfile(friendRequestId.trim());
-      if (res.error) {
-        setRequestStatus(res.error);
-      } else {
+      const data = await getProfile(friendRequestId.trim());
+      if (data && Object.keys(data).length > 0 && data.id) {
+        setSearchedUser(data); // data now includes the true 'id'
         setRequestStatus("");
-        setSearchedUser(res);
+      } else {
+        setRequestStatus("User not found");
       }
     } catch (err) {
-      setRequestStatus(err.message || "User not found");
+      setRequestStatus("User not found");
     }
   };
 
@@ -369,7 +376,7 @@ export function Navbar() {
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                     <input 
                       type="text" 
-                      placeholder="Enter Friend Code to Search..." 
+                      placeholder="Enter 8-digit Friend Code..." 
                       value={friendRequestId}
                       onChange={e => { setFriendRequestId(e.target.value); setRequestStatus(""); setSearchedUser(null); }}
                       onKeyDown={e => { if (e.key === 'Enter') handleSearchUser(); }}

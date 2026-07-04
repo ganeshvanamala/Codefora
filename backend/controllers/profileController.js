@@ -44,15 +44,32 @@ export function createProfileController() {
       if (!userId) return response.status(400).json({ error: "Missing userId" });
 
       try {
+        const isNumericCode = /^\d{8}$/.test(userId);
+
         if (!db || db.isMock) {
           const users = await readLocalUsers();
-          if (users[userId]) {
-            let presence = "offline";
-            if (globalOnlineUsers.has(userId) && globalOnlineUsers.get(userId).size > 0) {
-              presence = userIdToRoomId.has(userId) ? "in-room" : "online";
+          let targetUser = users[userId];
+          let trueUserId = userId;
+
+          if (isNumericCode) {
+            const entry = Object.entries(users).find(([_, u]) => u.profile?.friendCode === userId);
+            if (entry) {
+              trueUserId = entry[0];
+              targetUser = entry[1];
+            } else {
+              targetUser = null;
             }
-            return response.json({ ...(users[userId].profile || {}), presence });
+          }
+
+          if (targetUser) {
+            let presence = "offline";
+            if (globalOnlineUsers.has(trueUserId) && globalOnlineUsers.get(trueUserId).size > 0) {
+              presence = userIdToRoomId.has(trueUserId) ? "in-room" : "online";
+            }
+            return response.json({ ...(targetUser.profile || {}), presence, id: trueUserId });
           } else {
+            if (isNumericCode) return response.json({}); // Not found by code
+            
             const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
             const newProfile = {
               profile: { displayName: "Someone", bio: "", theme: "dark", friends: [], friendCode: generateFriendCode() },
@@ -66,36 +83,48 @@ export function createProfileController() {
               presence = userIdToRoomId.has(userId) ? "in-room" : "online";
             }
             
-            return response.json({ ...newProfile.profile, presence });
+            return response.json({ ...newProfile.profile, presence, id: userId });
           }
         }
 
-        const docRef = db.collection("users").doc(userId);
-        const docSnap = await docRef.get();
-        if (docSnap.exists) {
+        let docSnap;
+        let trueUserId = userId;
+
+        if (isNumericCode) {
+          const snapshot = await db.collection("users").where("profile.friendCode", "==", userId).limit(1).get();
+          if (!snapshot.empty) {
+            docSnap = snapshot.docs[0];
+            trueUserId = docSnap.id;
+          }
+        } else {
+          docSnap = await db.collection("users").doc(userId).get();
+        }
+        if (docSnap && docSnap.exists) {
           const data = docSnap.data();
           if (!data.profile?.friendCode) {
              const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
              const updatedProfile = { ...data.profile, friendCode: generateFriendCode() };
-             await docRef.set({ profile: updatedProfile }, { merge: true });
+             await db.collection("users").doc(trueUserId).set({ profile: updatedProfile }, { merge: true });
              data.profile = updatedProfile;
           }
           
           let presence = "offline";
-          if (globalOnlineUsers.has(userId) && globalOnlineUsers.get(userId).size > 0) {
-            presence = userIdToRoomId.has(userId) ? "in-room" : "online";
+          if (globalOnlineUsers.has(trueUserId) && globalOnlineUsers.get(trueUserId).size > 0) {
+            presence = userIdToRoomId.has(trueUserId) ? "in-room" : "online";
           }
           
-          return response.json({ ...(data.profile || {}), presence });
+          return response.json({ ...(data.profile || {}), presence, id: trueUserId });
         } else {
+          if (isNumericCode) return response.json({}); // Not found by code
+
           // Initialize new user profile
           const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
           const newProfile = {
             profile: { displayName: "", bio: "", theme: "dark", friends: [], friendCode: generateFriendCode() },
             recentWorks: []
           };
-          await docRef.set(newProfile);
-          return response.json(newProfile.profile);
+          await db.collection("users").doc(userId).set(newProfile);
+          return response.json({ ...newProfile.profile, id: userId });
         }
       } catch (error) {
         console.warn(`Profile get failed: ${error.message}`);
