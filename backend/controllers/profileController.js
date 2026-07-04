@@ -1,5 +1,5 @@
 import { createFirestore, admin } from "../config/firebase.js";
-import { readLocalUsers, writeLocalUsers } from "../utils/mockDB.js";
+import fs from "fs/promises";
 import { readLocalNotifications, writeLocalNotifications } from "../utils/mockNotifications.js";
 import path from "path";
 import { fileURLToPath } from "url";
