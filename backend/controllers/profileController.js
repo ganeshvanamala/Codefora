@@ -336,15 +336,34 @@ export function createProfileController() {
           return response.status(404).json({ error: "User not found" });
         }
 
+        let name = "Someone";
+        let emotionId = "";
+        let photoURL = "";
+        
         const targetDoc = await db.collection("users").doc(query).get();
         if (targetDoc.exists) {
-          return response.json({
-            id: targetDoc.id,
-            name: targetDoc.data().profile?.displayName || "Someone",
-            emotionId: targetDoc.data().profile?.emotionId || "",
-            photoURL: targetDoc.data().profile?.photoURL || ""
-          });
+          const profile = targetDoc.data().profile || {};
+          name = profile.displayName || name;
+          emotionId = profile.emotionId || emotionId;
+          photoURL = profile.photoURL || photoURL;
+          return response.json({ id: targetDoc.id, name, emotionId, photoURL });
         }
+        
+        // If they haven't saved a profile, check Firebase Auth
+        try {
+          if (admin && admin.apps && admin.apps.length > 0) {
+            const userRecord = await admin.auth().getUser(query);
+            return response.json({
+              id: userRecord.uid,
+              name: userRecord.displayName || userRecord.email?.split('@')[0] || "Someone",
+              emotionId: "",
+              photoURL: userRecord.photoURL || ""
+            });
+          }
+        } catch (authErr) {
+          // Fall through to 404
+        }
+        
         return response.status(404).json({ error: "User not found" });
       } catch (error) {
         return response.status(500).json({ error: "Search failed" });
@@ -396,12 +415,25 @@ export function createProfileController() {
         const senderDoc = await db.collection("users").doc(userId).get();
         const senderName = senderDoc.exists ? (senderDoc.data().profile?.displayName || "Someone") : "Someone";
 
+        let targetExists = false;
+        let targetFriends = [];
+        
         const targetDoc = await db.collection("users").doc(targetUserId).get();
-        if (!targetDoc.exists) {
+        if (targetDoc.exists) {
+          targetExists = true;
+          targetFriends = targetDoc.data().profile?.friends || [];
+        } else {
+          try {
+            if (admin && admin.apps && admin.apps.length > 0) {
+              await admin.auth().getUser(targetUserId);
+              targetExists = true;
+            }
+          } catch (e) {}
+        }
+
+        if (!targetExists) {
           return response.status(404).json({ error: "User not found" });
         }
-        
-        const targetFriends = targetDoc.data().profile?.friends || [];
         if (targetFriends.some(f => f.id === userId)) {
           return response.status(400).json({ error: "Already friends" });
         }
