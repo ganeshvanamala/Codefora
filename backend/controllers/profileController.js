@@ -1,6 +1,7 @@
 import { createFirestore, admin } from "../config/firebase.js";
 import fs from "fs/promises";
 import { readLocalNotifications, writeLocalNotifications } from "../utils/mockNotifications.js";
+import { globalOnlineUsers, userIdToRoomId } from "../utils/presenceTracker.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -46,7 +47,11 @@ export function createProfileController() {
         if (!db || db.isMock) {
           const users = await readLocalUsers();
           if (users[userId]) {
-            return response.json(users[userId].profile || {});
+            let presence = "offline";
+            if (globalOnlineUsers.has(userId) && globalOnlineUsers.get(userId).size > 0) {
+              presence = userIdToRoomId.has(userId) ? "in-room" : "online";
+            }
+            return response.json({ ...(users[userId].profile || {}), presence });
           } else {
             const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
             const newProfile = {
@@ -55,7 +60,13 @@ export function createProfileController() {
             };
             users[userId] = newProfile;
             await writeLocalUsers(users);
-            return response.json(newProfile.profile);
+            
+            let presence = "offline";
+            if (globalOnlineUsers.has(userId) && globalOnlineUsers.get(userId).size > 0) {
+              presence = userIdToRoomId.has(userId) ? "in-room" : "online";
+            }
+            
+            return response.json({ ...newProfile.profile, presence });
           }
         }
 
@@ -69,7 +80,13 @@ export function createProfileController() {
              await docRef.set({ profile: updatedProfile }, { merge: true });
              data.profile = updatedProfile;
           }
-          return response.json(data.profile || {});
+          
+          let presence = "offline";
+          if (globalOnlineUsers.has(userId) && globalOnlineUsers.get(userId).size > 0) {
+            presence = userIdToRoomId.has(userId) ? "in-room" : "online";
+          }
+          
+          return response.json({ ...(data.profile || {}), presence });
         } else {
           // Initialize new user profile
           const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();

@@ -53,8 +53,15 @@ function FriendListItem({ f, navigate, setFriendToRemove }) {
         )}
       </div>
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: '13px', color: 'white', fontWeight: 500, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+        <div style={{ fontSize: '13px', color: 'white', fontWeight: 500, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: '6px' }}>
           {profile?.displayName || f.name}
+          <span 
+            title={profile?.presence === 'in-room' ? 'In Room' : profile?.presence === 'online' ? 'Online' : 'Offline'}
+            style={{ 
+              display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', 
+              background: profile?.presence === 'in-room' ? '#3b82f6' : profile?.presence === 'online' ? '#10b981' : '#64748b' 
+            }}
+          />
         </div>
         {(profile?.friendCode || f.friendCode) && (
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>

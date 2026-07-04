@@ -16,6 +16,47 @@ import "../styles/profile.css";
 
 import defaultAvatar from "../../assets/scene1.jpeg"; // Fallback banner
 
+function FriendProfileItem({ friend, navigate }) {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    getProfile(friend.id).then(data => {
+      if (active && data) setProfile(data);
+    }).catch(console.error);
+    return () => { active = false; };
+  }, [friend.id]);
+
+  const emotionImage = profile?.emotionId ? `${API_URL}/api/emotions/${profile.emotionId}/image` : null;
+
+  return (
+    <div className="friend-item" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => navigate('/profile/' + friend.id)}>
+      <div className="friend-avatar" style={{ background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+        {emotionImage ? (
+          <img src={emotionImage} alt={friend.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : profile?.photoURL ? (
+          <img src={profile.photoURL} alt={friend.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-accent)', fontWeight: 'bold', fontSize: '18px' }}>
+            {friend.name ? friend.name[0].toUpperCase() : '?'}
+          </div>
+        )}
+        <div 
+          className="friend-status" 
+          style={{ 
+            background: profile?.presence === 'in-room' ? '#3b82f6' : profile?.presence === 'online' ? '#10b981' : '#64748b' 
+          }} 
+          title={profile?.presence === 'in-room' ? 'In Room' : profile?.presence === 'online' ? 'Online' : 'Offline'}
+        />
+      </div>
+      <div className="friend-name">{profile?.displayName || friend.name}</div>
+      {(profile?.friendCode || friend.friendCode) && (
+        <div className="friend-handle">Friend Code: {profile?.friendCode || friend.friendCode}</div>
+      )}
+    </div>
+  );
+}
+
 export function ProfilePage() {
   const { userId: urlUserId } = useParams();
   const navigate = useNavigate();
@@ -286,16 +327,7 @@ export function ProfilePage() {
           <div className="friends-list" style={{ overflowX: 'auto', paddingBottom: '8px', minHeight: '80px' }}>
             {friends.length > 0 ? (
               friends.map((friend, i) => (
-                <div key={i} className="friend-item" style={{ cursor: 'pointer' }} onClick={() => navigate('/profile/' + friend.id)}>
-                  <div className="friend-avatar">
-                    <img src={defaultAvatar} alt={friend.name} />
-                    <div className="friend-status"></div>
-                  </div>
-                  <div className="friend-name">{friend.name}</div>
-                  {friend.friendCode && (
-                    <div className="friend-handle">Friend Code: {friend.friendCode}</div>
-                  )}
-                </div>
+                <FriendProfileItem key={i} friend={friend} navigate={navigate} />
               ))
             ) : (
               <div style={{color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '8px'}}>

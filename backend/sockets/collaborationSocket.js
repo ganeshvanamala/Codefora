@@ -1,5 +1,5 @@
 import { cryptoId } from "../utils/id.js";
-import { globalOnlineUsers } from "../utils/presenceTracker.js";
+import { globalOnlineUsers, userIdToRoomId } from "../utils/presenceTracker.js";
 
 const MEMBER_COLORS = ["#00E5FF", "#FF9100", "#FF007F", "#B400FF", "#00FF00", "#FFEA00", "#FF0000", "#00FFCC"];
 const assignUserColor = (role, existingUsers = []) => {
@@ -21,7 +21,6 @@ const assignUserColor = (role, existingUsers = []) => {
 
 export function registerCollaborationSocket(io, { roomRepository, roomService, profileController }) {
   const socketUsers = new Map();
-  const userIdToRoomId = new Map(); // Track authenticated userId -> roomId to prevent multi-room access
   const broadcastRooms = () => io.emit("rooms:update", roomRepository.allPublicSummaries((room) => roomService.publicRoom(room)));
 
   io.on("connection", (socket) => {
