@@ -728,11 +728,15 @@ export default function AdminDashboardPage() {
                             <td style={{ color: '#FF5555' }}>{r.type}</td>
                             <td>
                               <div>{r.reportedName}</div>
-                              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{r.reportedId}</div>
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                                {users.find(u => u.userId === r.reportedId)?.friendCode || r.reportedId}
+                              </div>
                             </td>
                             <td>
                               <div>{r.reporterName}</div>
-                              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{r.reporterId}</div>
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                                {users.find(u => u.userId === r.reporterId)?.friendCode || r.reporterId}
+                              </div>
                             </td>
                             <td title={r.reason}>{r.reason.length > 30 ? r.reason.substring(0, 30) + "..." : r.reason}</td>
                             <td>{r.time}</td>
