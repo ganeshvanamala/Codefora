@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createCompilerRoutes } from "./compiler.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 
-export function createApiRoutes({ roomController, executionController, aiController, emotionController, profileController, compilerController, adminController, problemController, feedbackController }) {
+export function createApiRoutes({ roomController, executionController, aiController, emotionController, profileController, compilerController, adminController, problemController, feedbackController, notificationController }) {
   const router = Router();
 
   router.get("/health", (_request, response) => response.json({ ok: true }));
@@ -23,6 +23,8 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.get("/profiles/:userId/tour-status/:pageName", profileController.getTourStatus);
     router.post("/profiles/:userId/solve", profileController.solveProblem);
     router.get("/profiles/:userId/works", profileController.listWorks);
+    router.post("/profiles/:userId/friends/request", profileController.sendFriendRequest);
+    router.post("/profiles/:userId/friends/handle", profileController.handleFriendRequest);
   }
   if (compilerController) {
     router.use("/compiler", createCompilerRoutes(compilerController));
@@ -41,6 +43,9 @@ export function createApiRoutes({ roomController, executionController, aiControl
 
   // Admin routes (Protected)
   if (adminController) {
+    if (notificationController) {
+      router.post("/admin/announcements", adminAuth, notificationController.sendAnnouncement);
+    }
     router.get("/admin/stats", adminAuth, adminController.getStats);
     router.get("/admin/rooms", adminAuth, adminController.getRooms);
     router.get("/admin/users", adminAuth, adminController.getUsers);
@@ -51,6 +56,11 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.delete("/admin/problems/:id", adminAuth, adminController.deleteProblem);
     router.post("/admin/problems", adminAuth, adminController.addProblem);
     router.put("/admin/problems/:id", adminAuth, adminController.updateProblem);
+  }
+
+  if (notificationController) {
+    router.get("/notifications/:userId", notificationController.getNotifications);
+    router.post("/notifications/:userId/read", notificationController.markAsRead);
   }
 
   return router;

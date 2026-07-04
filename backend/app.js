@@ -9,6 +9,7 @@ import { createCompilerController } from "./controllers/compilerController.js";
 import { createAdminController } from "./controllers/adminController.js";
 import { createProblemController } from "./controllers/problemController.js";
 import { createFeedbackController } from "./controllers/feedbackController.js";
+import { createNotificationController } from "./controllers/notificationController.js";
 import { createApiRoutes } from "./routes/apiRoutes.js";
 import { AiService } from "./services/aiService.js";
 import { ExecutionService } from "./services/executionService.js";
@@ -25,6 +26,7 @@ export function createApp({ roomRepository, roomService, profileController, onRo
   const adminController = createAdminController(roomRepository);
   const problemController = createProblemController();
   const feedbackController = createFeedbackController();
+  const notificationController = createNotificationController();
 
   app.use(cors({ origin: corsOrigin }));
   app.use(express.json({ limit: "2mb" }));
@@ -64,7 +66,8 @@ export function createApp({ roomRepository, roomService, profileController, onRo
     compilerController,
     adminController,
     problemController,
-    feedbackController
+    feedbackController,
+    notificationController
   }));
 
   app.use((request, response) => {

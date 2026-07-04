@@ -314,6 +314,113 @@ export function createProfileController() {
         console.error(`Failed to record solved problem: ${error.message}`);
         return response.status(500).json({ error: error.message });
       }
+    },
+
+    sendFriendRequest: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const { targetUserId } = request.body || {};
+      
+      if (!userId || !targetUserId) return response.status(400).json({ error: "Missing parameters" });
+      if (userId === targetUserId) return response.status(400).json({ error: "Cannot send request to yourself" });
+
+      try {
+        if (!db || db.isMock) return response.json({ ok: true }); 
+        
+        const senderDoc = await db.collection("users").doc(userId).get();
+        if (!senderDoc.exists) return response.status(404).json({ error: "Sender not found" });
+        const senderName = senderDoc.data().profile?.displayName || "Someone";
+
+        const targetDoc = await db.collection("users").doc(targetUserId).get();
+        if (!targetDoc.exists) return response.status(404).json({ error: "User not found" });
+        
+        const targetFriends = targetDoc.data().profile?.friends || [];
+        if (targetFriends.some(f => f.id === userId)) {
+          return response.status(400).json({ error: "Already friends" });
+        }
+
+        // Check if request already pending
+        const existingReqs = await db.collection("notifications")
+          .where("userId", "==", targetUserId)
+          .where("type", "==", "friend_request")
+          .where("senderId", "==", userId)
+          .where("status", "==", "pending")
+          .get();
+        if (!existingReqs.empty) {
+          return response.status(400).json({ error: "Friend request already sent" });
+        }
+
+        await db.collection("notifications").add({
+          userId: targetUserId,
+          type: "friend_request",
+          message: `${senderName} (${userId}) sent you a friend request.`,
+          senderId: userId,
+          senderName: senderName,
+          status: "pending",
+          read: false,
+          createdAt: Date.now()
+        });
+
+        return response.json({ ok: true });
+      } catch (error) {
+        console.error(`Failed to send friend request: ${error.message}`);
+        return response.status(500).json({ error: "Internal server error" });
+      }
+    },
+
+    handleFriendRequest: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const { notificationId, action } = request.body || {};
+      
+      if (!userId || !notificationId || !action) return response.status(400).json({ error: "Missing parameters" });
+
+      try {
+        if (!db || db.isMock) return response.json({ ok: true });
+        
+        const notifRef = db.collection("notifications").doc(notificationId);
+        const notifDoc = await notifRef.get();
+        
+        if (!notifDoc.exists) return response.status(404).json({ error: "Notification not found" });
+        const notifData = notifDoc.data();
+        
+        if (notifData.userId !== userId) return response.status(403).json({ error: "Unauthorized" });
+        if (notifData.type !== "friend_request" || notifData.status !== "pending") {
+          return response.status(400).json({ error: "Invalid or already handled request" });
+        }
+
+        const senderId = notifData.senderId;
+        const senderName = notifData.senderName;
+
+        const userDocRef = db.collection("users").doc(userId);
+        const userDoc = await userDocRef.get();
+        const userName = userDoc.exists ? (userDoc.data().profile?.displayName || "Someone") : "Someone";
+
+        if (action === "accept") {
+          const userFriends = userDoc.exists ? (userDoc.data().profile?.friends || []) : [];
+          if (!userFriends.some(f => f.id === senderId)) {
+            userFriends.push({ id: senderId, name: senderName });
+            const userProfile = userDoc.data().profile || {};
+            await userDocRef.set({ profile: { ...userProfile, friends: userFriends }, updatedAt: Date.now() }, { merge: true });
+          }
+
+          const senderDocRef = db.collection("users").doc(senderId);
+          const senderDocData = await senderDocRef.get();
+          if (senderDocData.exists) {
+            const senderFriends = senderDocData.data().profile?.friends || [];
+            if (!senderFriends.some(f => f.id === userId)) {
+              senderFriends.push({ id: userId, name: userName });
+              const senderProfile = senderDocData.data().profile || {};
+              await senderDocRef.set({ profile: { ...senderProfile, friends: senderFriends }, updatedAt: Date.now() }, { merge: true });
+            }
+          }
+        }
+
+        await notifRef.update({ status: action, read: true });
+
+        return response.json({ ok: true });
+      } catch (error) {
+        console.error(`Failed to handle friend request: ${error.message}`);
+        return response.status(500).json({ error: "Internal server error" });
+      }
     }
   };
 }

@@ -6,6 +6,36 @@
       },
       "activities": [
         {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1783081386852
+        },
+        {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1783081375608
+        },
+        {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1783081368214
+        },
+        {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1783081360996
+        },
+        {
+          "type": "profile_update",
+          "text": "Updated Profile",
+          "subtext": "Profile updated successfully",
+          "timestamp": 1783079054777
+        },
+        {
           "type": "room_join",
           "text": "Joined Problem Room: Pattern 1: Right-Angled Triangle of Stars",
           "subtext": "Problem Solving",
@@ -17,8 +47,12 @@
           "subtext": "Problem Solving",
           "timestamp": 1781209155215
         }
-      ]
+      ],
+      "displayName": "ganesh vanamala",
+      "bio": "Building consistency one problem at a time.",
+      "emotionId": "loop:Screenshot 2026-05-10 191715.png",
+      "community": "loop"
     },
-    "updatedAt": 1781209285509
+    "updatedAt": 1783081386861
   }
 }

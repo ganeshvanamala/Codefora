@@ -25,6 +25,13 @@ export default function AdminDashboardPage() {
   const [problemList, setProblemList] = useState([]);
   const [users, setUsers] = useState([]);
   const [feedbackList, setFeedbackList] = useState([]);
+  
+  // Announcement states
+  const [announcementText, setAnnouncementText] = useState('');
+  const [announcementSearch, setAnnouncementSearch] = useState('');
+  const [selectedAnnouncementUsers, setSelectedAnnouncementUsers] = useState([]);
+  const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
+  const [announcementUsersInitialized, setAnnouncementUsersInitialized] = useState(false);
   const [activityLog, setActivityLog] = useState([
     { icon: <Activity size={16} />, class: 'updated', text: 'System initialized and connected to server.', time: 'just now' }
   ]);
@@ -49,6 +56,10 @@ export default function AdminDashboardPage() {
       setRooms(r);
       setProblemList(p);
       setUsers(u);
+      if (!announcementUsersInitialized && u.length > 0) {
+        setSelectedAnnouncementUsers(u.map(user => user.userId));
+        setAnnouncementUsersInitialized(true);
+      }
       setFeedbackList(f || []);
     } catch (err) {
       console.error("Failed to fetch admin data:", err);
@@ -191,7 +202,7 @@ export default function AdminDashboardPage() {
             <button className={`admin-nav-item ${activeTab === 'Settings' ? 'active' : ''}`} onClick={() => setActiveTab('Settings')}>
               <Settings size={18} /> Settings
             </button>
-            <button className="admin-nav-item">
+            <button className={`admin-nav-item ${activeTab === 'Announcements' ? 'active' : ''}`} onClick={() => setActiveTab('Announcements')}>
               <AlertTriangle size={18} /> Announcements
             </button>
           </div>
@@ -499,6 +510,127 @@ export default function AdminDashboardPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Announcements Tab */}
+          {activeTab === 'Announcements' && (
+            <div className="admin-panel" style={{ minHeight: '600px', display: 'flex', flexDirection: 'column' }}>
+              <div className="admin-panel-header">
+                <h2>Send Announcement</h2>
+              </div>
+              <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+                <div className="admin-setting-group">
+                  <label className="admin-setting-label">Message (Plain Text)</label>
+                  <textarea 
+                    className="admin-input" 
+                    style={{ minHeight: '120px' }} 
+                    placeholder="Type your announcement here..."
+                    value={announcementText}
+                    onChange={e => setAnnouncementText(e.target.value)}
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className="admin-setting-label" style={{ margin: 0 }}>Select Recipients</label>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input 
+                      type="text" 
+                      className="admin-input" 
+                      placeholder="Search by ID or Name..." 
+                      value={announcementSearch}
+                      onChange={e => setAnnouncementSearch(e.target.value)}
+                      style={{ padding: '6px 12px', minWidth: '250px' }}
+                    />
+                    <button 
+                      className="btn-secondary" 
+                      onClick={() => {
+                        if (selectedAnnouncementUsers.length === users.length) setSelectedAnnouncementUsers([]);
+                        else setSelectedAnnouncementUsers(users.map(u => u.userId));
+                      }}
+                      style={{ padding: '6px 12px' }}
+                    >
+                      {selectedAnnouncementUsers.length === users.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="admin-table-container" style={{ flex: 1, border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '50px' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedAnnouncementUsers.length === users.length && users.length > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) setSelectedAnnouncementUsers(users.map(u => u.userId));
+                              else setSelectedAnnouncementUsers([]);
+                            }}
+                          />
+                        </th>
+                        <th>User</th>
+                        <th>ID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.filter(u => !announcementSearch || (u.userId && u.userId.includes(announcementSearch)) || (u.name && u.name.toLowerCase().includes(announcementSearch.toLowerCase()))).map(u => (
+                        <tr key={u.userId} onClick={() => {
+                          setSelectedAnnouncementUsers(prev => 
+                            prev.includes(u.userId) ? prev.filter(id => id !== u.userId) : [...prev, u.userId]
+                          );
+                        }} style={{ cursor: 'pointer' }}>
+                          <td>
+                            <input 
+                              type="checkbox" 
+                              checked={selectedAnnouncementUsers.includes(u.userId)}
+                              onChange={() => {}} // handled by tr click
+                            />
+                          </td>
+                          <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {u.photoURL ? (
+                              <img src={u.photoURL} alt={u.name} className="user-avatar-sm" style={{ objectFit: 'cover' }} />
+                            ) : u.emotionId ? (
+                              <img src={`${API_URL}/api/emotions/${u.emotionId}/image`} alt={u.name} className="user-avatar-sm" style={{ objectFit: 'cover', background: 'rgba(255,255,255,0.1)', padding: '2px' }} />
+                            ) : (
+                              <span className="user-avatar-sm">{u.name ? u.name[0].toUpperCase() : '?'}</span>
+                            )}
+                            {u.name}
+                          </td>
+                          <td style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>{u.userId}</td>
+                        </tr>
+                      ))}
+                      {users.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No users found</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={async () => {
+                      if (!announcementText.trim()) return alert("Enter a message");
+                      if (selectedAnnouncementUsers.length === 0) return alert("Select at least one user");
+                      try {
+                        setSendingAnnouncement(true);
+                        await api.request("/api/admin/announcements", {
+                          method: 'POST',
+                          body: JSON.stringify({ message: announcementText, userIds: selectedAnnouncementUsers })
+                        });
+                        alert(`Successfully sent to ${selectedAnnouncementUsers.length} users!`);
+                        setAnnouncementText('');
+                      } catch (err) {
+                        alert(err.message);
+                      } finally {
+                        setSendingAnnouncement(false);
+                      }
+                    }}
+                    disabled={sendingAnnouncement}
+                  >
+                    {sendingAnnouncement ? 'Sending...' : 'Send Announcement'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
