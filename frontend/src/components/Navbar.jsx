@@ -146,7 +146,7 @@ export function Navbar() {
       }
     };
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000);
+    const interval = setInterval(fetchNotifications, 3000); // Poll every 3 seconds for real-time feel
     return () => clearInterval(interval);
   }, [user]);
 

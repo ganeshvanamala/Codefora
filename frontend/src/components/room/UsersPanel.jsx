@@ -40,7 +40,7 @@ export function UsersPanel({
       } catch(e) {}
     };
     fetchFriends();
-    const intv = setInterval(fetchFriends, 15000);
+    const intv = setInterval(fetchFriends, 3000); // Poll every 3s for faster presence updates
     return () => { active = false; clearInterval(intv); };
   }, [currentUser]);
 
