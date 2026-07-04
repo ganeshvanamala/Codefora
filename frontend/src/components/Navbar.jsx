@@ -322,9 +322,11 @@ export function Navbar() {
                           <div style={{ fontSize: '13px', color: 'white', fontWeight: 500, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                             {f.name}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
-                            {f.id}
-                          </div>
+                          {f.friendCode && (
+                            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
+                              Friend Code: {f.friendCode}
+                            </div>
+                          )}
                         </div>
                         <button 
                           style={{

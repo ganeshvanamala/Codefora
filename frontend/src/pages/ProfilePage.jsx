@@ -185,13 +185,7 @@ export function ProfilePage() {
             
             <div className="profile-handle">
               <span style={{ fontSize: "12px", fontFamily: "monospace", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: "4px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                ID: {(() => {
-                  const uid = user?.uid;
-                  if (!uid) return "Unknown";
-                  let hash = 0;
-                  for (let i = 0; i < uid.length; i++) hash = Math.imul(31, hash) + uid.charCodeAt(i) | 0;
-                  return Math.abs(hash).toString().padStart(8, '0').slice(0, 8);
-                })()}
+                Friend Code: {profileData.friendCode || "..."}
               </span>
             </div>
 
@@ -272,7 +266,9 @@ export function ProfilePage() {
                     <div className="friend-status"></div>
                   </div>
                   <div className="friend-name">{friend.name}</div>
-                  <div className="friend-handle">@{friend.handle}</div>
+                  {friend.friendCode && (
+                    <div className="friend-handle">Friend Code: {friend.friendCode}</div>
+                  )}
                 </div>
               ))
             ) : (
