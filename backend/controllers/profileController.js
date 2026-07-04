@@ -35,7 +35,7 @@ async function writeLocalWorks(works) {
   await fs.writeFile(localWorksPath, JSON.stringify(works, null, 2));
 }
 
-async function getNextFriendCode(db, userId) {
+export async function getNextFriendCode(db, userId) {
   if (!db || db.isMock) {
     const users = await readLocalUsers();
     let min = 13219873;

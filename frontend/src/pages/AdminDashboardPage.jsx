@@ -30,6 +30,7 @@ export default function AdminDashboardPage() {
   const [announcementText, setAnnouncementText] = useState('');
   const [announcementSearch, setAnnouncementSearch] = useState('');
   const [selectedAnnouncementUsers, setSelectedAnnouncementUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
   const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
   const [announcementUsersInitialized, setAnnouncementUsersInitialized] = useState(false);
   const [activityLog, setActivityLog] = useState([
@@ -643,6 +644,16 @@ export default function AdminDashboardPage() {
                 <div className="admin-panel" style={activeTab === 'Users' ? { flex: 1, minHeight: '600px' } : {}}>
                   <div className="admin-panel-header">
                     <h2>{activeTab === 'Users' ? 'User Management' : 'Recent Users'}</h2>
+                    {activeTab === 'Users' && (
+                      <input 
+                        type="text" 
+                        placeholder="Search by ID, Friend Code, or Name..." 
+                        className="admin-input" 
+                        style={{ padding: '6px 12px', minWidth: '300px', marginLeft: 'auto', marginRight: '15px' }}
+                        value={userSearch}
+                        onChange={e => setUserSearch(e.target.value)}
+                      />
+                    )}
                     {activeTab === 'Dashboard' && <button className="admin-link-button" onClick={() => setActiveTab('Users')}>View All</button>}
                   </div>
                   <div className="admin-table-container">
@@ -658,7 +669,11 @@ export default function AdminDashboardPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {users.slice(0, activeTab === 'Dashboard' ? 5 : users.length).map(u => (
+                        {users.filter(u => !userSearch || 
+                          (u.friendCode && u.friendCode.includes(userSearch)) || 
+                          (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
+                          (u.userId && u.userId.includes(userSearch))
+                        ).slice(0, activeTab === 'Dashboard' ? 5 : users.length).map(u => (
                           <tr key={u.userId}>
                             <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               {u.photoURL ? (
@@ -676,7 +691,7 @@ export default function AdminDashboardPage() {
                             <td><span className={`status-badge ${u.status.toLowerCase()}`}>{u.status}</span></td>
                             <td>
                               <div className="admin-table-actions">
-                                <button className="admin-action-btn" title="View"><Eye size={12} /></button>
+                                <button className="admin-action-btn" title="View Profile" onClick={() => window.open(`/profile/${u.friendCode || u.userId}`, '_blank')}><Eye size={12} /></button>
                                 <button className="admin-action-btn warning" title="Warn"><AlertTriangle size={12} /></button>
                                 <button className="admin-action-btn danger" title="Ban"><ShieldAlert size={12} /></button>
                               </div>

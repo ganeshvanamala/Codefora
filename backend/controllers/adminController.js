@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createAuth, createFirestore } from "../config/firebase.js";
 import { globalOnlineUsers } from "../utils/presenceTracker.js";
+import { getNextFriendCode } from "./profileController.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const localProblemsPath = path.join(__dirname, "../data/problems.json");
@@ -74,16 +75,24 @@ export function createAdminController(roomRepository) {
 
         // Fetch profiles from Firestore to get more info (like rating, solved count, etc)
         const profilesMap = {};
-        if (db && !db.isMock) {
+        if (db) {
           const profilesSnap = await db.collection("users").get();
           profilesSnap.forEach(doc => {
             profilesMap[doc.id] = doc.data().profile || {};
           });
         }
 
-        const users = authUsers.map(user => {
-          const profile = profilesMap[user.uid] || {};
-          return {
+        const users = [];
+        for (const user of authUsers) {
+          let profile = profilesMap[user.uid] || {};
+          
+          if (!profile.friendCode && db) {
+            const newCode = await getNextFriendCode(db, user.uid);
+            profile.friendCode = newCode;
+            await db.collection("users").doc(user.uid).set({ profile }, { merge: true });
+          }
+          
+          users.push({
             userId: user.uid,
             friendCode: profile.friendCode || "",
             name: user.displayName || profile.displayName || user.email?.split('@')[0] || "Unknown User",
@@ -95,8 +104,8 @@ export function createAdminController(roomRepository) {
             status: globalOnlineUsers.has(user.uid) ? "Online" : "Offline",
             role: profile.role || "user",
             createdAt: user.metadata.creationTime
-          };
-        });
+          });
+        }
 
         users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
