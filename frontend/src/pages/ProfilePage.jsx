@@ -5,9 +5,9 @@ import {
   Shield, CheckCircle2, MessageSquare, MoreHorizontal, UserPlus, 
   Activity, Star, ExternalLink, Flag, X, Save, Folder, Clock, Search
 } from "lucide-react";
+import { useParams } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import EmotionPicker from "../components/EmotionPicker";
-import { PublicProfileModal } from "../components/PublicProfileModal";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, saveProfile } from "../api/client";
 import { API_URL } from "../config";
@@ -17,8 +17,11 @@ import "../styles/profile.css";
 import defaultAvatar from "../../assets/scene1.jpeg"; // Fallback banner
 
 export function ProfilePage() {
+  const { userId: urlUserId } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const isOwnProfile = !urlUserId || (user && urlUserId === user.uid);
+  const targetUserId = urlUserId || user?.uid;
   
   // Real Profile Data
   const [profileData, setProfileData] = useState({});
@@ -50,28 +53,28 @@ export function ProfilePage() {
   }, [loadingProfile]);
 
   useEffect(() => {
-    if (!user?.uid) {
+    if (!targetUserId) {
       setLoadingProfile(false);
       return;
     }
     let active = true;
     async function loadProfile() {
       setLoadingProfile(true);
-      const profile = await getProfile(user.uid).catch(() => ({}));
+      const profile = await getProfile(targetUserId).catch(() => ({}));
       if (!active) return;
       setProfileData(profile || {});
-      setDisplayName(profile.displayName || user.displayName || "");
+      setDisplayName(profile.displayName || (isOwnProfile ? user?.displayName : "") || "");
       setBio(profile.bio || "Building consistency one problem at a time.");
       setSelectedEmotion(profile.emotionId || "");
       setSelectedCommunity(profile.community || "sider");
       setLoadingProfile(false);
     }
-    trackEvent("profile_visit", { user_id: user.uid });
+    trackEvent("profile_visit", { user_id: targetUserId });
     loadProfile();
     return () => { active = false; };
-  }, [user?.uid, user?.displayName]);
+  }, [targetUserId, isOwnProfile, user?.displayName]);
 
-  const headerName = useMemo(() => displayName || user?.displayName || "Anonymous Developer", [displayName, user?.displayName]);
+  const headerName = useMemo(() => displayName || (isOwnProfile ? user?.displayName : "Unknown Developer"), [displayName, isOwnProfile, user?.displayName]);
   const emotionImage = selectedEmotion ? `${API_URL}/api/emotions/${selectedEmotion}/image` : null;
   
   const stats = profileData.stats || {};
@@ -165,7 +168,18 @@ export function ProfilePage() {
     );
   }
 
-  if (!user) {
+  if (!isOwnProfile && !targetUserId) {
+    return (
+      <main className="profile-dashboard">
+        <Navbar />
+        <div style={{ textAlign: 'center', marginTop: '100px' }}>
+          <h2>User Not Found</h2>
+        </div>
+      </main>
+    );
+  }
+
+  if (isOwnProfile && !user) {
     return (
       <main className="profile-dashboard">
         <Navbar />
@@ -198,14 +212,16 @@ export function ProfilePage() {
           <div className="profile-info">
             <div className="profile-name-row">
               <h1>{headerName}</h1>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn-secondary" onClick={openEditModal} style={{ padding: '6px 12px', fontSize: '12px' }}>
-                  <Edit3 size={14} /> Edit Profile
-                </button>
-                <button className="btn-secondary" onClick={openAvatarModal} style={{ padding: '6px 12px', fontSize: '12px' }}>
-                  <Users size={14} /> Change Avatar
-                </button>
-              </div>
+              {isOwnProfile && (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn-secondary" onClick={openEditModal} style={{ padding: '6px 12px', fontSize: '12px' }}>
+                    <Edit3 size={14} /> Edit Profile
+                  </button>
+                  <button className="btn-secondary" onClick={openAvatarModal} style={{ padding: '6px 12px', fontSize: '12px' }}>
+                    <Users size={14} /> Change Avatar
+                  </button>
+                </div>
+              )}
             </div>
             
             <div className="profile-handle">
@@ -270,7 +286,7 @@ export function ProfilePage() {
           <div className="friends-list" style={{ overflowX: 'auto', paddingBottom: '8px', minHeight: '80px' }}>
             {friends.length > 0 ? (
               friends.map((friend, i) => (
-                <div key={i} className="friend-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedPublicProfileId(friend.id)}>
+                <div key={i} className="friend-item" style={{ cursor: 'pointer' }} onClick={() => navigate('/profile/' + friend.id)}>
                   <div className="friend-avatar">
                     <img src={defaultAvatar} alt={friend.name} />
                     <div className="friend-status"></div>
@@ -283,7 +299,7 @@ export function ProfilePage() {
               ))
             ) : (
               <div style={{color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <UserPlus size={16} /> No friends yet. Invite people to rooms to connect!
+                <UserPlus size={16} /> No friends yet.
               </div>
             )}
           </div>
@@ -719,15 +735,6 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
-      )}
-
-      {selectedPublicProfileId && (
-        <PublicProfileModal
-          userId={selectedPublicProfileId}
-          onClose={() => setSelectedPublicProfileId(null)}
-          onRemoveFriend={handleRemoveFriend}
-          isFriend={friends.some(f => f.id === selectedPublicProfileId)}
-        />
       )}
     </main>
   );

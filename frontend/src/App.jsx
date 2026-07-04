@@ -91,6 +91,7 @@ const router = createBrowserRouter([
       { path: "problems", element: <ProblemsPage /> },
       { path: "admin", element: <AdminDashboardPage /> },
       { path: "profile", element: <ProfilePage /> },
+      { path: "profile/:userId", element: <ProfilePage /> },
       { path: "playground", element: <PlaygroundPage /> },
       { path: "feedback", element: <FeedbackPage /> },
       { path: "privacy", element: <PrivacyPolicyPage /> },

@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { UserCircle2, LogOut, User, Bell, Users, MessageCircle } from "lucide-react";
+import { UserCircle2, LogOut, User, Bell, Users, MessageCircle, UserMinus } from "lucide-react";
 import { BrandButton } from "./BrandButton";
 import { logoutUser } from "../lib/firebase";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, api } from "../api/client";
 import { API_URL } from "../config";
-import { PublicProfileModal } from "./PublicProfileModal";
 
 export function Navbar() {
   const { user, isAdmin } = useAuth();
@@ -27,7 +26,8 @@ export function Navbar() {
   const [requestStatus, setRequestStatus] = useState("");
   const [searchedUser, setSearchedUser] = useState(null);
   const [friendCode, setFriendCode] = useState("");
-  const [selectedPublicProfileId, setSelectedPublicProfileId] = useState(null);
+  const [friendToRemove, setFriendToRemove] = useState(null);
+  const [removingFriend, setRemovingFriend] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -134,12 +134,11 @@ export function Navbar() {
   };
 
   const handleRemoveFriend = async (friendId) => {
+    setRemovingFriend(true);
     try {
       await api.removeFriend(user.uid, friendId);
-      // Update local state
       setFriends(prev => prev.filter(f => f.id !== friendId));
       
-      // Also update the local cached profile so it doesn't reappear on reload without refresh
       const cachedProfileStr = localStorage.getItem("codefora_profile_" + user.uid);
       if (cachedProfileStr) {
         try {
@@ -150,11 +149,12 @@ export function Navbar() {
           }
         } catch(e) {}
       }
-      
-      // We don't dispatch profileUpdated here because it might cause a re-fetch loop if not careful, 
-      // but we updated local `friends` state which updates the UI immediately.
     } catch (err) {
-      throw err; // Let the modal catch it
+      console.error(err);
+      alert("Failed to remove friend.");
+    } finally {
+      setRemovingFriend(false);
+      setFriendToRemove(null);
     }
   };
 
@@ -338,7 +338,10 @@ export function Navbar() {
                           border: '1px solid rgba(255,255,255,0.05)',
                           cursor: 'pointer'
                         }}
-                        onClick={() => setSelectedPublicProfileId(f.id)}
+                        onClick={(e) => {
+                          if (e.target.closest('button')) return;
+                          navigate('/profile/' + f.id);
+                        }}
                       >
                         <div style={{
                           width: '32px', height: '32px', borderRadius: '50%', 
@@ -358,15 +361,27 @@ export function Navbar() {
                             </div>
                           )}
                         </div>
-                        <button 
-                          style={{
-                            background: 'transparent', border: 'none', color: 'var(--primary-accent)',
-                            cursor: 'pointer', padding: '4px'
-                          }}
-                          title="Message"
-                        >
-                          <MessageCircle size={16} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button 
+                            style={{
+                              background: 'transparent', border: 'none', color: '#ef4444',
+                              cursor: 'pointer', padding: '4px'
+                            }}
+                            title="Remove Friend"
+                            onClick={(e) => { e.stopPropagation(); setFriendToRemove(f); }}
+                          >
+                            <UserMinus size={16} />
+                          </button>
+                          <button 
+                            style={{
+                              background: 'transparent', border: 'none', color: 'var(--primary-accent)',
+                              cursor: 'pointer', padding: '4px'
+                            }}
+                            title="Message"
+                          >
+                            <MessageCircle size={16} />
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -543,13 +558,24 @@ export function Navbar() {
           </button>
         )}
       </div>
-      {selectedPublicProfileId && (
-        <PublicProfileModal
-          userId={selectedPublicProfileId}
-          onClose={() => setSelectedPublicProfileId(null)}
-          onRemoveFriend={handleRemoveFriend}
-          isFriend={friends.some(f => f.id === selectedPublicProfileId)}
-        />
+
+      {friendToRemove && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '8px', textAlign: 'center', width: '300px' }}>
+            <h3 style={{ margin: '0 0 16px 0', color: 'white' }}>Remove Friend?</h3>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', marginBottom: '24px' }}>
+              Are you sure you want to remove {friendToRemove.name} from your friends list?
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setFriendToRemove(null)} disabled={removingFriend}>
+                Cancel
+              </button>
+              <button className="btn-primary" style={{ background: '#ef4444', borderColor: '#ef4444' }} onClick={() => handleRemoveFriend(friendToRemove.id)} disabled={removingFriend}>
+                {removingFriend ? "Removing..." : "Yes, Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </header>
   );
