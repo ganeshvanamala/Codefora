@@ -205,8 +205,10 @@ export function ProfilePage() {
     }
   };
 
-  const handleReportSubmit = async () => {
-    if (!reportReason.trim()) return;
+  const handleReportSubmit = async (reasonOverride = null) => {
+    const finalReason = reasonOverride || reportReason.trim();
+    if (!finalReason) return;
+    
     setIsReporting(true);
     try {
       const { api } = await import("../api/client");
@@ -218,7 +220,7 @@ export function ProfilePage() {
           reportedName: displayName,
           reporterId: user.uid,
           reporterName: user.displayName || user.email?.split('@')[0] || "Unknown User",
-          message: reportReason
+          message: finalReason
         })
       });
       setIsReportModalOpen(false);
@@ -818,11 +820,26 @@ export function ProfilePage() {
             </div>
             <div className="modal-body">
               <div className="form-group">
-                <label>Reason for reporting {displayName}</label>
+                <label>Quick Report Options</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px', marginBottom: '20px' }}>
+                  {["Cheating / Hacking", "Inappropriate Behavior", "Spam / Scam", "Offensive Content", "Harassment"].map(option => (
+                    <button 
+                      key={option}
+                      className="btn-secondary" 
+                      style={{ textAlign: 'left', padding: '8px 12px', justifyContent: 'flex-start', border: '1px solid rgba(255, 85, 85, 0.3)', color: 'rgba(255,255,255,0.8)' }}
+                      onClick={() => handleReportSubmit(option)}
+                      disabled={isReporting}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
+                <label>Or describe the issue (Optional)</label>
                 <textarea 
                   className="profile-textarea" 
-                  rows="4" 
-                  placeholder="Please provide details about the abusive or inappropriate behavior..."
+                  rows="3" 
+                  placeholder="Provide additional details..."
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
                   style={{ width: '100%', marginTop: '10px' }}
@@ -831,8 +848,8 @@ export function ProfilePage() {
             </div>
             <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
               <button className="btn-secondary" onClick={() => setIsReportModalOpen(false)} disabled={isReporting}>Cancel</button>
-              <button className="btn-primary" onClick={handleReportSubmit} disabled={isReporting || !reportReason.trim()} style={{ background: '#ff5555', color: 'white', border: 'none' }}>
-                {isReporting ? 'Submitting...' : 'Submit Report'}
+              <button className="btn-primary" onClick={() => handleReportSubmit()} disabled={isReporting || !reportReason.trim()} style={{ background: '#ff5555', color: 'white', border: 'none' }}>
+                {isReporting ? 'Submitting...' : 'Submit Custom Report'}
               </button>
             </div>
           </div>
