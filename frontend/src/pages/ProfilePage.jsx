@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   Edit3, Code, Users, Flame, Trophy, Award, 
   Shield, CheckCircle2, MessageSquare, MoreHorizontal, UserPlus, 
-  Activity, Star, ExternalLink, Flag, X, Save, Folder, Clock, Search
+  Activity, Star, ExternalLink, Flag, X, Save, Folder, Clock, Search, ShieldAlert
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -86,6 +86,11 @@ export function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
   const [selectedPublicProfileId, setSelectedPublicProfileId] = useState(null);
+
+  // Report User State
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
 
   useEffect(() => {
     if (heatmapContainerRef.current) {
@@ -200,6 +205,32 @@ export function ProfilePage() {
     }
   };
 
+  const handleReportSubmit = async () => {
+    if (!reportReason.trim()) return;
+    setIsReporting(true);
+    try {
+      const { api } = await import("../api/client");
+      await api.request('/api/feedback', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'report',
+          reportedId: profileData.id || targetUserId,
+          reportedName: displayName,
+          reporterId: user.uid,
+          reporterName: user.displayName || user.email?.split('@')[0] || "Unknown User",
+          message: reportReason
+        })
+      });
+      setIsReportModalOpen(false);
+      setReportReason('');
+      alert('Report submitted successfully. Our team will review it shortly.');
+    } catch (err) {
+      alert('Failed to submit report: ' + err.message);
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
   if (loading || loadingProfile) {
     return (
       <main className="profile-dashboard">
@@ -253,7 +284,7 @@ export function ProfilePage() {
           <div className="profile-info">
             <div className="profile-name-row">
               <h1>{headerName}</h1>
-              {isOwnProfile && (
+              {isOwnProfile ? (
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button className="btn-secondary" onClick={openEditModal} style={{ padding: '6px 12px', fontSize: '12px' }}>
                     <Edit3 size={14} /> Edit Profile
@@ -261,6 +292,14 @@ export function ProfilePage() {
                   <button className="btn-secondary" onClick={openAvatarModal} style={{ padding: '6px 12px', fontSize: '12px' }}>
                     <Users size={14} /> Change Avatar
                   </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {user && (
+                    <button className="btn-secondary" onClick={() => setIsReportModalOpen(true)} style={{ padding: '6px 12px', fontSize: '12px', color: '#ff5555', borderColor: 'rgba(255, 85, 85, 0.3)' }}>
+                      <ShieldAlert size={14} /> Report User
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -763,6 +802,37 @@ export function ProfilePage() {
               <button className="btn-secondary" onClick={() => setIsEditingAvatar(false)} disabled={isSaving}>Cancel</button>
               <button className="btn-primary" onClick={handleSaveChanges} disabled={isSaving}>
                 <Save size={16} /> {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REPORT MODAL */}
+      {isReportModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsReportModalOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h2>Report User</h2>
+              <button className="close-btn" onClick={() => setIsReportModalOpen(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Reason for reporting {displayName}</label>
+                <textarea 
+                  className="profile-textarea" 
+                  rows="4" 
+                  placeholder="Please provide details about the abusive or inappropriate behavior..."
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  style={{ width: '100%', marginTop: '10px' }}
+                />
+              </div>
+            </div>
+            <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
+              <button className="btn-secondary" onClick={() => setIsReportModalOpen(false)} disabled={isReporting}>Cancel</button>
+              <button className="btn-primary" onClick={handleReportSubmit} disabled={isReporting || !reportReason.trim()} style={{ background: '#ff5555', color: 'white', border: 'none' }}>
+                {isReporting ? 'Submitting...' : 'Submit Report'}
               </button>
             </div>
           </div>
