@@ -38,21 +38,21 @@ async function writeLocalWorks(works) {
 async function getNextFriendCode(db, userId) {
   if (!db || db.isMock) {
     const users = await readLocalUsers();
-    let max = 10000000;
+    let min = 13219873;
     for (const u of Object.values(users)) {
-      if (u.profile?.friendCode) max = Math.max(max, parseInt(u.profile.friendCode));
+      if (u.profile?.friendCode) min = Math.min(min, parseInt(u.profile.friendCode));
     }
-    return (max + 1).toString();
+    return (min - 1).toString();
   }
 
   const counterRef = db.collection('counters').doc('users');
   return await db.runTransaction(async (t) => {
     const doc = await t.get(counterRef);
-    let nextCode = 10000000;
+    let nextCode = 13219873;
     if (doc.exists && doc.data().nextFriendCode) {
       nextCode = doc.data().nextFriendCode;
     }
-    t.set(counterRef, { nextFriendCode: nextCode + 1 }, { merge: true });
+    t.set(counterRef, { nextFriendCode: nextCode - 1 }, { merge: true });
     t.set(db.collection('friendCodes').doc(nextCode.toString()), { uid: userId });
     return nextCode.toString();
   });
