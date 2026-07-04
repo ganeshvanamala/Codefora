@@ -278,14 +278,15 @@ export function Navbar() {
                       borderRadius: '8px', padding: '10px', marginBottom: '12px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{
-                          width: '36px', height: '36px', borderRadius: '50%', 
-                          background: 'rgba(255,255,255,0.1)', display: 'flex', 
-                          alignItems: 'center', justifyContent: 'center',
-                          color: 'var(--primary-accent)', fontWeight: 'bold', fontSize: '16px'
-                        }}>
-                          {searchedUser.name ? searchedUser.name[0].toUpperCase() : '?'}
-                        </div>
+                        {searchedUser.photoURL ? (
+                          <img src={searchedUser.photoURL} alt={searchedUser.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : searchedUser.emotionId ? (
+                          <img src={`${API_URL}/api/emotions/${searchedUser.emotionId}/image`} alt={searchedUser.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', background: 'rgba(255,255,255,0.1)', padding: '2px' }} />
+                        ) : (
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-accent)', fontWeight: 'bold', fontSize: '16px' }}>
+                            {searchedUser.name ? searchedUser.name[0].toUpperCase() : '?'}
+                          </div>
+                        )}
                         <div style={{ overflow: 'hidden' }}>
                           <div style={{ color: 'white', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{searchedUser.name}</div>
                           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'monospace' }}>{searchedUser.friendCode || searchedUser.id}</div>

@@ -204,21 +204,6 @@ export function ProfilePage() {
             <div className="profile-bio">
               "{bio}"
             </div>
-
-            <div className="profile-actions">
-              <button className="btn-primary">
-                <UserPlus size={16} /> Add Friend
-              </button>
-              <button className="btn-secondary">
-                <ExternalLink size={16} /> Invite to Room
-              </button>
-              <button className="btn-icon">
-                <MessageSquare size={16} /> Message
-              </button>
-              <button className="btn-icon-only">
-                <MoreHorizontal size={16} />
-              </button>
-            </div>
           </div>
         </div>
 
