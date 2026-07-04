@@ -6,6 +6,7 @@ import { logoutUser } from "../lib/firebase";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, api } from "../api/client";
 import { API_URL } from "../config";
+import { PublicProfileModal } from "./PublicProfileModal";
 
 export function Navbar() {
   const { user, isAdmin } = useAuth();
@@ -26,6 +27,7 @@ export function Navbar() {
   const [requestStatus, setRequestStatus] = useState("");
   const [searchedUser, setSearchedUser] = useState(null);
   const [friendCode, setFriendCode] = useState("");
+  const [selectedPublicProfileId, setSelectedPublicProfileId] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -128,6 +130,31 @@ export function Navbar() {
       }
     } catch (err) {
       setRequestStatus(err.message || "Failed to send");
+    }
+  };
+
+  const handleRemoveFriend = async (friendId) => {
+    try {
+      await api.removeFriend(user.uid, friendId);
+      // Update local state
+      setFriends(prev => prev.filter(f => f.id !== friendId));
+      
+      // Also update the local cached profile so it doesn't reappear on reload without refresh
+      const cachedProfileStr = localStorage.getItem("codefora_profile_" + user.uid);
+      if (cachedProfileStr) {
+        try {
+          const cp = JSON.parse(cachedProfileStr);
+          if (cp.friends) {
+            cp.friends = cp.friends.filter(f => f.id !== friendId);
+            localStorage.setItem("codefora_profile_" + user.uid, JSON.stringify(cp));
+          }
+        } catch(e) {}
+      }
+      
+      // We don't dispatch profileUpdated here because it might cause a re-fetch loop if not careful, 
+      // but we updated local `friends` state which updates the UI immediately.
+    } catch (err) {
+      throw err; // Let the modal catch it
     }
   };
 
@@ -308,8 +335,10 @@ export function Navbar() {
                         style={{ 
                           display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', 
                           borderRadius: '6px', background: 'rgba(255,255,255,0.02)',
-                          border: '1px solid rgba(255,255,255,0.05)'
+                          border: '1px solid rgba(255,255,255,0.05)',
+                          cursor: 'pointer'
                         }}
+                        onClick={() => setSelectedPublicProfileId(f.id)}
                       >
                         <div style={{
                           width: '32px', height: '32px', borderRadius: '50%', 
@@ -514,6 +543,14 @@ export function Navbar() {
           </button>
         )}
       </div>
+      {selectedPublicProfileId && (
+        <PublicProfileModal
+          userId={selectedPublicProfileId}
+          onClose={() => setSelectedPublicProfileId(null)}
+          onRemoveFriend={handleRemoveFriend}
+          isFriend={friends.some(f => f.id === selectedPublicProfileId)}
+        />
+      )}
     </header>
   );
 }

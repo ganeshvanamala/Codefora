@@ -26,6 +26,7 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.get("/profiles/:userId/works", profileController.listWorks);
     router.post("/profiles/:userId/friends/request", profileController.sendFriendRequest);
     router.post("/profiles/:userId/friends/handle", profileController.handleFriendRequest);
+    router.delete("/profiles/:userId/friends/:friendId", profileController.removeFriend);
   }
   if (compilerController) {
     router.use("/compiler", createCompilerRoutes(compilerController));

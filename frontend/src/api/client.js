@@ -42,7 +42,8 @@ export const api = {
   saveProfile: (userId, profile) => request(`/api/profiles/${encodeURIComponent(userId)}`, { method: "POST", body: JSON.stringify(profile) }),
   saveWork: (userId, work) => request(`/api/profiles/${encodeURIComponent(userId)}/save-work`, { method: "POST", body: JSON.stringify(work) }),
   getWorks: (userId) => request(`/api/profiles/${encodeURIComponent(userId)}/works`),
-  solveProblem: (userId, problemId) => request(`/api/profiles/${encodeURIComponent(userId)}/solve`, { method: "POST", body: JSON.stringify({ problemId }) })
+  solveProblem: (userId, problemId) => request(`/api/profiles/${encodeURIComponent(userId)}/solve`, { method: "POST", body: JSON.stringify({ problemId }) }),
+  removeFriend: (userId, friendId) => request(`/api/profiles/${encodeURIComponent(userId)}/friends/${encodeURIComponent(friendId)}`, { method: "DELETE" })
 };
 
 // Export individual helpers for backward compatibility/flexibility

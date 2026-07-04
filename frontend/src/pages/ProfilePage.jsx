@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import EmotionPicker from "../components/EmotionPicker";
+import { PublicProfileModal } from "../components/PublicProfileModal";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, saveProfile } from "../api/client";
 import { API_URL } from "../config";
@@ -40,6 +41,7 @@ export function ProfilePage() {
   const [editCommunity, setEditCommunity] = useState("sider");
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  const [selectedPublicProfileId, setSelectedPublicProfileId] = useState(null);
 
   useEffect(() => {
     if (heatmapContainerRef.current) {
@@ -129,6 +131,29 @@ export function ProfilePage() {
       setSaveStatus("Could not save profile.");
     }
     setIsSaving(false);
+  };
+
+  const handleRemoveFriend = async (friendId) => {
+    try {
+      const { api } = await import("../api/client");
+      await api.removeFriend(user.uid, friendId);
+      
+      const newFriends = friends.filter(f => f.id !== friendId);
+      setProfileData(prev => ({ ...prev, friends: newFriends }));
+      
+      const cachedProfileStr = localStorage.getItem("codefora_profile_" + user.uid);
+      if (cachedProfileStr) {
+        try {
+          const cp = JSON.parse(cachedProfileStr);
+          if (cp.friends) {
+            cp.friends = cp.friends.filter(f => f.id !== friendId);
+            localStorage.setItem("codefora_profile_" + user.uid, JSON.stringify(cp));
+          }
+        } catch(e) {}
+      }
+    } catch (err) {
+      throw err;
+    }
   };
 
   if (loading || loadingProfile) {
@@ -245,7 +270,7 @@ export function ProfilePage() {
           <div className="friends-list" style={{ overflowX: 'auto', paddingBottom: '8px', minHeight: '80px' }}>
             {friends.length > 0 ? (
               friends.map((friend, i) => (
-                <div key={i} className="friend-item">
+                <div key={i} className="friend-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedPublicProfileId(friend.id)}>
                   <div className="friend-avatar">
                     <img src={defaultAvatar} alt={friend.name} />
                     <div className="friend-status"></div>
@@ -694,6 +719,15 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {selectedPublicProfileId && (
+        <PublicProfileModal
+          userId={selectedPublicProfileId}
+          onClose={() => setSelectedPublicProfileId(null)}
+          onRemoveFriend={handleRemoveFriend}
+          isFriend={friends.some(f => f.id === selectedPublicProfileId)}
+        />
       )}
     </main>
   );

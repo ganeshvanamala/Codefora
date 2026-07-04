@@ -628,6 +628,50 @@ export function createProfileController() {
         console.error(`Failed to handle friend request: ${error.message}`);
         return response.status(500).json({ error: "Internal server error" });
       }
+    },
+
+    removeFriend: async (request, response) => {
+      const userId = String(request.params.userId || "").trim();
+      const friendId = String(request.params.friendId || "").trim();
+
+      if (!userId || !friendId) return response.status(400).json({ error: "Missing parameters" });
+
+      try {
+        if (!db || db.isMock) {
+          const users = await readLocalUsers();
+          if (users[userId] && users[userId].profile && users[userId].profile.friends) {
+            users[userId].profile.friends = users[userId].profile.friends.filter(f => f.id !== friendId);
+          }
+          if (users[friendId] && users[friendId].profile && users[friendId].profile.friends) {
+            users[friendId].profile.friends = users[friendId].profile.friends.filter(f => f.id !== userId);
+          }
+          await writeLocalUsers(users);
+          return response.json({ ok: true });
+        }
+
+        const userDocRef = db.collection("users").doc(userId);
+        const userDoc = await userDocRef.get();
+        if (userDoc.exists) {
+          const userProfile = userDoc.data().profile || {};
+          const userFriends = userProfile.friends || [];
+          const newFriends = userFriends.filter(f => f.id !== friendId);
+          await userDocRef.set({ profile: { ...userProfile, friends: newFriends }, updatedAt: Date.now() }, { merge: true });
+        }
+
+        const friendDocRef = db.collection("users").doc(friendId);
+        const friendDoc = await friendDocRef.get();
+        if (friendDoc.exists) {
+          const friendProfile = friendDoc.data().profile || {};
+          const friendFriends = friendProfile.friends || [];
+          const newFriendFriends = friendFriends.filter(f => f.id !== userId);
+          await friendDocRef.set({ profile: { ...friendProfile, friends: newFriendFriends }, updatedAt: Date.now() }, { merge: true });
+        }
+
+        return response.json({ ok: true });
+      } catch (error) {
+        console.error(`Failed to remove friend: ${error.message}`);
+        return response.status(500).json({ error: "Internal server error" });
+      }
     }
   };
 }
