@@ -75,9 +75,9 @@ export function createAdminController(roomRepository) {
         // Fetch profiles from Firestore to get more info (like rating, solved count, etc)
         const profilesMap = {};
         if (db && !db.isMock) {
-          const profilesSnap = await db.collection("profiles").get();
+          const profilesSnap = await db.collection("users").get();
           profilesSnap.forEach(doc => {
-            profilesMap[doc.id] = doc.data();
+            profilesMap[doc.id] = doc.data().profile || {};
           });
         }
 
@@ -85,7 +85,8 @@ export function createAdminController(roomRepository) {
           const profile = profilesMap[user.uid] || {};
           return {
             userId: user.uid,
-            name: user.displayName || profile.name || user.email?.split('@')[0] || "Unknown User",
+            friendCode: profile.friendCode || "",
+            name: user.displayName || profile.displayName || user.email?.split('@')[0] || "Unknown User",
             email: user.email,
             emotionId: profile.emotionId || "",
             photoURL: user.photoURL || profile.photoURL || "",

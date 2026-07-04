@@ -598,7 +598,7 @@ export default function AdminDashboardPage() {
                             )}
                             {u.name}
                           </td>
-                          <td style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>{u.userId}</td>
+                          <td style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>{u.friendCode || u.userId}</td>
                         </tr>
                       ))}
                       {users.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No users found</td></tr>}
@@ -650,6 +650,7 @@ export default function AdminDashboardPage() {
                       <thead>
                         <tr>
                           <th>User</th>
+                          <th>Friend Code</th>
                           <th>Rating</th>
                           <th>Solved</th>
                           <th>Status</th>
@@ -669,6 +670,7 @@ export default function AdminDashboardPage() {
                               )}
                               {u.name}
                             </td>
+                            <td style={{ fontFamily: 'monospace', color: 'var(--primary-accent)' }}>{u.friendCode || 'N/A'}</td>
                             <td>{u.rating}</td>
                             <td>{u.solved}</td>
                             <td><span className={`status-badge ${u.status.toLowerCase()}`}>{u.status}</span></td>

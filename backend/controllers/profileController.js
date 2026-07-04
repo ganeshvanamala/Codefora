@@ -41,17 +41,45 @@ export function createProfileController() {
     get: async (request, response) => {
       const userId = String(request.params.userId || "").trim();
       if (!userId) return response.status(400).json({ error: "Missing userId" });
+
       try {
         if (!db || db.isMock) {
           const users = await readLocalUsers();
-          const user = users[userId] || {};
-          return response.json(user.profile || {});
+          if (users[userId]) {
+            return response.json(users[userId].profile || {});
+          } else {
+            const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
+            const newProfile = {
+              profile: { displayName: "Someone", bio: "", theme: "dark", friends: [], friendCode: generateFriendCode() },
+              recentWorks: []
+            };
+            users[userId] = newProfile;
+            await writeLocalUsers(users);
+            return response.json(newProfile.profile);
+          }
         }
 
-        const doc = await db.collection("users").doc(userId).get();
-        if (!doc.exists) return response.status(404).json({ error: "Profile not found" });
-        const data = doc.data() || {};
-        return response.json(data.profile || {});
+        const docRef = db.collection("users").doc(userId);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          if (!data.profile?.friendCode) {
+             const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
+             const updatedProfile = { ...data.profile, friendCode: generateFriendCode() };
+             await docRef.set({ profile: updatedProfile }, { merge: true });
+             data.profile = updatedProfile;
+          }
+          return response.json(data.profile || {});
+        } else {
+          // Initialize new user profile
+          const generateFriendCode = () => Math.floor(10000000 + Math.random() * 90000000).toString();
+          const newProfile = {
+            profile: { displayName: "", bio: "", theme: "dark", friends: [], friendCode: generateFriendCode() },
+            recentWorks: []
+          };
+          await docRef.set(newProfile);
+          return response.json(newProfile.profile);
+        }
       } catch (error) {
         console.warn(`Profile get failed: ${error.message}`);
         return response.status(500).json({ error: error.message });
@@ -324,13 +352,25 @@ export function createProfileController() {
       try {
         if (!db || db.isMock) {
           const users = await readLocalUsers();
-          const target = users[query];
+          let targetId = query;
+          let target = users[query];
+          
+          if (!target) {
+            // Search by friendCode
+            const foundEntry = Object.entries(users).find(([uid, u]) => u.profile?.friendCode === query);
+            if (foundEntry) {
+               targetId = foundEntry[0];
+               target = foundEntry[1];
+            }
+          }
+
           if (target) {
             return response.json({
-              id: query,
+              id: targetId,
               name: target.profile?.displayName || "Someone",
               emotionId: target.profile?.emotionId || "",
-              photoURL: target.profile?.photoURL || ""
+              photoURL: target.profile?.photoURL || "",
+              friendCode: target.profile?.friendCode || ""
             });
           }
           return response.status(404).json({ error: "User not found" });
@@ -339,14 +379,38 @@ export function createProfileController() {
         let name = "Someone";
         let emotionId = "";
         let photoURL = "";
+        let friendCode = "";
+        let targetId = query;
+        let targetFound = false;
         
-        const targetDoc = await db.collection("users").doc(query).get();
-        if (targetDoc.exists) {
-          const profile = targetDoc.data().profile || {};
-          name = profile.displayName || name;
-          emotionId = profile.emotionId || emotionId;
-          photoURL = profile.photoURL || photoURL;
-          return response.json({ id: targetDoc.id, name, emotionId, photoURL });
+        // First, check if the query is a friendCode
+        const codeQuery = await db.collection("users").where("profile.friendCode", "==", query).limit(1).get();
+        
+        if (!codeQuery.empty) {
+           const targetDoc = codeQuery.docs[0];
+           targetFound = true;
+           targetId = targetDoc.id;
+           const profile = targetDoc.data().profile || {};
+           name = profile.displayName || name;
+           emotionId = profile.emotionId || emotionId;
+           photoURL = profile.photoURL || photoURL;
+           friendCode = profile.friendCode || "";
+        } else {
+           // Fallback to checking document ID
+           const targetDoc = await db.collection("users").doc(query).get();
+           if (targetDoc.exists) {
+             targetFound = true;
+             targetId = targetDoc.id;
+             const profile = targetDoc.data().profile || {};
+             name = profile.displayName || name;
+             emotionId = profile.emotionId || emotionId;
+             photoURL = profile.photoURL || photoURL;
+             friendCode = profile.friendCode || "";
+           }
+        }
+        
+        if (targetFound) {
+           return response.json({ id: targetId, name, emotionId, photoURL, friendCode });
         }
         
         // If they haven't saved a profile, check Firebase Auth
@@ -357,7 +421,8 @@ export function createProfileController() {
               id: userRecord.uid,
               name: userRecord.displayName || userRecord.email?.split('@')[0] || "Someone",
               emotionId: "",
-              photoURL: userRecord.photoURL || ""
+              photoURL: userRecord.photoURL || "",
+              friendCode: ""
             });
           }
         } catch (authErr) {

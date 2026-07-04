@@ -25,6 +25,7 @@ export function Navbar() {
   const [friendRequestId, setFriendRequestId] = useState("");
   const [requestStatus, setRequestStatus] = useState("");
   const [searchedUser, setSearchedUser] = useState(null);
+  const [friendCode, setFriendCode] = useState("");
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -156,6 +157,11 @@ export function Navbar() {
           } else {
             setFriends([]);
           }
+          if (profile?.friendCode) {
+            setFriendCode(profile.friendCode);
+          } else {
+            setFriendCode("");
+          }
         } catch (e) {
           console.error('Failed to fetch profile in navbar', e);
         }
@@ -233,20 +239,23 @@ export function Navbar() {
                   display: 'flex', flexDirection: 'column', gap: '8px',
                   maxHeight: '400px', overflowY: 'auto'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '4px' }}>
+                  <div style={{ padding: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3 style={{ margin: 0, fontSize: '14px', color: 'white' }}>Friends</h3>
-                    <button 
-                      onClick={() => { setShowFriends(false); navigate('/profile'); }}
-                      style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', fontSize: '12px', cursor: 'pointer' }}
-                    >
+                    <button onClick={() => { setShowFriends(false); navigate('/profile'); }} style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', fontSize: '12px', cursor: 'pointer' }}>
                       View All
                     </button>
                   </div>
+                  {friendCode && (
+                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '8px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Your Friend Code:</span>
+                      <span style={{ fontFamily: 'monospace', color: 'var(--primary-accent)', fontWeight: 'bold' }}>{friendCode}</span>
+                    </div>
+                  )}
                   {/* Search Friend Input */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                     <input 
                       type="text" 
-                      placeholder="Enter User ID to Search..." 
+                      placeholder="Enter Friend Code to Search..." 
                       value={friendRequestId}
                       onChange={e => { setFriendRequestId(e.target.value); setRequestStatus(""); setSearchedUser(null); }}
                       onKeyDown={e => { if (e.key === 'Enter') handleSearchUser(); }}
@@ -279,7 +288,7 @@ export function Navbar() {
                         </div>
                         <div style={{ overflow: 'hidden' }}>
                           <div style={{ color: 'white', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{searchedUser.name}</div>
-                          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'monospace' }}>{searchedUser.id}</div>
+                          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'monospace' }}>{searchedUser.friendCode || searchedUser.id}</div>
                         </div>
                       </div>
                       <button 
