@@ -537,12 +537,13 @@ export function createProfileController() {
           }
 
           const senderName = users[userId]?.profile?.displayName || "Someone";
+          const senderCode = users[userId]?.profile?.friendCode || userId;
           
           allNotifs.push({
             id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
             userId: targetUserId,
             type: "friend_request",
-            message: `${senderName} (${userId}) sent you a friend request.`,
+            message: `${senderName} (${senderCode}) sent you a friend request.`,
             senderId: userId,
             senderName: senderName,
             status: "pending",
@@ -555,6 +556,7 @@ export function createProfileController() {
         
         const senderDoc = await db.collection("users").doc(userId).get();
         const senderName = senderDoc.exists ? (senderDoc.data().profile?.displayName || "Someone") : "Someone";
+        const senderCode = senderDoc.exists ? (senderDoc.data().profile?.friendCode || userId) : userId;
 
         let targetExists = false;
         let targetFriends = [];
@@ -596,7 +598,7 @@ export function createProfileController() {
         await db.collection("notifications").add({
           userId: targetUserId,
           type: "friend_request",
-          message: `${senderName} (${userId}) sent you a friend request.`,
+          message: `${senderName} (${senderCode}) sent you a friend request.`,
           senderId: userId,
           senderName: senderName,
           status: "pending",
