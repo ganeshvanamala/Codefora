@@ -1,11 +1,91 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { UserCircle2, LogOut, User, Bell, Users, MessageCircle, UserMinus } from "lucide-react";
+import { createPortal } from "react-dom";
 import { BrandButton } from "./BrandButton";
 import { logoutUser } from "../lib/firebase";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, api } from "../api/client";
 import { API_URL } from "../config";
+import defaultAvatar from "../../assets/scene1.jpeg";
+
+function FriendListItem({ f, navigate, setFriendToRemove }) {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    getProfile(f.id).then(data => {
+      if (active && data) setProfile(data);
+    }).catch(console.error);
+    return () => { active = false; };
+  }, [f.id]);
+
+  const emotionImage = profile?.emotionId ? `${API_URL}/api/emotions/${profile.emotionId}/image` : null;
+
+  return (
+    <div 
+      style={{ 
+        display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', 
+        borderRadius: '6px', 
+        backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)), url(${defaultAvatar})`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        border: '1px solid rgba(255,255,255,0.05)',
+        cursor: 'pointer', position: 'relative', overflow: 'hidden'
+      }}
+      onClick={(e) => {
+        if (e.target.closest('button')) return;
+        navigate('/profile/' + f.id);
+      }}
+    >
+      <div style={{
+        width: '32px', height: '32px', borderRadius: '50%', 
+        background: 'rgba(255,255,255,0.1)', display: 'flex', 
+        alignItems: 'center', justifyContent: 'center',
+        color: 'var(--primary-accent)', fontWeight: 'bold', fontSize: '14px',
+        overflow: 'hidden'
+      }}>
+        {emotionImage ? (
+          <img src={emotionImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : profile?.photoURL ? (
+          <img src={profile.photoURL} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          f.name ? f.name[0].toUpperCase() : '?'
+        )}
+      </div>
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+        <div style={{ fontSize: '13px', color: 'white', fontWeight: 500, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+          {profile?.displayName || f.name}
+        </div>
+        {(profile?.friendCode || f.friendCode) && (
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
+            Friend Code: {profile?.friendCode || f.friendCode}
+          </div>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 1 }}>
+        <button 
+          style={{
+            background: 'transparent', border: 'none', color: '#ef4444',
+            cursor: 'pointer', padding: '4px'
+          }}
+          title="Remove Friend"
+          onClick={(e) => { e.stopPropagation(); setFriendToRemove(f); }}
+        >
+          <UserMinus size={16} />
+        </button>
+        <button 
+          style={{
+            background: 'transparent', border: 'none', color: 'var(--primary-accent)',
+            cursor: 'pointer', padding: '4px'
+          }}
+          title="Message"
+        >
+          <MessageCircle size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function Navbar() {
   const { user, isAdmin } = useAuth();
@@ -330,59 +410,7 @@ export function Navbar() {
 
                   {friends.length > 0 ? (
                     friends.map((f, i) => (
-                      <div 
-                        key={i} 
-                        style={{ 
-                          display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', 
-                          borderRadius: '6px', background: 'rgba(255,255,255,0.02)',
-                          border: '1px solid rgba(255,255,255,0.05)',
-                          cursor: 'pointer'
-                        }}
-                        onClick={(e) => {
-                          if (e.target.closest('button')) return;
-                          navigate('/profile/' + f.id);
-                        }}
-                      >
-                        <div style={{
-                          width: '32px', height: '32px', borderRadius: '50%', 
-                          background: 'rgba(255,255,255,0.1)', display: 'flex', 
-                          alignItems: 'center', justifyContent: 'center',
-                          color: 'var(--primary-accent)', fontWeight: 'bold', fontSize: '14px'
-                        }}>
-                          {f.name ? f.name[0].toUpperCase() : '?'}
-                        </div>
-                        <div style={{ flex: 1, overflow: 'hidden' }}>
-                          <div style={{ fontSize: '13px', color: 'white', fontWeight: 500, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                            {f.name}
-                          </div>
-                          {f.friendCode && (
-                            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
-                              Friend Code: {f.friendCode}
-                            </div>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button 
-                            style={{
-                              background: 'transparent', border: 'none', color: '#ef4444',
-                              cursor: 'pointer', padding: '4px'
-                            }}
-                            title="Remove Friend"
-                            onClick={(e) => { e.stopPropagation(); setFriendToRemove(f); }}
-                          >
-                            <UserMinus size={16} />
-                          </button>
-                          <button 
-                            style={{
-                              background: 'transparent', border: 'none', color: 'var(--primary-accent)',
-                              cursor: 'pointer', padding: '4px'
-                            }}
-                            title="Message"
-                          >
-                            <MessageCircle size={16} />
-                          </button>
-                        </div>
-                      </div>
+                      <FriendListItem key={i} f={f} navigate={navigate} setFriendToRemove={setFriendToRemove} />
                     ))
                   ) : (
                     <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', padding: '20px 0', fontSize: '13px' }}>
@@ -559,7 +587,7 @@ export function Navbar() {
         )}
       </div>
 
-      {friendToRemove && (
+      {friendToRemove && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
           <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '8px', textAlign: 'center', width: '300px' }}>
             <h3 style={{ margin: '0 0 16px 0', color: 'white' }}>Remove Friend?</h3>
@@ -575,7 +603,8 @@ export function Navbar() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
