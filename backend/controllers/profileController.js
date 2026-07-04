@@ -1,5 +1,6 @@
 import { createFirestore, admin } from "../config/firebase.js";
-import fs from "fs/promises";
+import { readLocalUsers, writeLocalUsers } from "../utils/mockDB.js";
+import { readLocalNotifications, writeLocalNotifications } from "../utils/mockNotifications.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -324,7 +325,35 @@ export function createProfileController() {
       if (userId === targetUserId) return response.status(400).json({ error: "Cannot send request to yourself" });
 
       try {
-        if (!db || db.isMock) return response.json({ ok: true }); 
+        if (!db || db.isMock) {
+          const allNotifs = await readLocalNotifications();
+          const alreadySent = allNotifs.some(n => 
+            n.userId === targetUserId && n.type === "friend_request" && n.senderId === userId && n.status === "pending"
+          );
+          if (alreadySent) return response.status(400).json({ error: "Friend request already sent" });
+
+          const users = await readLocalUsers();
+          const targetFriends = users[targetUserId]?.profile?.friends || [];
+          if (targetFriends.some(f => f.id === userId)) {
+            return response.status(400).json({ error: "Already friends" });
+          }
+
+          const senderName = users[userId]?.profile?.displayName || "Someone";
+          
+          allNotifs.push({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            userId: targetUserId,
+            type: "friend_request",
+            message: `${senderName} (${userId}) sent you a friend request.`,
+            senderId: userId,
+            senderName: senderName,
+            status: "pending",
+            read: false,
+            createdAt: Date.now()
+          });
+          await writeLocalNotifications(allNotifs);
+          return response.json({ ok: true });
+        }
         
         const senderDoc = await db.collection("users").doc(userId).get();
         const senderName = senderDoc.exists ? (senderDoc.data().profile?.displayName || "Someone") : "Someone";
@@ -375,7 +404,46 @@ export function createProfileController() {
       if (!userId || !notificationId || !action) return response.status(400).json({ error: "Missing parameters" });
 
       try {
-        if (!db || db.isMock) return response.json({ ok: true });
+        if (!db || db.isMock) {
+          const allNotifs = await readLocalNotifications();
+          const notif = allNotifs.find(n => n.id === notificationId);
+          if (!notif) return response.status(404).json({ error: "Notification not found" });
+          if (notif.userId !== userId) return response.status(403).json({ error: "Unauthorized" });
+          if (notif.type !== "friend_request" || notif.status !== "pending") {
+            return response.status(400).json({ error: "Invalid or already handled request" });
+          }
+
+          if (action === "accept") {
+            const users = await readLocalUsers();
+            
+            // Add to current user's friends
+            if (!users[userId]) users[userId] = { profile: { friends: [] } };
+            if (!users[userId].profile) users[userId].profile = { friends: [] };
+            if (!users[userId].profile.friends) users[userId].profile.friends = [];
+            
+            if (!users[userId].profile.friends.some(f => f.id === notif.senderId)) {
+              users[userId].profile.friends.push({ id: notif.senderId, name: notif.senderName });
+            }
+
+            // Add to sender's friends
+            const userName = users[userId].profile.displayName || "Someone";
+            if (!users[notif.senderId]) users[notif.senderId] = { profile: { friends: [] } };
+            if (!users[notif.senderId].profile) users[notif.senderId].profile = { friends: [] };
+            if (!users[notif.senderId].profile.friends) users[notif.senderId].profile.friends = [];
+            
+            if (!users[notif.senderId].profile.friends.some(f => f.id === userId)) {
+              users[notif.senderId].profile.friends.push({ id: userId, name: userName });
+            }
+            
+            await writeLocalUsers(users);
+          }
+
+          notif.status = action;
+          notif.read = true;
+          await writeLocalNotifications(allNotifs);
+          
+          return response.json({ ok: true });
+        }
         
         const notifRef = db.collection("notifications").doc(notificationId);
         const notifDoc = await notifRef.get();

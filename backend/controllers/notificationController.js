@@ -1,4 +1,5 @@
 import { createFirestore, admin } from "../config/firebase.js";
+import { readLocalNotifications, writeLocalNotifications } from "../utils/mockNotifications.js";
 
 export function createNotificationController() {
   const db = createFirestore();
@@ -8,7 +9,12 @@ export function createNotificationController() {
       try {
         const userId = request.params.userId;
         if (!userId) return response.status(400).json({ error: "Missing userId" });
-        if (!db || db.isMock) return response.json([]);
+        if (!db || db.isMock) {
+          const allNotifs = await readLocalNotifications();
+          const userNotifs = allNotifs.filter(n => n.userId === userId);
+          userNotifs.sort((a, b) => b.createdAt - a.createdAt);
+          return response.json(userNotifs.slice(0, 100));
+        }
 
         // Get notifications for this user. Sort in memory to avoid needing a composite index.
         const snapshot = await db.collection("notifications")
@@ -36,7 +42,18 @@ export function createNotificationController() {
         const userId = request.params.userId;
         const { notificationId } = request.body; // if null, mark all as read
         if (!userId) return response.status(400).json({ error: "Missing userId" });
-        if (!db || db.isMock) return response.json({ success: true });
+        if (!db || db.isMock) {
+          const allNotifs = await readLocalNotifications();
+          let updated = false;
+          for (const n of allNotifs) {
+            if (n.userId === userId && (!notificationId || n.id === notificationId)) {
+              n.read = true;
+              updated = true;
+            }
+          }
+          if (updated) await writeLocalNotifications(allNotifs);
+          return response.json({ success: true });
+        }
 
         const batch = db.batch();
 
@@ -72,7 +89,21 @@ export function createNotificationController() {
         if (!message || !userIds || !Array.isArray(userIds)) {
           return response.status(400).json({ error: "Invalid payload" });
         }
-        if (!db || db.isMock) return response.json({ success: true });
+        if (!db || db.isMock) {
+          const allNotifs = await readLocalNotifications();
+          for (const uid of userIds) {
+            allNotifs.push({
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+              userId: uid,
+              type: "announcement",
+              message: message,
+              read: false,
+              createdAt: Date.now()
+            });
+          }
+          await writeLocalNotifications(allNotifs);
+          return response.json({ success: true, count: userIds.length });
+        }
 
         // Firestore batch allows up to 500 operations. We will chunk them.
         const chunkArray = (arr, size) => 

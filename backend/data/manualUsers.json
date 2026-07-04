@@ -2,9 +2,15 @@
   "4aY3w2Zz4kh4D15rd58V8xMZrk72": {
     "profile": {
       "stats": {
-        "roomsJoined": 2
+        "roomsJoined": 3
       },
       "activities": [
+        {
+          "type": "room_join",
+          "text": "Joined ganesh vanamala's Room",
+          "subtext": "Collaboration",
+          "timestamp": 1783166396198
+        },
         {
           "type": "profile_update",
           "text": "Updated Profile",
@@ -53,6 +59,6 @@
       "emotionId": "loop:Screenshot 2026-05-10 191715.png",
       "community": "loop"
     },
-    "updatedAt": 1783081386861
+    "updatedAt": 1783166396198
   }
 }
