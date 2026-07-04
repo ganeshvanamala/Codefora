@@ -85,10 +85,20 @@ export function createAdminController(roomRepository) {
         const users = [];
         for (const user of authUsers) {
           let profile = profilesMap[user.uid] || {};
+          let needsUpdate = false;
           
           if (!profile.friendCode && db) {
-            const newCode = await getNextFriendCode(db, user.uid);
-            profile.friendCode = newCode;
+            profile.friendCode = await getNextFriendCode(db, user.uid);
+            needsUpdate = true;
+          }
+          
+          if (!profile.displayName && db) {
+            profile.displayName = user.displayName || user.email?.split('@')[0] || "Unknown User";
+            profile.photoURL = profile.photoURL || user.photoURL || "";
+            needsUpdate = true;
+          }
+          
+          if (needsUpdate && db) {
             await db.collection("users").doc(user.uid).set({ profile }, { merge: true });
           }
           
