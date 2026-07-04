@@ -107,7 +107,7 @@ export function Navbar() {
         setFriendRequestId("");
       }
     } catch (err) {
-      setRequestStatus("Failed to send");
+      setRequestStatus(err.message || "Failed to send");
     }
   };
 

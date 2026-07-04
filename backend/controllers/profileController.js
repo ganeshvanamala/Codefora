@@ -341,11 +341,14 @@ export function createProfileController() {
         // Check if request already pending
         const existingReqs = await db.collection("notifications")
           .where("userId", "==", targetUserId)
-          .where("type", "==", "friend_request")
-          .where("senderId", "==", userId)
-          .where("status", "==", "pending")
           .get();
-        if (!existingReqs.empty) {
+          
+        const alreadySent = existingReqs.docs.some(doc => {
+          const data = doc.data();
+          return data.type === "friend_request" && data.senderId === userId && data.status === "pending";
+        });
+        
+        if (alreadySent) {
           return response.status(400).json({ error: "Friend request already sent" });
         }
 
