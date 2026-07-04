@@ -124,6 +124,38 @@ export function RoomPage() {
     prevProblemId.current = room?.problemId;
   }, [room]);
 
+  // Join sound and toast
+  const previousUsersCount = useRef(0);
+  useEffect(() => {
+    if (users.length > previousUsersCount.current && previousUsersCount.current > 0) {
+      const newUsers = users.slice(previousUsersCount.current);
+      newUsers.forEach(nu => {
+        if (nu.socketId === permissions.me?.socketId) return;
+        
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+          oscillator.frequency.exponentialRampToValueAtTime(1046.50, audioContext.currentTime + 0.1); // C6
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.3);
+        } catch(e) {}
+        
+        const id = Date.now() + Math.random();
+        setFloatingMsgs(prev => [...prev, { floatId: id, user: "System", text: `${nu.name} joined the room`, isSystem: true }]);
+        setTimeout(() => setFloatingMsgs(prev => prev.filter(m => m.floatId !== id)), 4000);
+      });
+    }
+    previousUsersCount.current = users.length;
+  }, [users, permissions.me]);
+
   // --- Leave Room Navigation Blocker ---
   const [showLeavePrompt, setShowLeavePrompt] = useState(false);
   const [showUsersModal, setShowUsersModal] = useState(false);
@@ -524,6 +556,7 @@ export function RoomPage() {
         users={users}
         permissions={permissions}
         actions={actions}
+        isAnyMicOn={users.some(u => u.mic)}
       />
 
       {activeSidebarTab && (
