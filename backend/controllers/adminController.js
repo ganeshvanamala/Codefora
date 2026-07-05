@@ -90,18 +90,21 @@ export function createAdminController(roomRepository) {
           let profile = profilesMap[user.uid] || {};
           
           usersList.push({
-            id: user.uid,
-            name: profile.displayName || user.displayName || user.email?.split('@')[0] || "Unknown",
+            userId: user.uid,
+            friendCode: profile.friendCode || "",
+            name: user.displayName || profile.displayName || user.email?.split('@')[0] || "Unknown User",
             email: user.email,
-            photoURL: profile.photoURL || user.photoURL || "",
+            emotionId: profile.emotionId || "",
+            photoURL: user.photoURL || profile.photoURL || "",
+            rating: profile.rating || 1500,
+            solved: profile.solvedCount || 0,
+            status: globalOnlineUsers.has(user.uid) ? "Online" : "Offline",
             role: profile.role || "user",
-            friendCode: profile.friendCode || "N/A",
-            joined: new Date(user.metadata.creationTime).toLocaleString(),
-            lastActive: new Date(user.metadata.lastSignInTime).toLocaleString(),
-            isBanned: user.disabled
+            createdAt: user.metadata.creationTime
           });
         }
         
+        usersList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         return response.json(usersList);
       } catch (err) {
         console.error("Admin list users failed:", err);
