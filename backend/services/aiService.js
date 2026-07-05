@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createFirestore } from "../config/firebase.js";
+import { CODEFORA_KNOWLEDGE_BASE } from "../config/knowledgeBase.js";
 
 const db = createFirestore();
 
@@ -104,12 +105,7 @@ Codefora is a collaborative competitive programming platform where users can sol
 The user is currently on the "${page || "Platform"}" page.
 The user asked: "${userMessage}"
 
---- CODEFORA KNOWLEDGE BASE (ABSOLUTE TRUTH) ---
-- Codefora has Rooms (for real-time collaborative coding up to 7 members), a Problem Library, a Playground, a Dashboard, and User Profiles (with a Friends system).
-- Codefora DOES NOT currently have a Dark Mode, Light Mode, or Appearance Settings.
-- Users can create Public or Private rooms. Private rooms require an Invite Code.
-- Codefora evaluates code using an internal compiler system.
-- If LoRA's raw answer contradicts this knowledge base, YOU MUST IGNORE LORA and use this knowledge base instead.
+${CODEFORA_KNOWLEDGE_BASE}
 
 Our internal knowledge base (LoRA) provided this raw answer:
 "${rawLoraText}"
