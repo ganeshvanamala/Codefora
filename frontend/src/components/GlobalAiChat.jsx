@@ -45,13 +45,8 @@ export default function GlobalAiChat() {
     }
   }, [user, location.pathname]);
 
-  // Hide on pages that have their own custom combo AI chat
-  if (
-    location.pathname.startsWith("/code") || 
-    location.pathname.startsWith("/room") || 
-    location.pathname.startsWith("/problems") ||
-    location.pathname.startsWith("/playground")
-  ) {
+  // Hide on pages that have their own custom combo AI chat (ProblemsPage)
+  if (location.pathname.startsWith("/problems")) {
     return null;
   }
 
