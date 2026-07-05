@@ -2166,6 +2166,7 @@ label {
 
 .ai-message .msg-bubble p {
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .ai-message .msg-bubble p + p {
