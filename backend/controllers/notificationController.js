@@ -9,9 +9,11 @@ export function createNotificationController() {
       try {
         const userId = request.params.userId;
         if (!userId) return response.status(400).json({ error: "Missing userId" });
+        const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
+        
         if (!db || db.isMock) {
           const allNotifs = await readLocalNotifications();
-          const userNotifs = allNotifs.filter(n => n.userId === userId);
+          const userNotifs = allNotifs.filter(n => n.userId === userId && n.createdAt >= fortyEightHoursAgo);
           userNotifs.sort((a, b) => b.createdAt - a.createdAt);
           return response.json(userNotifs.slice(0, 100));
         }
@@ -24,7 +26,13 @@ export function createNotificationController() {
 
         const notifications = [];
         snapshot.forEach(doc => {
-          notifications.push({ id: doc.id, ...doc.data() });
+          const data = doc.data();
+          if (data.createdAt >= fortyEightHoursAgo) {
+            notifications.push({ id: doc.id, ...data });
+          } else {
+            // Delete old notifications to clean up the database
+            doc.ref.delete().catch(() => {});
+          }
         });
 
         // Sort by newest first
