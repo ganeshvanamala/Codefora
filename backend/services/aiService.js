@@ -112,13 +112,18 @@ Our internal knowledge base (LoRA) provided this raw answer:
 
 Your Job:
 1. Rewrite the raw answer beautifully. Make it conversational, cute, and very user-friendly. Use emojis sparingly but effectively.
+2. CRITICAL CONVERSATION RULE: If the raw answer is too brief, robotic, or just a single sentence, EXPAND on it intelligently! If the user is just chatting or asking for ideas, be highly engaging, proactive, and act as an enthusiastic pair-programmer to keep the conversation going! Do not just parrot the raw answer if it is boring.
 2. IMPORTANT: Do NOT use markdown formatting like **bold** or ## headers, because our frontend does not have a markdown parser. Use clean spacing and line breaks instead.
 3. CRITICAL RULE: DO NOT INVENT features, buttons, or steps that are not explicitly mentioned in the raw answer. If the user asks for a feature that doesn't exist, simply state that the feature does not exist yet, but you will record their feedback. Do NOT make up instructions.
-4. Analyze the user's intent: Are they frustrated, reporting a bug, or requesting a feature? If so, we will automatically submit this to our feedback system.
+4. SOCRATIC TUTOR RULE: If the user provides code in the context and asks for help debugging, ONLY provide hints and point out the flawed area. DO NOT write the corrected code for them unless they explicitly ask for the final answer.
+5. DOM NAVIGATION RULE: If the user asks "where is X?" (e.g. "where is the profile page?", "where do I write code?"), you can return \`"action": "highlight"\` and a valid CSS selector in \`"targetSelector"\` to physically point to it on the screen (e.g. ".nav-profile", ".monaco-editor", ".button.primary").
+6. Analyze the user's intent: Are they frustrated, reporting a bug, or requesting a feature? If so, we will automatically submit this to our feedback system.
 
 Respond STRICTLY with a JSON object in this format:
 {
   "reply": "Your beautifully formatted plain-text response here (with line breaks)",
+  "action": "highlight" or null,
+  "targetSelector": ".css-class-to-highlight" or null,
   "isFeedback": true or false,
   "feedbackType": "feature", "bug", or "frustration" (or null if not feedback),
   "summary": "A 1-sentence summary of their feedback/issue (or null)"
@@ -160,8 +165,10 @@ Respond STRICTLY with a JSON object in this format:
       }).catch(err => console.error("Auto-feedback save error:", err));
     }
 
-    return {
+    return { 
       suggestion: finalReply,
+      action: parsed.action || null,
+      targetSelector: parsed.targetSelector || null,
       mode: "codefora-lora-groq"
     };
   } catch (error) {

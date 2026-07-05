@@ -146,6 +146,8 @@ export function PlaygroundPage() {
 
   const handleCodeChange = (value) => {
     setFiles(prev => prev.map(f => f.name === activeName ? { ...f, code: value } : f));
+    localStorage.setItem("current_code", value || "");
+    localStorage.setItem("current_problem_title", `Playground File: ${activeName}`);
   };
 
   const handleRun = async () => {

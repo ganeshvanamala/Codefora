@@ -813,8 +813,18 @@ export function RoomPage() {
                 typing={typing}
                 typingCursors={typingCursors}
                 permissions={permissions}
-                onChange={actions.updateCode}
-                onUpdateFileCode={actions.updateFileCode}
+                onChange={(val) => {
+                  localStorage.setItem("current_code", val || "");
+                  localStorage.setItem("current_problem_title", `Room File: ${activeName}`);
+                  actions.updateCode(val);
+                }}
+                onUpdateFileCode={(filename, code) => {
+                  if (filename === activeName) {
+                    localStorage.setItem("current_code", code || "");
+                    localStorage.setItem("current_problem_title", `Room File: ${filename}`);
+                  }
+                  actions.updateFileCode(filename, code);
+                }}
                 onCreateFile={actions.createFile}
                 onExpectActiveName={actions.setExpectedActiveName}
                 onDeleteFile={actions.deleteActiveFile}

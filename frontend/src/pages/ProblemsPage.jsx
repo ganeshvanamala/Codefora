@@ -61,11 +61,6 @@ export function ProblemsPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [failedTestCase, setFailedTestCase] = useState(null);
   const [showFailedDetails, setShowFailedDetails] = useState(false);
-  const [problemAiOpen, setProblemAiOpen] = useState(false);
-  const [problemAiPrompt, setProblemAiPrompt] = useState("");
-  const [problemAiThinking, setProblemAiThinking] = useState(false);
-  const [problemAiMessages, setProblemAiMessages] = useState([]);
-
   const [problems, setProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
   const [loadingProblems, setLoadingProblems] = useState(true);
@@ -146,7 +141,7 @@ export function ProblemsPage() {
     const promises = testCases.map(async (testCase) => {
       try {
         const result = await api.runCode({
-          language,
+          language: runLanguage,
           version: undefined,
           code,
           input: testCase.input
@@ -179,7 +174,7 @@ export function ProblemsPage() {
     setJudgeStatus("running");
     setFailedTestCase(null);
     setRunOutput("Compiling and running sample test case 1...");
-    trackEvent("code_run", { problem_id: selectedProblem.id, language });
+    trackEvent("code_run", { problem_id: selectedProblem.id, language: runLanguage });
     try {
       const [result] = await runAgainstTests([selectedProblem.tests[0]]);
       setJudgeStatus(result.passed ? "accepted" : "wrong");
@@ -203,7 +198,7 @@ export function ProblemsPage() {
     setJudgeStatus("running");
     setFailedTestCase(null);
     setRunOutput("Submitting against all 15 test cases (3 sample + 12 hidden)...");
-    trackEvent("submission", { problem_id: selectedProblem.id, language });
+    trackEvent("submission", { problem_id: selectedProblem.id, language: runLanguage });
     try {
       const results = await runAgainstTests(selectedProblem.tests);
       const passedCount = results.filter(r => r.passed).length;
@@ -233,69 +228,6 @@ export function ProblemsPage() {
       setIsRunning(false);
     }
   }
-
-
-  async function askProblemAi() {
-    const question = problemAiPrompt.trim();
-    if (!question || problemAiThinking) return;
-
-    const questionMessage = { id: `problem-ai-q-${Date.now()}`, role: "user", text: question };
-    setProblemAiMessages((items) => [...items, questionMessage]);
-    setProblemAiPrompt("");
-    setProblemAiThinking(true);
-
-    const problemContext = selectedProblem
-      ? {
-          title: selectedProblem.title,
-          difficulty: selectedProblem.difficulty,
-          statement: selectedProblem.statement,
-          constraints: selectedProblem.constraints,
-          sampleTests: selectedProblem.tests
-        }
-      : {
-          mode: "problem library",
-          visibleProblems: filteredProblems.map((problem) => ({
-            title: problem.title,
-            difficulty: problem.difficulty,
-            tags: problem.tags
-          }))
-        };
-
-    try {
-      const result = await api.askAi({
-        prompt: question,
-        file: selectedProblem ? selectedLanguage.file : "problems",
-        code: selectedProblem ? code : "",
-        context: {
-          page: "Problems",
-          selectedProblem: problemContext,
-          selectedLanguage: selectedProblem ? selectedLanguage.label : null,
-          currentCode: selectedProblem ? code : "",
-          judgeStatus,
-          runOutput,
-          recentAiChat: problemAiMessages.slice(-8)
-        }
-      });
-      setProblemAiMessages((items) => [
-        ...items,
-        { 
-          id: `problem-ai-a-${Date.now()}`, 
-          role: "assistant", 
-          text: result.suggestion || "No answer returned.",
-          feedbackNote: result.feedbackNote
-        }
-      ]);
-    } catch (error) {
-      setProblemAiMessages((items) => [
-        ...items,
-        { id: `problem-ai-e-${Date.now()}`, role: "assistant", text: error.message || "AI request failed." }
-      ]);
-    } finally {
-      setProblemAiThinking(false);
-    }
-  }
-
-
 
   async function handleCreateRoom(e) {
     e?.preventDefault();
@@ -781,67 +713,6 @@ export function ProblemsPage() {
         </section>
       </section>
       )}
-
-      <button
-        type="button"
-        className="problem-ai-fab tour-problem-ai-chat"
-        onClick={() => setProblemAiOpen(!problemAiOpen)}
-        aria-label={problemAiOpen ? "Close AI assistant" : "Open AI assistant"}
-      >
-        {problemAiOpen ? <X size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
-      </button>
-
-      <aside className={`problem-ai-panel ${problemAiOpen ? "open" : ""}`} aria-hidden={!problemAiOpen}>
-        <div className="problem-ai-header">
-          <div>
-            <img src="/ai-icon.png" alt="AI" className="ai-header-img" />
-            <strong>{selectedProblem ? selectedProblem.title : "Problem Library"}</strong>
-          </div>
-          <button type="button" onClick={() => setProblemAiOpen(false)} aria-label="Close problem AI">
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="problem-ai-messages">
-          {problemAiMessages.length === 0 && (
-            <div className="assistant-empty">
-              <Sparkles size={15} />
-              <p>Ask for hints, edge cases, debugging help, or an explanation of the selected problem.</p>
-            </div>
-          )}
-          {problemAiMessages.map((message) => (
-            <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`}>
-              <div className="avatar">
-                {message.role === "user" ? <User size={14} /> : <img src="/ai-icon.png" alt="AI" className="ai-avatar-img" />}
-              </div>
-              <div className="msg-bubble">
-                <p>{message.text}</p>
-                {message.feedbackNote && <p className="feedback-note">{message.feedbackNote}</p>}
-              </div>
-            </div>
-          ))}
-          {problemAiThinking && (
-            <div className="ai-message ai-message--assistant">
-              <div className="avatar">
-                <img src="/ai-icon.png" alt="AI" className="ai-avatar-img" />
-              </div>
-              <div className="msg-bubble"><p>Thinking...</p></div>
-            </div>
-          )}
-        </div>
-
-        <div className="problem-ai-input">
-          <input
-            value={problemAiPrompt}
-            onChange={(event) => setProblemAiPrompt(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && askProblemAi()}
-            placeholder="Ask AI about this problem..."
-          />
-          <button type="button" onClick={askProblemAi} disabled={problemAiThinking || !problemAiPrompt.trim()} aria-label="Ask AI">
-            <Send size={16} />
-          </button>
-        </div>
-      </aside>
 
       {showRoomModal && (
         <div className="profile-modal-overlay" role="dialog" aria-modal="true" aria-label="Create a problem room">

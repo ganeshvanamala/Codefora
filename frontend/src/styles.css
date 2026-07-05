@@ -2271,6 +2271,24 @@ label {
   margin-right: 6px;
 }
 
+.ai-dom-highlight {
+  position: relative;
+  z-index: 9999 !important;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.8), 0 0 24px rgba(var(--primary-rgb), 0.8) !important;
+  animation: aiPulseGlow 1.5s infinite alternate !important;
+  transition: all 0.3s ease;
+}
+
+@keyframes aiPulseGlow {
+  0% {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.5), 0 0 10px rgba(var(--primary-rgb), 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 6px rgba(var(--primary-rgb), 1), 0 0 30px rgba(var(--primary-rgb), 1);
+  }
+}
+
 .ai-message .msg-bubble p + p {
   margin-top: 8px;
 }

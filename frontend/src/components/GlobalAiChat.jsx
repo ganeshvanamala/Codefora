@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { MessageSquare, X, Bot, Sparkles, Send, User } from "lucide-react";
 import { api } from "../api/client";
@@ -12,6 +12,11 @@ export default function GlobalAiChat() {
   const [thinking, setThinking] = useState(false);
   const [greetingText, setGreetingText] = useState("");
   const { user } = useAuth();
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, thinking]);
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +78,8 @@ export default function GlobalAiChat() {
           prompt: input,
           context: {
             page: getPageName(),
+            code: localStorage.getItem("current_code") || "",
+            problemTitle: localStorage.getItem("current_problem_title") || "",
           }
         })
       });
@@ -85,6 +92,18 @@ export default function GlobalAiChat() {
           feedbackNote: result.feedbackNote
         }
       ]);
+
+      if (result.action === "highlight" && result.targetSelector) {
+        const el = document.querySelector(result.targetSelector);
+        if (el) {
+          // Scroll to element smoothly
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Add glowing highlight
+          el.classList.add('ai-dom-highlight');
+          // Remove highlight after 5 seconds
+          setTimeout(() => el.classList.remove('ai-dom-highlight'), 5000);
+        }
+      }
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -157,6 +176,7 @@ export default function GlobalAiChat() {
               <div className="msg-bubble"><p>Thinking...</p></div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="problem-ai-input">
