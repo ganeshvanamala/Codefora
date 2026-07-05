@@ -728,7 +728,7 @@ export default function AdminDashboardPage() {
                                 {u.name}
                               </td>
                               <td style={{ fontFamily: 'monospace', color: 'var(--primary-accent)' }}>
-                                {u.friendCode && u.friendCode !== 'N/A' ? u.friendCode : u.userId}
+                                {u.friendCode || 'N/A'}
                               </td>
                               <td>{u.rating}</td>
                               <td>{u.solved}</td>
