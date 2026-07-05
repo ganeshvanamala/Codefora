@@ -28,6 +28,7 @@ export function createApp({ roomRepository, roomService, profileController, onRo
   const feedbackController = createFeedbackController();
   const notificationController = createNotificationController();
 
+  app.set('trust proxy', 1);
   app.use(cors({ origin: corsOrigin }));
   app.use(express.json({ limit: "2mb" }));
 
