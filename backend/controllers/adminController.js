@@ -85,43 +85,24 @@ export function createAdminController(roomRepository) {
           });
         }
 
+        const usersList = [];
         for (const user of authUsers) {
           let profile = profilesMap[user.uid] || {};
-          let needsUpdate = false;
           
-          if (!profile.friendCode && db) {
-            profile.friendCode = await getNextFriendCode(db, user.uid);
-            needsUpdate = true;
-          }
-          
-          if (!profile.displayName && db) {
-            profile.displayName = user.displayName || user.email?.split('@')[0] || "Unknown User";
-            profile.photoURL = profile.photoURL || user.photoURL || "";
-            needsUpdate = true;
-          }
-          
-          if (needsUpdate && db) {
-            await db.collection("users").doc(user.uid).set({ profile }, { merge: true });
-          }
-          
-          users.push({
-            userId: user.uid,
-            friendCode: profile.friendCode || "",
-            name: user.displayName || profile.displayName || user.email?.split('@')[0] || "Unknown User",
+          usersList.push({
+            id: user.uid,
+            name: profile.displayName || user.displayName || user.email?.split('@')[0] || "Unknown",
             email: user.email,
-            emotionId: profile.emotionId || "",
-            photoURL: user.photoURL || profile.photoURL || "",
-            rating: profile.rating || 1500,
-            solved: profile.solvedCount || 0,
-            status: globalOnlineUsers.has(user.uid) ? "Online" : "Offline",
+            photoURL: profile.photoURL || user.photoURL || "",
             role: profile.role || "user",
-            createdAt: user.metadata.creationTime
+            friendCode: profile.friendCode || "N/A",
+            joined: new Date(user.metadata.creationTime).toLocaleString(),
+            lastActive: new Date(user.metadata.lastSignInTime).toLocaleString(),
+            isBanned: user.disabled
           });
         }
-
-        users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        return response.json(users);
+        
+        return response.json(usersList);
       } catch (err) {
         console.error("Admin list users failed:", err);
         return response.status(500).json({ error: err.message });
