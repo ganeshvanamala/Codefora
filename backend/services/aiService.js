@@ -15,11 +15,11 @@ export class AiService {
     try {
       const page = context?.page || "";
       if (page !== "Problems" && page !== "Room") {
-        return await askCodeforaAI(prompt);
+        return await askCodeforaAI(prompt, context);
       }
 
       if (isCodeforaQuestion(prompt)) {
-        return await askCodeforaAI(prompt);
+        return await askCodeforaAI(prompt, context);
       }
 
       if (provider === "groq") return await askGroq(messages);
@@ -64,7 +64,12 @@ function isCodeforaQuestion(prompt) {
   return false;
 }
 
-async function askCodeforaAI(userMessage) {
+async function askCodeforaAI(userMessage, context = {}) {
+  const page = context.page;
+  const enrichedMessage = page 
+    ? `[System Note: The user is currently on the '${page}' page.]\n${userMessage}`
+    : userMessage;
+
   const response = await fetch(
     "https://roopasri06-codefora-lora-api.hf.space/generate",
     {
@@ -73,7 +78,7 @@ async function askCodeforaAI(userMessage) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        message: userMessage
+        message: enrichedMessage
       })
     }
   );
