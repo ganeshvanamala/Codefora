@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useBlocker, useLocation } from "react-router-dom";
-import { Loader2, AlertTriangle, MessageSquare, X, ArrowLeft, PanelLeftClose } from "lucide-react";
+import { Loader2, AlertTriangle, MessageSquare, X as XIcon, ArrowLeft, PanelLeftClose } from "lucide-react";
 import { useRoomSession } from "../hooks/useRoomSession";
 import { TopBar } from "../components/room/TopBar";
 import { EditorPanel } from "../components/room/EditorPanel";
@@ -458,8 +458,8 @@ export function RoomPage() {
       <div className="room-loading">
         <AlertTriangle size={40} />
         <p>Could not join room: {joinError.reason || "unknown error"}</p>
-        <button className="button primary" onClick={() => navigate("/rooms")}>
-          Back to Rooms
+        <button className="comms-close-cyber" onClick={() => setShowUsersModal(false)} aria-label="Close Users">
+          <XIcon size={16}/>
         </button>
       </div>
     );

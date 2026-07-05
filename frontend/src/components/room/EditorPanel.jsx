@@ -84,6 +84,7 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
   const otherUsers = users.filter((user) => user.socketId !== socket.id);
 
   const yjsRefs = useRef({ doc: null, provider: null, binding: null, saveTimeout: null, boundFile: null });
+  const seededFilesRef = useRef(new Set());
   const onChangeRef = useRef(onChange);
   const onUpdateFileCodeRef = useRef(onUpdateFileCode);
 
@@ -168,7 +169,8 @@ export function EditorPanel({ roomId, allowCopyPaste, files, activeFile, activeN
         if (!isSynced || yjsRefs.current.boundFile !== activeFile.name || yjsRefs.current.binding) return;
         
         // If the server's document is empty, seed it with the database's code so it doesn't wipe the editor
-        if (type.length === 0 && model.getValue()) {
+        if (type.length === 0 && model.getValue() && !seededFilesRef.current.has(activeFile.name)) {
+          seededFilesRef.current.add(activeFile.name);
           type.insert(0, model.getValue());
         }
 

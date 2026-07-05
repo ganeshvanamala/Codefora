@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Loader2, Save, Play, Code2, Layout, Terminal, Globe, ChevronRight, Plus, Upload, X, Download } from 'lucide-react';
+import { Loader2, Save, Play, Code2, Layout, Terminal, Globe, ChevronRight, Plus, Upload, X as XIcon, Download } from 'lucide-react';
 import JSZip from "jszip";
 import Editor from "@monaco-editor/react";
 import { Navbar } from "../components/Navbar";
@@ -360,14 +360,12 @@ export function PlaygroundPage() {
             <Code2 size={14} />
             <span>{f.name}</span>
             {files.length > 1 && (
-              <X 
-                size={12} 
-                className="hover-danger" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteFile(f.name);
-                }} 
-              />
+              <button type="button" onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteFile(f.name);
+              }} className="pg-file-delete" aria-label="Delete file">
+                <XIcon size={14} />
+              </button>
             )}
           </div>
         ))}
@@ -406,7 +404,7 @@ export function PlaygroundPage() {
                 </div>
                 {activeMainTab === 'preview' && !isSplitView && (
                   <button onClick={() => { setActiveMainTab('editor'); setIsSplitView(true); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }} title="Close Full Screen">
-                    <X size={14} />
+                    <XIcon size={14} />
                   </button>
                 )}
               </div>

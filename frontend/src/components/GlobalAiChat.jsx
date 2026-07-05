@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { MessageSquare, X, Bot, Sparkles, Send, User } from "lucide-react";
+import { MessageSquare, X as XIcon, Bot, Sparkles, Send, User } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../hooks/useAuth";
 
@@ -130,7 +130,7 @@ export default function GlobalAiChat() {
             <p>{greetingText}</p>
           </div>
           <button className="greeting-close" onClick={(e) => { e.stopPropagation(); setGreetingText(""); }}>
-            <X size={12} />
+            <XIcon size={12} />
           </button>
         </div>
       )}
@@ -143,7 +143,7 @@ export default function GlobalAiChat() {
           aria-label={open ? "Close AI assistant" : "Open AI assistant"}
           style={{ zIndex: 9999 }}
         >
-          {open ? <X size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
+          {open ? <XIcon size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
         </button>
       )}
 
@@ -154,7 +154,7 @@ export default function GlobalAiChat() {
             <strong>{getPageName()}</strong>
           </div>
           <button type="button" onClick={() => setOpen(false)} aria-label="Close AI">
-            <X size={16} />
+            <XIcon size={16} />
           </button>
         </div>
 

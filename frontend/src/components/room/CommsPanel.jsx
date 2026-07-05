@@ -1,4 +1,4 @@
-import { Bot, ImagePlus, MessageSquare, Send, Sparkles, X, Paperclip, ChevronsRight, CheckCheck } from "lucide-react";
+import { Bot, ImagePlus, MessageSquare, Send, Sparkles, X as XIcon, Paperclip, ChevronsRight, CheckCheck } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import sticker1 from "../../../assets/sticker1.jpeg";
 import sticker2 from "../../../assets/sticker2.jpeg";
