@@ -59,7 +59,9 @@ export default function SignInPage() {
 
     localStorage.setItem("codefora_community", "sider");
     document.documentElement.dataset.community = "sider";
+    const guestId = `guest-${Date.now()}`;
     saveUsername("Guest");
+    localStorage.setItem("codefora_user_id", guestId);
     navigate('/home');
   }
 

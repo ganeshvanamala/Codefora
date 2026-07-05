@@ -19,11 +19,11 @@ export class AiService {
     try {
       const page = context?.page || "";
       if (page !== "Problems" && page !== "Room") {
-        return await askCodeforaAI(prompt, context);
+        return await askCodeforaAI(prompt, context, code, file);
       }
 
       if (isCodeforaQuestion(prompt)) {
-        return await askCodeforaAI(prompt, context);
+        return await askCodeforaAI(prompt, context, code, file);
       }
 
       if (provider === "groq") return await askGroq(messages);
@@ -68,7 +68,7 @@ function isCodeforaQuestion(prompt) {
   return false;
 }
 
-async function askCodeforaAI(userMessage, context = {}) {
+async function askCodeforaAI(userMessage, context = {}, code = "", file = "") {
   const page = context.page;
   const loraPrompt = page 
     ? `[System Note: The user is currently on the '${page}' page.]\n${userMessage}`
@@ -103,6 +103,8 @@ async function askCodeforaAI(userMessage, context = {}) {
   const systemPrompt = `You are a cute, friendly, and helpful AI assistant for the Codefora platform.
 Codefora is a collaborative competitive programming platform where users can solve problems together in real-time rooms.
 The user is currently on the "${page || "Platform"}" page.
+${file ? `The user's active file/problem is: ${file}\n` : ""}
+${code ? `The user's current code is:\n\`\`\`\n${code}\n\`\`\`\n` : ""}
 The user asked: "${userMessage}"
 
 ${CODEFORA_KNOWLEDGE_BASE}
