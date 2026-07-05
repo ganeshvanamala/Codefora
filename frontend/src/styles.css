@@ -2035,11 +2035,12 @@ label {
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
   color: var(--text);
-  background: rgba(8, 18, 30, 0.96);
-  border: 1px solid rgba(var(--primary-rgb), 0.26);
-  border-radius: 14px;
+  background: rgba(8, 18, 30, 0.45);
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
+  border-radius: 16px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   transform: translateY(18px) scale(0.98);
   opacity: 0;
   pointer-events: none;
