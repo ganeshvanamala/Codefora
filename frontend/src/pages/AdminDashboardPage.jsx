@@ -18,6 +18,8 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
 
   // Real data states
   const [statsData, setStatsData] = useState(null);
@@ -62,8 +64,12 @@ export default function AdminDashboardPage() {
         setAnnouncementUsersInitialized(true);
       }
       setFeedbackList(f || []);
+      setAuthError(false);
     } catch (err) {
       console.error("Failed to fetch admin data:", err);
+      if (err.message.includes("403") || err.message.includes("401") || err.message.toLowerCase().includes("denied") || err.message.toLowerCase().includes("expired")) {
+        setAuthError(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -134,7 +140,38 @@ export default function AdminDashboardPage() {
     } catch (err) { alert(err.message); }
   };
 
-  if (authLoading || !isAdmin) return <div className="admin-dashboard-container"><Navbar /><div style={{ padding: '100px', textAlign: 'center', color: 'white' }}>Verifying Administrator...</div></div>;
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    localStorage.setItem("codefora_admin_token", adminPasswordInput);
+    fetchData();
+  };
+
+  if (authError) {
+    return (
+      <div className="admin-dashboard">
+        <Navbar />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '20px' }}>
+          <ShieldAlert size={64} style={{ color: 'var(--primary-accent)', marginBottom: '20px' }} />
+          <h2 style={{ marginBottom: '10px' }}>Admin Authentication Required</h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '30px', textAlign: 'center', maxWidth: '400px' }}>
+            Please enter your master admin secret to access the dashboard on this device.
+          </p>
+          <form onSubmit={handleAdminLogin} style={{ display: 'flex', width: '100%', maxWidth: '300px', gap: '10px' }}>
+            <input 
+              type="password" 
+              placeholder="Admin Secret" 
+              value={adminPasswordInput}
+              onChange={e => setAdminPasswordInput(e.target.value)}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white' }}
+            />
+            <button type="submit" className="btn-primary" style={{ padding: '10px 20px' }}>Unlock</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || !isAdmin) return <div className="admin-dashboard-container"><Navbar /><div style={{ padding: '100px', textAlign: 'center', color: 'white' }}>Verifying Administrator...</div></div>;
 
   const stats = statsData ? [
     { label: 'Total Users', value: statsData.totalUsers, trend: '+ 12.4% from yesterday', icon: <Users />, color: '#8BE9FD' },
