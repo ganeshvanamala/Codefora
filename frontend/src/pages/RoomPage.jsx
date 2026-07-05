@@ -219,6 +219,13 @@ export function RoomPage() {
   }, [activeProblem]);
 
   useEffect(() => {
+    if (activeFile) {
+      localStorage.setItem("current_code", activeFile.code || "");
+      localStorage.setItem("current_problem_title", `Room File: ${activeFile.name}`);
+    }
+  }, [activeFile]);
+
+  useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = ""; 

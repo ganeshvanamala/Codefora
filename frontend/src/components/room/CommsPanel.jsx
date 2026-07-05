@@ -74,14 +74,16 @@ export function CommsPanel({
         </div>
 
         <div className="comms-header-right">
-          <button
-            type="button"
-            className="ai-toggle-pill tour-chat-ai"
-            onClick={() => window.dispatchEvent(new Event("toggleGlobalAiChat"))}
-          >
-            <span>Chat with AI</span>
-            <Sparkles size={11} className="orange-sparkle" />
-          </button>
+          {permissions?.canUseAi && (
+            <button
+              type="button"
+              className="ai-toggle-pill tour-chat-ai"
+              onClick={() => window.dispatchEvent(new Event("toggleGlobalAiChat"))}
+            >
+              <span>Chat with AI</span>
+              <Sparkles size={11} className="orange-sparkle" />
+            </button>
+          )}
           <button type="button" className="comms-close-cyber" onClick={onClose} aria-label="Close chat">
             <ChevronsRight size={16} />
           </button>

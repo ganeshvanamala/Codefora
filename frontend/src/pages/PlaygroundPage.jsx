@@ -66,6 +66,13 @@ export function PlaygroundPage() {
     }
   }, [location.state]);
 
+  useEffect(() => {
+    if (activeFile) {
+      localStorage.setItem("current_code", activeFile.code || "");
+      localStorage.setItem("current_problem_title", `Playground File: ${activeFile.name}`);
+    }
+  }, [activeFile]);
+
   const handleCreateFile = () => {
     const selectedType = FILE_TYPES.find((type) => type.language === newFileType) || FILE_TYPES[0];
     const cleanName = newFileName.trim();
