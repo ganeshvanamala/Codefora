@@ -572,7 +572,7 @@ export default function AdminDashboardPage() {
                           />
                         </th>
                         <th>User</th>
-                        <th>Friend Code</th>
+                        <th>USER ID</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -647,7 +647,7 @@ export default function AdminDashboardPage() {
                     {activeTab === 'Users' && (
                       <input 
                         type="text" 
-                        placeholder="Search by ID, Friend Code, or Name..." 
+                        placeholder="Search by ID, USER ID, or Name..." 
                         className="admin-input" 
                         style={{ padding: '6px 12px', minWidth: '300px', marginLeft: 'auto', marginRight: '15px' }}
                         value={userSearch}
@@ -661,7 +661,7 @@ export default function AdminDashboardPage() {
                       <thead>
                         <tr>
                           <th>User</th>
-                          <th>Friend Code</th>
+                          <th>USER ID</th>
                           <th>Rating</th>
                           <th>Solved</th>
                           <th>Status</th>

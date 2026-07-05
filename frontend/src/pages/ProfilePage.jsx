@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   Edit3, Code, Users, Flame, Trophy, Award, 
   Shield, CheckCircle2, MessageSquare, MoreHorizontal, UserPlus, 
-  Activity, Star, ExternalLink, Flag, X, Save, Folder, Clock, Search, ShieldAlert
+  Activity, Star, ExternalLink, Flag, X, Save, Folder, Clock, Search, ShieldAlert, Copy
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -51,7 +51,7 @@ function FriendProfileItem({ friend, navigate }) {
       </div>
       <div className="friend-name">{profile?.displayName || friend.name}</div>
       {(profile?.friendCode || friend.friendCode) && (
-        <div className="friend-handle">Friend Code: {profile?.friendCode || friend.friendCode}</div>
+        <div className="friend-handle">USER ID: {profile?.friendCode || friend.friendCode}</div>
       )}
     </div>
   );
@@ -306,9 +306,21 @@ export function ProfilePage() {
               )}
             </div>
             
-            <div className="profile-handle">
-              <span style={{ fontSize: "12px", fontFamily: "monospace", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: "4px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                Friend Code: {profileData.friendCode || "..."}
+            <div className="profile-handle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: "12px", fontFamily: "monospace", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: "4px", border: "1px solid rgba(255,255,255,0.1)", display: 'flex', alignItems: 'center', gap: '6px' }}>
+                USER ID: {profileData.friendCode || "..."}
+                {profileData.friendCode && (
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(profileData.friendCode);
+                      alert("USER ID copied to clipboard!");
+                    }}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                    title="Copy USER ID"
+                  >
+                    <Copy size={12} />
+                  </button>
+                )}
               </span>
             </div>
 

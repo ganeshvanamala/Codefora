@@ -65,7 +65,7 @@ function FriendListItem({ f, navigate, setFriendToRemove }) {
         </div>
         {(profile?.friendCode || f.friendCode) && (
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
-            Friend Code: {profile?.friendCode || f.friendCode}
+            USER ID: {profile?.friendCode || f.friendCode}
           </div>
         )}
       </div>
@@ -188,7 +188,7 @@ export function Navbar() {
     
     // Only allow 8-digit numeric friend codes
     if (!/^\d{8}$/.test(friendRequestId.trim())) {
-      setRequestStatus("Invalid Friend Code (must be 8 digits)");
+      setRequestStatus("Invalid USER ID (must be 8 digits)");
       return;
     }
 
@@ -368,7 +368,7 @@ export function Navbar() {
                   </div>
                   {friendCode && (
                     <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '8px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Your Friend Code:</span>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Your USER ID:</span>
                       <span style={{ fontFamily: 'monospace', color: 'var(--primary-accent)', fontWeight: 'bold' }}>{friendCode}</span>
                     </div>
                   )}
@@ -376,7 +376,7 @@ export function Navbar() {
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                     <input 
                       type="text" 
-                      placeholder="Enter 8-digit Friend Code..." 
+                      placeholder="Enter 8-digit USER ID..." 
                       value={friendRequestId}
                       onChange={e => { setFriendRequestId(e.target.value); setRequestStatus(""); setSearchedUser(null); }}
                       onKeyDown={e => { if (e.key === 'Enter') handleSearchUser(); }}
