@@ -13,6 +13,10 @@ export class AiService {
     const messages = buildMessages({ prompt, file, code, context });
 
     try {
+      if (isCodeforaQuestion(prompt)) {
+        return await askCodeforaAI(prompt);
+      }
+
       if (provider === "groq") return await askGroq(messages);
       if (provider === "gemini") return await askGemini(messages);
       return await askOllama(messages);
@@ -32,6 +36,52 @@ function resolveProvider() {
   if (process.env.GROQ_API_KEY) return "groq";
   if (process.env.GEMINI_API_KEY) return "gemini";
   return "ollama";
+}
+
+function isCodeforaQuestion(prompt) {
+  const text = prompt.toLowerCase();
+  
+  // If it's heavily coding-focused, bypass unless "codefora" is explicitly mentioned
+  if (/debug|error|compile|syntax|bug|c\+\+|java|python|javascript|algorithm|dsa|time complexity|space complexity/i.test(text)) {
+    if (!text.includes("codefora")) return false;
+  }
+  
+  const codeforaKeywords = [
+    "codefora", "rooms", "room", "platform", "navigate", "navigation", 
+    "collaborate", "collaboration", "profile", "profiles", "friend", 
+    "friends", "contest", "contests", "war room", "war rooms"
+  ];
+  
+  for (const kw of codeforaKeywords) {
+    const regex = new RegExp(`\\b${kw}\\b`, "i");
+    if (regex.test(text)) return true;
+  }
+  return false;
+}
+
+async function askCodeforaAI(userMessage) {
+  const response = await fetch(
+    "https://roopasri06-codefora-lora-api.hf.space/generate",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: userMessage
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Codefora AI API failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return {
+    suggestion: data.response || "No response from Codefora AI.",
+    mode: "codefora-lora"
+  };
 }
 
 function buildMessages({ prompt, file, code, context }) {
