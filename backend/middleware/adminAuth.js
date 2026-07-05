@@ -1,39 +1,36 @@
-import { admin } from "../config/firebase.js";
+import { admin, createFirestore } from "../config/firebase.js";
+
+const db = createFirestore();
+const SUPER_ADMIN_EMAIL = "ganeshvanamala16@gmail.com";
 
 export async function adminAuth(request, response, next) {
-  const token = request.headers["x-admin-token"];
+  const authHeader = request.headers["authorization"];
   
-  if (!token) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return response.status(401).json({ error: "Access denied. Admin token required." });
   }
 
-  // Allow static secret for simple local dev, but strictly require JWT for prod
-  const staticSecret = process.env.ADMIN_SECRET ? process.env.ADMIN_SECRET.trim() : null;
-  const cleanToken = token ? token.trim() : null;
-  
-  if (staticSecret && cleanToken === staticSecret) {
-    return next();
-  }
-
-  console.log(`[DEBUG ADMIN AUTH] Mismatch!`);
-  console.log(`Expected (Render): "${staticSecret}"`);
-  console.log(`Received (Browser): "${cleanToken}"`);
+  const token = authHeader.split("Bearer ")[1];
 
   try {
-    // 1. Verify the JWT
     const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // 2. Check if the decoded uid is in our allowed list
-    const allowedUidsStr = process.env.ADMIN_UIDS || "";
-    const allowedUids = allowedUidsStr.split(",").map(uid => uid.trim());
-
-    if (!allowedUids.includes(decodedToken.uid)) {
-      return response.status(403).json({ error: "Forbidden. You are not an authorized admin." });
+    // 1. Super Admin Check
+    if (decodedToken.email === SUPER_ADMIN_EMAIL) {
+      request.adminUser = { ...decodedToken, isSuperAdmin: true };
+      return next();
     }
 
-    // Pass the user info to the next middleware if needed
-    request.adminUser = decodedToken;
-    next();
+    // 2. Dynamic Admin Check (Firestore)
+    if (db && !db.isMock) {
+      const userDoc = await db.collection("users").doc(decodedToken.uid).get();
+      if (userDoc.exists && userDoc.data().profile?.role === "admin") {
+        request.adminUser = { ...decodedToken, isSuperAdmin: false };
+        return next();
+      }
+    }
+
+    return response.status(403).json({ error: "Forbidden. You are not an authorized admin." });
   } catch (error) {
     console.error("Admin Auth Error:", error.message);
     return response.status(403).json({ error: "Invalid or expired admin token." });

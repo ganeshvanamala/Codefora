@@ -19,7 +19,7 @@ export default function AdminDashboardPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
-  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Real data states
   const [statsData, setStatsData] = useState(null);
@@ -56,6 +56,7 @@ export default function AdminDashboardPage() {
         api.request("/api/admin/feedback")
       ]);
       setStatsData(s);
+      setIsSuperAdmin(s.isSuperAdmin || false);
       setRooms(r);
       setProblemList(p);
       setUsers(u);
@@ -140,10 +141,15 @@ export default function AdminDashboardPage() {
     } catch (err) { alert(err.message); }
   };
 
-  const handleAdminLogin = (e) => {
-    e.preventDefault();
-    localStorage.setItem("codefora_admin_token", adminPasswordInput);
-    fetchData();
+  const handleToggleRole = async (userId, currentRole) => {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    try {
+      await api.request(`/api/admin/users/${userId}/role`, { method: 'POST', body: JSON.stringify({ role: newRole }) });
+      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, role: newRole } : u));
+      setActivityLog(prev => [{ icon: <ShieldAlert size={16} />, class: 'updated', text: `User <strong>${userId}</strong> is now ${newRole}.`, time: 'just now' }, ...prev]);
+    } catch (err) {
+      alert("Failed to change role: " + err.message);
+    }
   };
 
   if (authError) {
@@ -151,21 +157,11 @@ export default function AdminDashboardPage() {
       <div className="admin-dashboard">
         <Navbar />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '20px' }}>
-          <ShieldAlert size={64} style={{ color: 'var(--primary-accent)', marginBottom: '20px' }} />
-          <h2 style={{ marginBottom: '10px' }}>Admin Authentication Required</h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '30px', textAlign: 'center', maxWidth: '400px' }}>
-            Please enter your master admin secret to access the dashboard on this device.
+          <ShieldAlert size={64} style={{ color: '#ff5555', marginBottom: '20px' }} />
+          <h2 style={{ marginBottom: '10px' }}>Access Denied</h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', maxWidth: '400px' }}>
+            You do not have permission to view the Admin Dashboard.
           </p>
-          <form onSubmit={handleAdminLogin} style={{ display: 'flex', width: '100%', maxWidth: '300px', gap: '10px' }}>
-            <input 
-              type="password" 
-              placeholder="Admin Secret" 
-              value={adminPasswordInput}
-              onChange={e => setAdminPasswordInput(e.target.value)}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white' }}
-            />
-            <button type="submit" className="btn-primary" style={{ padding: '10px 20px' }}>Unlock</button>
-          </form>
         </div>
       </div>
     );
@@ -729,8 +725,15 @@ export default function AdminDashboardPage() {
                             <td>
                               <div className="admin-table-actions">
                                 <button className="admin-action-btn" title="View Profile" onClick={() => window.open(`/profile/${u.friendCode || u.userId}`, '_blank')}><Eye size={12} /></button>
-                                <button className="admin-action-btn warning" title="Warn"><AlertTriangle size={12} /></button>
-                                <button className="admin-action-btn danger" title="Ban"><ShieldAlert size={12} /></button>
+                                {isSuperAdmin && (
+                                  <button 
+                                    className={`admin-action-btn ${u.role === 'admin' ? 'danger' : 'warning'}`} 
+                                    title={u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                                    onClick={() => handleToggleRole(u.userId, u.role)}
+                                  >
+                                    <ShieldAlert size={12} />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>

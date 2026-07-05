@@ -45,7 +45,8 @@ export function createAdminController(roomRepository) {
           onlineUsers: globalOnlineUsers.size,
           activeRooms: rooms.length,
           totalProblems: problems.length,
-          mostSolved: "N/A"
+          mostSolved: "N/A",
+          isSuperAdmin: request.adminUser?.isSuperAdmin || false
         });
       } catch (err) {
         console.error("Admin stats failed:", err);
@@ -108,6 +109,32 @@ export function createAdminController(roomRepository) {
         return response.json(usersList);
       } catch (err) {
         console.error("Admin list users failed:", err);
+        return response.status(500).json({ error: err.message });
+      }
+    },
+
+    updateUserRole: async (request, response) => {
+      try {
+        if (!request.adminUser?.isSuperAdmin) {
+          return response.status(403).json({ error: "Only Super Admins can manage roles." });
+        }
+        
+        const { id } = request.params;
+        const { role } = request.body;
+        
+        if (!db || db.isMock) return response.status(500).json({ error: "Database not available" });
+        
+        const userRef = db.collection("users").doc(id);
+        const userDoc = await userRef.get();
+        
+        let profile = userDoc.exists ? userDoc.data().profile || {} : {};
+        profile.role = role;
+        
+        await userRef.set({ profile }, { merge: true });
+        
+        return response.json({ success: true, role });
+      } catch (err) {
+        console.error("Admin updateUserRole failed:", err);
         return response.status(500).json({ error: err.message });
       }
     },

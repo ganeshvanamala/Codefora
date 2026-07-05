@@ -76,6 +76,7 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.get("/admin/stats", adminAuth, adminController.getStats);
     router.get("/admin/rooms", adminAuth, adminController.getRooms);
     router.get("/admin/users", adminAuth, adminController.getUsers);
+    router.post("/admin/users/:id/role", adminAuth, adminController.updateUserRole);
     router.get("/admin/problems", adminAuth, adminController.getProblems);
     router.delete("/admin/rooms/:id", adminAuth, adminController.deleteRoom);
     router.post("/admin/rooms/:id/lock", adminAuth, adminController.toggleRoomLock);

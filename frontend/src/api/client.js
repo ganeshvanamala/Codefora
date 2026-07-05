@@ -1,14 +1,19 @@
 import { API_URL } from "../config";
+import { auth } from "../lib/firebase";
 
 async function request(path, options) {
-  const adminToken = localStorage.getItem("codefora_admin_token");
   const headers = { 
     "Content-Type": "application/json", 
     ...(options?.headers || {}) 
   };
   
-  if (adminToken) {
-    headers["x-admin-token"] = adminToken;
+  if (auth.currentUser) {
+    try {
+      const idToken = await auth.currentUser.getIdToken(false);
+      headers["Authorization"] = `Bearer ${idToken}`;
+    } catch (e) {
+      console.warn("Could not get Firebase ID token", e);
+    }
   }
 
   const response = await fetch(`${API_URL}${path}`, {
