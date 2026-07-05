@@ -10,6 +10,7 @@ export default function GlobalAiChat() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState([]);
   const [thinking, setThinking] = useState(false);
+  const [greetingText, setGreetingText] = useState("");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -36,7 +37,10 @@ export default function GlobalAiChat() {
           role: "assistant",
           text: randomGreeting
         }]);
-        setOpen(true);
+        setGreetingText(randomGreeting);
+        
+        // Auto-hide the floating greeting after 8 seconds
+        setTimeout(() => setGreetingText(""), 8000);
       }
     }
   }, [user, location.pathname]);
@@ -98,6 +102,19 @@ export default function GlobalAiChat() {
 
   return (
     <>
+      {/* Floating Glassmorphic Greeting */}
+      {!open && greetingText && (
+        <div className="ai-floating-greeting" onClick={() => { setOpen(true); setGreetingText(""); }}>
+          <div className="greeting-content">
+            <Sparkles size={16} className="greeting-icon" />
+            <p>{greetingText}</p>
+          </div>
+          <button className="greeting-close" onClick={(e) => { e.stopPropagation(); setGreetingText(""); }}>
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       <button
         type="button"
         className="problem-ai-fab"
