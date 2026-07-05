@@ -13,6 +13,11 @@ export class AiService {
     const messages = buildMessages({ prompt, file, code, context });
 
     try {
+      const page = context?.page || "";
+      if (page !== "Problems" && page !== "Room") {
+        return await askCodeforaAI(prompt);
+      }
+
       if (isCodeforaQuestion(prompt)) {
         return await askCodeforaAI(prompt);
       }

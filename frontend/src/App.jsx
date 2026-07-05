@@ -21,6 +21,7 @@ import { useAuth } from "./hooks/useAuth";
 import { API_URL } from "./config";
 
 import { socket } from "./lib/socket";
+import GlobalAiChat from "./components/GlobalAiChat";
 
 function LoaderManager({ children }) {
   const location = useLocation();
@@ -71,6 +72,7 @@ function LoaderManager({ children }) {
     <>
       <Loader visible={loading} />
       {children}
+      <GlobalAiChat />
       {showFooter && <Footer />}
     </>
   );
