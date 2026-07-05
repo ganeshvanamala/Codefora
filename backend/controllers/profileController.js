@@ -680,23 +680,16 @@ export function createProfileController() {
         const userName = userDoc.exists ? (userDoc.data().profile?.displayName || "Someone") : "Someone";
 
         if (action === "accept") {
-          const userFriends = userDoc.exists ? (userDoc.data().profile?.friends || []) : [];
-          if (!userFriends.some(f => f.id === senderId)) {
-            userFriends.push({ id: senderId, name: senderName });
-            const userProfile = userDoc.data().profile || {};
-            await userDocRef.set({ profile: { ...userProfile, friends: userFriends }, updatedAt: Date.now() }, { merge: true });
-          }
+          await userDocRef.set({ 
+            profile: { friends: admin.firestore.FieldValue.arrayUnion({ id: senderId, name: senderName }) }, 
+            updatedAt: Date.now() 
+          }, { merge: true });
 
           const senderDocRef = db.collection("users").doc(senderId);
-          const senderDocData = await senderDocRef.get();
-          if (senderDocData.exists) {
-            const senderFriends = senderDocData.data().profile?.friends || [];
-            if (!senderFriends.some(f => f.id === userId)) {
-              senderFriends.push({ id: userId, name: userName });
-              const senderProfile = senderDocData.data().profile || {};
-              await senderDocRef.set({ profile: { ...senderProfile, friends: senderFriends }, updatedAt: Date.now() }, { merge: true });
-            }
-          }
+          await senderDocRef.set({ 
+            profile: { friends: admin.firestore.FieldValue.arrayUnion({ id: userId, name: userName }) }, 
+            updatedAt: Date.now() 
+          }, { merge: true });
         }
 
         await notifRef.update({ status: action, read: true });
@@ -730,6 +723,9 @@ export function createProfileController() {
         const userDocRef = db.collection("users").doc(userId);
         const userDoc = await userDocRef.get();
         if (userDoc.exists) {
+          // Removing friends with arrayRemove requires the exact object match. 
+          // Since we don't have the exact friend name in this scope without fetching, 
+          // we filter the array manually. We will wrap this in a transaction in the future if high concurrency removal is needed.
           const userProfile = userDoc.data().profile || {};
           const userFriends = userProfile.friends || [];
           const newFriends = userFriends.filter(f => f.id !== friendId);

@@ -1,9 +1,25 @@
 import { Router } from "express";
 import { createCompilerRoutes } from "./compiler.js";
 import { adminAuth } from "../middleware/adminAuth.js";
+import rateLimit from "express-rate-limit";
+
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 60, // Limit each IP to 60 requests per windowMs
+  message: { error: "Too many requests from this IP, please try again later." }
+});
+
+const heavyLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 20, // Limit AI/Compiler to 20 requests per min
+  message: { error: "Rate limit exceeded for heavy operations." }
+});
 
 export function createApiRoutes({ roomController, executionController, aiController, emotionController, profileController, compilerController, adminController, problemController, feedbackController, notificationController }) {
   const router = Router();
+  
+  // Apply standard rate limit to all routes
+  router.use(apiLimiter);
 
   router.get("/health", (_request, response) => response.json({ ok: true }));
   router.get("/rooms", roomController.list);
@@ -29,10 +45,19 @@ export function createApiRoutes({ roomController, executionController, aiControl
     router.delete("/profiles/:userId/friends/:friendId", profileController.removeFriend);
   }
   if (compilerController) {
-    router.use("/compiler", createCompilerRoutes(compilerController));
+    router.use("/compiler", heavyLimiter, createCompilerRoutes(compilerController));
   }
-  router.post("/run", executionController.run);
-  router.post("/ai", aiController.ask);
+  router.post("/run", heavyLimiter, executionController.run);
+  
+  // Basic payload validation for AI route
+  const validateAiRequest = (req, res, next) => {
+    if (!req.body || typeof req.body.prompt !== 'string') {
+      return res.status(400).json({ error: "Invalid AI request payload" });
+    }
+    next();
+  };
+  
+  router.post("/ai", heavyLimiter, validateAiRequest, aiController.ask);
   
   // Emotion routes
   router.get("/emotions", emotionController.getEmotions);
