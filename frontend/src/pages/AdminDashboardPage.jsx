@@ -702,42 +702,75 @@ export default function AdminDashboardPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {users.filter(u => !userSearch || 
-                          (u.friendCode && u.friendCode.includes(userSearch)) || 
-                          (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
-                          (u.userId && u.userId.includes(userSearch))
-                        ).slice(0, activeTab === 'Dashboard' ? 5 : users.length).map(u => (
-                          <tr key={u.userId}>
-                            <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {u.photoURL ? (
-                                <img src={u.photoURL} alt={u.name} className="user-avatar-sm" style={{ objectFit: 'cover' }} />
-                              ) : u.emotionId ? (
-                                <img src={`${API_URL}/api/emotions/${u.emotionId}/image`} alt={u.name} className="user-avatar-sm" style={{ objectFit: 'cover', background: 'rgba(255,255,255,0.1)', padding: '2px' }} />
-                              ) : (
-                                <span className="user-avatar-sm">{u.name ? u.name[0].toUpperCase() : '?'}</span>
-                              )}
-                              {u.name}
-                            </td>
-                            <td style={{ fontFamily: 'monospace', color: 'var(--primary-accent)' }}>{u.friendCode || 'N/A'}</td>
-                            <td>{u.rating}</td>
-                            <td>{u.solved}</td>
-                            <td><span className={`status-badge ${u.status.toLowerCase()}`}>{u.status}</span></td>
-                            <td>
-                              <div className="admin-table-actions">
-                                <button className="admin-action-btn" title="View Profile" onClick={() => window.open(`/profile/${u.friendCode || u.userId}`, '_blank')}><Eye size={12} /></button>
-                                {isSuperAdmin && (
-                                  <button 
-                                    className={`admin-action-btn ${u.role === 'admin' ? 'danger' : 'warning'}`} 
-                                    title={u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
-                                    onClick={() => handleToggleRole(u.userId, u.role)}
-                                  >
-                                    <ShieldAlert size={12} />
-                                  </button>
+                        {(() => {
+                          const filtered = users.filter(u => !userSearch || 
+                            (u.friendCode && u.friendCode.includes(userSearch)) || 
+                            (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
+                            (u.userId && u.userId.includes(userSearch))
+                          );
+                          
+                          const admins = filtered.filter(u => u.role === 'admin' || u.email === 'ganeshvanamala16@gmail.com');
+                          const regulars = filtered.filter(u => u.role !== 'admin' && u.email !== 'ganeshvanamala16@gmail.com');
+                          
+                          const displayAdmins = activeTab === 'Dashboard' ? admins.slice(0, 5) : admins;
+                          const displayRegulars = activeTab === 'Dashboard' ? regulars.slice(0, 5) : regulars;
+                          
+                          const renderUserRow = (u) => (
+                            <tr key={u.userId}>
+                              <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {u.photoURL ? (
+                                  <img src={u.photoURL} alt={u.name} className="user-avatar-sm" style={{ objectFit: 'cover' }} />
+                                ) : u.emotionId ? (
+                                  <img src={`${API_URL}/api/emotions/${u.emotionId}/image`} alt={u.name} className="user-avatar-sm" style={{ objectFit: 'cover', background: 'rgba(255,255,255,0.1)', padding: '2px' }} />
+                                ) : (
+                                  <span className="user-avatar-sm">{u.name ? u.name[0].toUpperCase() : '?'}</span>
                                 )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                                {u.name}
+                              </td>
+                              <td style={{ fontFamily: 'monospace', color: 'var(--primary-accent)' }}>
+                                {u.friendCode && u.friendCode !== 'N/A' ? u.friendCode : u.userId}
+                              </td>
+                              <td>{u.rating}</td>
+                              <td>{u.solved}</td>
+                              <td><span className={`status-badge ${u.status.toLowerCase()}`}>{u.status}</span></td>
+                              <td>
+                                <div className="admin-table-actions">
+                                  <button className="admin-action-btn" title="View Profile" onClick={() => window.open(`/profile/${u.friendCode || u.userId}`, '_blank')}><Eye size={12} /></button>
+                                  {isSuperAdmin && u.email !== 'ganeshvanamala16@gmail.com' && (
+                                    <button 
+                                      className={`admin-action-btn ${u.role === 'admin' ? 'danger' : 'warning'}`} 
+                                      title={u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                                      onClick={() => handleToggleRole(u.userId, u.role)}
+                                    >
+                                      <ShieldAlert size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+
+                          return (
+                            <>
+                              {displayAdmins.length > 0 && (
+                                <>
+                                  <tr className="admin-table-section-header">
+                                    <td colSpan="6" style={{ background: 'rgba(255, 255, 255, 0.05)', fontWeight: 'bold', color: 'var(--primary-accent)', padding: '8px 12px' }}>Administrators</td>
+                                  </tr>
+                                  {displayAdmins.map(renderUserRow)}
+                                </>
+                              )}
+                              {displayRegulars.length > 0 && (
+                                <>
+                                  <tr className="admin-table-section-header">
+                                    <td colSpan="6" style={{ background: 'rgba(255, 255, 255, 0.02)', fontWeight: 'bold', color: 'rgba(255,255,255,0.6)', padding: '8px 12px' }}>Regular Users</td>
+                                  </tr>
+                                  {displayRegulars.map(renderUserRow)}
+                                </>
+                              )}
+                            </>
+                          );
+                        })()}
                       </tbody>
                     </table>
                   </div>
