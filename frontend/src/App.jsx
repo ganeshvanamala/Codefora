@@ -32,6 +32,10 @@ function LoaderManager({ children }) {
     // initial show
     setLoading(true);
     const t = setTimeout(() => setLoading(false), 1000);
+    
+    // Silently ping the Hugging Face space to wake it up from sleep/cold-start
+    fetch("https://roopasri06-codefora-lora-api.hf.space/").catch(() => {});
+    
     return () => clearTimeout(t);
   }, []);
 
