@@ -31,6 +31,7 @@ export function CommsPanel({
   participantsCount
 }) {
   const [chatText, setChatText] = useState("");
+  const [showStickers, setShowStickers] = useState(false);
   const chatScrollRef = useRef(null);
 
   const scrollToBottom = () => {
