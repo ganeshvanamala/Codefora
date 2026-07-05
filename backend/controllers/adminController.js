@@ -70,13 +70,13 @@ export function createAdminController(roomRepository) {
       try {
         if (!auth) return response.json([]);
 
-        const listUsersResult = await auth.listUsers(1000);
+        const listUsersResult = await auth.listUsers(100); // Limit to 100 to prevent crashing
         const authUsers = listUsersResult.users;
 
         // Fetch profiles from Firestore to get more info (like rating, solved count, etc)
         const profilesMap = {};
         if (db) {
-          const profilesSnap = await db.collection("users").get();
+          const profilesSnap = await db.collection("users").orderBy("updatedAt", "desc").limit(100).get();
           profilesSnap.forEach(doc => {
             profilesMap[doc.id] = doc.data().profile || {};
           });
