@@ -15,7 +15,9 @@ export async function adminAuth(request, response, next) {
     return next();
   }
 
-  console.log(`[DEBUG ADMIN AUTH] Mismatch! Expected length: ${staticSecret?.length}, Received length: ${cleanToken?.length}`);
+  console.log(`[DEBUG ADMIN AUTH] Mismatch!`);
+  console.log(`Expected (Render): "${staticSecret}"`);
+  console.log(`Received (Browser): "${cleanToken}"`);
 
   try {
     // 1. Verify the JWT
