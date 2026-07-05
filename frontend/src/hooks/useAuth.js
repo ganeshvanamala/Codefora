@@ -45,7 +45,6 @@ export const useAuth = () => {
       localStorage.setItem("codefora_role", "admin");
     } else {
       localStorage.setItem("codefora_role", "user");
-      localStorage.removeItem("codefora_admin_token");
     }
   }, [isAdmin, user]);
 

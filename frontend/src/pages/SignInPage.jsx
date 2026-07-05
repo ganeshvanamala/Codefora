@@ -42,7 +42,6 @@ export default function SignInPage() {
         navigate('/admin');
       } else {
         localStorage.setItem("codefora_role", "user");
-        localStorage.removeItem("codefora_admin_token");
         navigate('/home');
       }
     } catch (err) {
@@ -80,7 +79,6 @@ export default function SignInPage() {
 
     } else {
       localStorage.setItem("codefora_role", "user");
-      localStorage.removeItem("codefora_admin_token");
     }
 
     setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
