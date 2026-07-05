@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { MessageSquare, X, Bot, Sparkles, Send, User } from "lucide-react";
 import { api } from "../api/client";
+import { useAuth } from "../hooks/useAuth";
 
 export default function GlobalAiChat() {
   const location = useLocation();
@@ -9,6 +10,36 @@ export default function GlobalAiChat() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState([]);
   const [thinking, setThinking] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+    const isHome = location.pathname === "/" || location.pathname === "/home";
+    
+    if (isHome) {
+      const hasGreeted = sessionStorage.getItem(`greeted_${user.uid || user.id}`);
+      if (!hasGreeted) {
+        sessionStorage.setItem(`greeted_${user.uid || user.id}`, "true");
+        
+        const name = user.displayName || user.username || "friend";
+        const greetings = [
+          `Hi ${name}! 👋 How can I help you today?`,
+          `Hello ${name}! ✨ How was your day? Need help with any problems?`,
+          `Welcome back ${name}! 🚀 Ready to code? Let me know if you have any questions!`,
+          `Hey ${name}! 🤩 Ask me anything about Codefora!`
+        ];
+        
+        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+        
+        setMessages([{
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text: randomGreeting
+        }]);
+        setOpen(true);
+      }
+    }
+  }, [user, location.pathname]);
 
   // Hide on pages that have their own custom combo AI chat
   if (
