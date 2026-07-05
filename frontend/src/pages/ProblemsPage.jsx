@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { ArrowLeft, Bot, BookOpen, CheckCircle, Loader2, MessageCircle, MessageSquare, Play, Search, Send, Sparkles, Users, X, XCircle, Plus, Lock, Zap, Filter, List, LayoutGrid, Bookmark, Star, ChevronRight, ChevronLeft, ChevronDown, Hash, Code } from "lucide-react";
+import { ArrowLeft, Bot, BookOpen, CheckCircle, Loader2, MessageCircle, MessageSquare, Play, Search, Send, Sparkles, Users, X, XCircle, Plus, Lock, Zap, Filter, List, LayoutGrid, Bookmark, Star, ChevronRight, ChevronLeft, ChevronDown, Hash, Code, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { api } from "../api/client";
@@ -278,7 +278,12 @@ export function ProblemsPage() {
       });
       setProblemAiMessages((items) => [
         ...items,
-        { id: `problem-ai-a-${Date.now()}`, role: "assistant", text: result.suggestion || "No answer returned." }
+        { 
+          id: `problem-ai-a-${Date.now()}`, 
+          role: "assistant", 
+          text: result.suggestion || "No answer returned.",
+          feedbackNote: result.feedbackNote
+        }
       ]);
     } catch (error) {
       setProblemAiMessages((items) => [
@@ -806,15 +811,20 @@ export function ProblemsPage() {
           )}
           {problemAiMessages.map((message) => (
             <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`}>
-              <strong>{message.role === "user" ? "You" : "AI Assistant"}</strong>
+              <div className="avatar">
+                {message.role === "user" ? <User size={14} /> : <Bot size={14} />}
+              </div>
               <div className="msg-bubble">
                 <p>{message.text}</p>
+                {message.feedbackNote && <p className="feedback-note">{message.feedbackNote}</p>}
               </div>
             </div>
           ))}
           {problemAiThinking && (
             <div className="ai-message ai-message--assistant">
-              <strong>AI Assistant</strong>
+              <div className="avatar">
+                <Bot size={14} />
+              </div>
               <div className="msg-bubble"><p>Thinking...</p></div>
             </div>
           )}

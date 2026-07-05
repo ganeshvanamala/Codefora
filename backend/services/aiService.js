@@ -1,4 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createFirestore } from "../config/firebase.js";
+
+const db = createFirestore();
 
 const DEFAULT_OLLAMA_URL = "http://localhost:11434";
 const DEFAULT_OLLAMA_MODEL = "llama3.2:1b";
@@ -66,32 +69,104 @@ function isCodeforaQuestion(prompt) {
 
 async function askCodeforaAI(userMessage, context = {}) {
   const page = context.page;
-  const enrichedMessage = page 
+  const loraPrompt = page 
     ? `[System Note: The user is currently on the '${page}' page.]\n${userMessage}`
     : userMessage;
 
-  const response = await fetch(
-    "https://roopasri06-codefora-lora-api.hf.space/generate",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: enrichedMessage
-      })
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Codefora AI API failed: ${response.status}`);
+  // 1. Fetch raw facts from LoRA
+  let rawLoraText = "";
+  try {
+    const response = await fetch(
+      "https://roopasri06-codefora-lora-api.hf.space/generate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: loraPrompt })
+      }
+    );
+    if (!response.ok) throw new Error("LoRA API failed");
+    const data = await response.json();
+    rawLoraText = data.response || "No response";
+  } catch (error) {
+    console.error("LoRA Error:", error);
+    rawLoraText = "I couldn't reach the Codefora knowledge base right now.";
   }
 
-  const data = await response.json();
-  return {
-    suggestion: data.response || "No response from Codefora AI.",
-    mode: "codefora-lora"
-  };
+  // 2. If Groq is missing, fallback to raw LoRA
+  const groqKey = process.env.GROQ_API_KEY;
+  if (!groqKey) {
+    return { suggestion: rawLoraText, mode: "codefora-lora-raw" };
+  }
+
+  // 3. Chain to Groq for beautiful formatting and feedback analysis
+  const systemPrompt = `You are a cute, friendly, and helpful AI assistant for the Codefora platform.
+Codefora is a collaborative competitive programming platform where users can solve problems together in real-time rooms.
+The user is currently on the "${page || "Platform"}" page.
+The user asked: "${userMessage}"
+
+Our internal knowledge base provided this raw answer:
+"${rawLoraText}"
+
+Your Job:
+1. Rewrite the raw answer beautifully. Make it conversational, cute, and very user-friendly. Use emojis sparingly but effectively.
+2. Analyze the user's intent: Are they frustrated, reporting a bug, or requesting a feature? If so, we will automatically submit this to our feedback system.
+
+Respond STRICTLY with a JSON object in this format:
+{
+  "reply": "Your beautifully formatted Markdown response here",
+  "isFeedback": true or false,
+  "feedbackType": "feature", "bug", or "frustration" (or null if not feedback),
+  "summary": "A 1-sentence summary of their feedback/issue (or null)"
+}`;
+
+  try {
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${groqKey}`
+      },
+      body: JSON.stringify({
+        model: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
+        messages: [{ role: "system", content: systemPrompt }],
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      })
+    });
+
+    if (!groqRes.ok) throw new Error("Groq analysis failed");
+    
+    const groqPayload = await groqRes.json();
+    const rawContent = groqPayload.choices?.[0]?.message?.content || "{}";
+    const parsed = JSON.parse(rawContent);
+
+    let finalReply = parsed.reply || rawLoraText;
+
+    // 4. Handle Automated Feedback
+    if (parsed.isFeedback && db) {
+      finalReply += "\n\n*(P.S. I noticed you might be having trouble or suggesting a feature. I have automatically sent this to the Codefora team as feedback!)*";
+      
+      await db.collection("feedback").add({
+        username: context.username || "AI Auto-Feedback",
+        message: `[Auto-Submitted via AI Chat]\nSummary: ${parsed.summary}\nOriginal: "${userMessage}"`,
+        type: parsed.feedbackType || "general",
+        rating: 0,
+        createdAt: Date.now()
+      }).catch(err => console.error("Auto-feedback save error:", err));
+    }
+
+    return {
+      suggestion: finalReply,
+      mode: "codefora-lora-groq"
+    };
+  } catch (error) {
+    console.error("Groq Chain Error:", error);
+    // Fallback to raw LoRA if Groq fails
+    return {
+      suggestion: rawLoraText,
+      mode: "codefora-lora-raw-fallback"
+    };
+  }
 }
 
 function buildMessages({ prompt, file, code, context }) {

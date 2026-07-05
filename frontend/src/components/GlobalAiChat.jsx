@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { MessageSquare, X, Bot, Sparkles, Send } from "lucide-react";
+import { MessageSquare, X, Bot, Sparkles, Send, User } from "lucide-react";
 import { api } from "../api/client";
 
 export default function GlobalAiChat() {
@@ -48,7 +48,12 @@ export default function GlobalAiChat() {
       });
       setMessages((prev) => [
         ...prev,
-        { id: `a-${Date.now()}`, role: "assistant", text: result.suggestion || "No answer returned." }
+        { 
+          id: `a-${Date.now()}`, 
+          role: "assistant", 
+          text: result.suggestion || "No answer returned.",
+          feedbackNote: result.feedbackNote
+        }
       ]);
     } catch (error) {
       setMessages((prev) => [
@@ -92,15 +97,20 @@ export default function GlobalAiChat() {
           )}
           {messages.map((message) => (
             <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`}>
-              <strong>{message.role === "user" ? "You" : "AI Assistant"}</strong>
+              <div className="avatar">
+                {message.role === "user" ? <User size={14} /> : <Bot size={14} />}
+              </div>
               <div className="msg-bubble">
                 <p>{message.text}</p>
+                {message.feedbackNote && <p className="feedback-note">{message.feedbackNote}</p>}
               </div>
             </div>
           ))}
           {thinking && (
             <div className="ai-message ai-message--assistant">
-              <strong>AI Assistant</strong>
+              <div className="avatar">
+                <Bot size={14} />
+              </div>
               <div className="msg-bubble"><p>Thinking...</p></div>
             </div>
           )}
