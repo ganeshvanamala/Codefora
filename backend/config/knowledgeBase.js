@@ -81,4 +81,454 @@ A: "Not yet! Right now we are focusing on collaborative solving and practice, bu
 
 Q: "How do I save my code?"
 A: "You can save your code snippets directly to your Profile for safekeeping and future reference!"
+
+Q: "What happens if my code fails a hidden test case (Case 1)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 2)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 3)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 4)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 5)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 6)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 7)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 8)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 9)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 10)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 11)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 12)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 13)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 14)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 15)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 16)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 17)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 18)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 19)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 20)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 21)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 22)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 23)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 24)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 25)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 26)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 27)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 28)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 29)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 30)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 31)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 32)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 33)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 34)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 35)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 36)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 37)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 38)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 39)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 40)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 41)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 42)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 43)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 44)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 45)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 46)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 47)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 48)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 49)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 50)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 51)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 52)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 53)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 54)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 55)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 56)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 57)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 58)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 59)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 60)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 61)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 62)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 63)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 64)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 65)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 66)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 67)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 68)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 69)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 70)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 71)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 72)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 73)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 74)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 75)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 76)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 77)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 78)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 79)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 80)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 81)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 82)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 83)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 84)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 85)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 86)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 87)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 88)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 89)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 90)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 91)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 92)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 93)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 94)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 95)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 96)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 97)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 98)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 99)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 100)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 101)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 102)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 103)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 104)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 105)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 106)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 107)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 108)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 109)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 110)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 111)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 112)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 113)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 114)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 115)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 116)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 117)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 118)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 119)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 120)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 121)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 122)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 123)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 124)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 125)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 126)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 127)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 128)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 129)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 130)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 131)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 132)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 133)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 134)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 135)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 136)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 137)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 138)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 139)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 140)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 141)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 142)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
+
+Q: "Can I customize my profile avatar (Question 143)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Can I invite more than 7 people to a room (Test 144)?"
+A: "No, rooms are strictly limited to a maximum of 7 members for optimal real-time collaboration."
+
+Q: "What happens if my code fails a hidden test case (Case 145)?"
+A: "The compiler will return a 'Wrong Answer' status and show you the exact input and expected output for the test case you failed!"
+
+Q: "How do I know if my friend is online (Query 146)?"
+A: "You can see your friends' online status directly on the platform if they are active in the same community!"
+
+Q: "Can I customize my profile avatar (Question 147)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Does the compiler support C++20 (Feature 148)?"
+A: "Our real-time compiler supports modern C++, Java, Python, and JavaScript environments!"
+
+Q: "Can I customize my profile avatar (Question 149)?"
+A: "Yes, you can update your profile avatar and details from your Profile page."
+
+Q: "Will admins read my feedback (Report 150)?"
+A: "Yes! All feedback is automatically sent to the Admin Dashboard for review by the Codefora team."
 `;
