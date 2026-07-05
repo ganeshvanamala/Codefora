@@ -165,6 +165,12 @@ export function createProfileController() {
     save: async (request, response) => {
       const userId = String(request.params.userId || "").trim();
       const profile = request.body || {};
+      
+      // SECURITY FIX: Prevent malicious users from promoting themselves to admin via the API
+      if (profile.role !== undefined) {
+        delete profile.role;
+      }
+      
       if (!userId) return response.status(400).json({ error: "Missing userId" });
       try {
         if (!db || db.isMock) {
