@@ -101,11 +101,16 @@ export function createAdminController(roomRepository) {
             solved: profile.solvedCount || 0,
             status: globalOnlineUsers.has(user.uid) ? "Online" : "Offline",
             role: profile.role || "user",
-            createdAt: user.metadata.creationTime
+            createdAt: user.metadata.creationTime,
+            lastActive: user.metadata.lastSignInTime || user.metadata.creationTime
           });
         }
         
-        usersList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        usersList.sort((a, b) => {
+          if (a.status === "Online" && b.status !== "Online") return -1;
+          if (b.status === "Online" && a.status !== "Online") return 1;
+          return new Date(b.lastActive || 0) - new Date(a.lastActive || 0);
+        });
         return response.json(usersList);
       } catch (err) {
         console.error("Admin list users failed:", err);
