@@ -2247,6 +2247,30 @@ label {
   white-space: pre-wrap;
 }
 
+.ai-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.ai-fab-img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ai-header-img {
+  width: 18px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
 .ai-message .msg-bubble p + p {
   margin-top: 8px;
 }

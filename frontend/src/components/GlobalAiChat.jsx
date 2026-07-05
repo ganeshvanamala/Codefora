@@ -113,11 +113,11 @@ export default function GlobalAiChat() {
       <button
         type="button"
         className="problem-ai-fab"
-        onClick={() => setOpen(!open)}
+        onClick={() => { setOpen(!open); setGreetingText(""); }}
         aria-label={open ? "Close AI assistant" : "Open AI assistant"}
         style={{ zIndex: 9999 }}
       >
-        {open ? <X size={22} /> : <MessageSquare size={22} />}
+        {open ? <X size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
       </button>
 
       <aside className={`problem-ai-panel ${open ? "open" : ""}`} aria-hidden={!open} style={{ zIndex: 9999 }}>
@@ -141,7 +141,7 @@ export default function GlobalAiChat() {
           {messages.map((message) => (
             <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`}>
               <div className="avatar">
-                {message.role === "user" ? <User size={14} /> : <Bot size={14} />}
+                {message.role === "user" ? <User size={14} /> : <img src="/ai-icon.png" alt="AI" className="ai-avatar-img" />}
               </div>
               <div className="msg-bubble">
                 <p>{message.text}</p>
@@ -152,7 +152,7 @@ export default function GlobalAiChat() {
           {thinking && (
             <div className="ai-message ai-message--assistant">
               <div className="avatar">
-                <Bot size={14} />
+                <img src="/ai-icon.png" alt="AI" className="ai-avatar-img" />
               </div>
               <div className="msg-bubble"><p>Thinking...</p></div>
             </div>

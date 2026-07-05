@@ -786,15 +786,15 @@ export function ProblemsPage() {
         type="button"
         className="problem-ai-fab tour-problem-ai-chat"
         onClick={() => setProblemAiOpen(!problemAiOpen)}
-        aria-label={problemAiOpen ? "Close problem AI assistant" : "Open problem AI assistant"}
+        aria-label={problemAiOpen ? "Close AI assistant" : "Open AI assistant"}
       >
-        {problemAiOpen ? <X size={22} /> : <MessageSquare size={22} />}
+        {problemAiOpen ? <X size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
       </button>
 
       <aside className={`problem-ai-panel ${problemAiOpen ? "open" : ""}`} aria-hidden={!problemAiOpen}>
         <div className="problem-ai-header">
           <div>
-            <span><Bot size={15} /> AI Assistant</span>
+            <img src="/ai-icon.png" alt="AI" className="ai-header-img" />
             <strong>{selectedProblem ? selectedProblem.title : "Problem Library"}</strong>
           </div>
           <button type="button" onClick={() => setProblemAiOpen(false)} aria-label="Close problem AI">
@@ -812,7 +812,7 @@ export function ProblemsPage() {
           {problemAiMessages.map((message) => (
             <div key={message.id} className={`ai-message ${message.role === "user" ? "ai-message--user" : "ai-message--assistant"}`}>
               <div className="avatar">
-                {message.role === "user" ? <User size={14} /> : <Bot size={14} />}
+                {message.role === "user" ? <User size={14} /> : <img src="/ai-icon.png" alt="AI" className="ai-avatar-img" />}
               </div>
               <div className="msg-bubble">
                 <p>{message.text}</p>
@@ -823,7 +823,7 @@ export function ProblemsPage() {
           {problemAiThinking && (
             <div className="ai-message ai-message--assistant">
               <div className="avatar">
-                <Bot size={14} />
+                <img src="/ai-icon.png" alt="AI" className="ai-avatar-img" />
               </div>
               <div className="msg-bubble"><p>Thinking...</p></div>
             </div>
