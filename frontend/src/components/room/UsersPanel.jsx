@@ -15,6 +15,12 @@ export function UsersPanel({
 }) {
   const [openMenuFor, setOpenMenuFor] = useState(null);
   const [expandedUser, setExpandedUser] = useState(null);
+  const [toastMsg, setToastMsg] = useState("");
+  
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
 
   // Invite Friends State
   const { user: currentUser } = useAuth();
@@ -46,7 +52,7 @@ export function UsersPanel({
 
   const handleInvite = async (friend) => {
     if (friend.presence === 'in-room') {
-      alert("User is already in a room!");
+      showToast("User is already in a room!");
       return;
     }
     setInvitingFriendId(friend.id);
@@ -61,9 +67,9 @@ export function UsersPanel({
           inviterName: currentUser.displayName || currentUser.email?.split('@')[0] || 'A friend'
         })
       });
-      alert("Invite sent!");
+      showToast("Invite sent!");
     } catch(e) {
-      alert("Failed to send invite");
+      showToast("Failed to send invite");
     } finally {
       setInvitingFriendId(null);
     }
@@ -349,7 +355,7 @@ export function UsersPanel({
                           reporterId: localStorage.getItem("userId") || "Unknown",
                           reporterName: localStorage.getItem("username") || "Anonymous"
                         })
-                      }).then(() => alert("User reported to admin.")).catch(console.error);
+                      }).then(() => showToast("User reported to admin.")).catch(console.error);
                     }}
                   >
                     <Shield size={12} /> Report User
@@ -486,6 +492,12 @@ export function UsersPanel({
           </div>
         )}
       </div>
+
+      {toastMsg && (
+        <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-accent)', color: '#000', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', zIndex: 9999, boxShadow: '0 4px 12px rgba(0,0,0,0.5)', animation: 'fadeInOut 3s ease-in-out', whiteSpace: 'nowrap' }}>
+          {toastMsg}
+        </div>
+      )}
     </aside>
   );
 }

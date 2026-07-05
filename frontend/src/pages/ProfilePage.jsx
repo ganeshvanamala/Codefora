@@ -19,6 +19,7 @@ import defaultAvatar from "../../assets/scene1.jpeg"; // Fallback banner
 function FriendProfileItem({ friend, navigate }) {
   const [profile, setProfile] = useState(null);
 
+
   useEffect(() => {
     let active = true;
     getProfile(friend.id).then(data => {
@@ -66,6 +67,12 @@ export function ProfilePage() {
   
   // Real Profile Data
   const [profileData, setProfileData] = useState({});
+  const [toastMsg, setToastMsg] = useState("");
+  
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [selectedEmotion, setSelectedEmotion] = useState("");
@@ -225,9 +232,9 @@ export function ProfilePage() {
       });
       setIsReportModalOpen(false);
       setReportReason('');
-      alert('Report submitted successfully. Our team will review it shortly.');
+      showToast('Report submitted successfully. Our team will review it shortly.');
     } catch (err) {
-      alert('Failed to submit report: ' + err.message);
+      showToast('Failed to submit report: ' + err.message);
     } finally {
       setIsReporting(false);
     }
@@ -313,7 +320,7 @@ export function ProfilePage() {
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(profileData.friendCode);
-                      alert("USER ID copied to clipboard!");
+                      showToast("USER ID copied to clipboard!");
                     }}
                     style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
                     title="Copy USER ID"
