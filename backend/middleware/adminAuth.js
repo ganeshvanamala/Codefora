@@ -8,8 +8,10 @@ export async function adminAuth(request, response, next) {
   }
 
   // Allow static secret for simple local dev, but strictly require JWT for prod
-  const staticSecret = process.env.ADMIN_SECRET;
-  if (staticSecret && token === staticSecret) {
+  const staticSecret = process.env.ADMIN_SECRET ? process.env.ADMIN_SECRET.trim() : null;
+  const cleanToken = token ? token.trim() : null;
+  
+  if (staticSecret && cleanToken === staticSecret) {
     return next();
   }
 
