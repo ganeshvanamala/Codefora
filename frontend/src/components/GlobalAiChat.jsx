@@ -15,6 +15,12 @@ export default function GlobalAiChat() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    const handleToggle = () => setOpen((prev) => !prev);
+    window.addEventListener("toggleGlobalAiChat", handleToggle);
+    return () => window.removeEventListener("toggleGlobalAiChat", handleToggle);
+  }, []);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
 
@@ -129,15 +135,17 @@ export default function GlobalAiChat() {
         </div>
       )}
 
-      <button
-        type="button"
-        className="problem-ai-fab"
-        onClick={() => { setOpen(!open); setGreetingText(""); }}
-        aria-label={open ? "Close AI assistant" : "Open AI assistant"}
-        style={{ zIndex: 9999 }}
-      >
-        {open ? <X size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
-      </button>
+      {!location.pathname.startsWith("/code") && (
+        <button
+          type="button"
+          className="problem-ai-fab"
+          onClick={() => { setOpen(!open); setGreetingText(""); }}
+          aria-label={open ? "Close AI assistant" : "Open AI assistant"}
+          style={{ zIndex: 9999 }}
+        >
+          {open ? <X size={22} /> : <img src="/ai-icon.png" alt="AI" className="ai-fab-img" />}
+        </button>
+      )}
 
       <aside className={`problem-ai-panel ${open ? "open" : ""}`} aria-hidden={!open} style={{ zIndex: 9999 }}>
         <div className="problem-ai-header">
