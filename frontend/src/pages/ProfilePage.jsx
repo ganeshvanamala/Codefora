@@ -67,6 +67,7 @@ export function ProfilePage() {
   
   // Real Profile Data
   const [profileData, setProfileData] = useState({});
+  const [myFriends, setMyFriends] = useState([]);
   const [toastMsg, setToastMsg] = useState("");
   
   const showToast = (msg) => {
@@ -114,6 +115,10 @@ export function ProfilePage() {
     async function loadProfile() {
       setLoadingProfile(true);
       const profile = await getProfile(targetUserId).catch(() => ({}));
+      if (!isOwnProfile && user?.uid) {
+        const myProfile = await getProfile(user.uid).catch(() => ({}));
+        if (active && myProfile.friends) setMyFriends(myProfile.friends);
+      }
       if (!active) return;
       setProfileData(profile || {});
       setDisplayName(profile.displayName || (isOwnProfile ? user?.displayName : "") || "");
@@ -137,7 +142,13 @@ export function ProfilePage() {
   const globalRank = stats.globalRank || "-";
   
   // Real Friends & Activities (currently empty)
-  const friends = profileData.friends || [];
+  const rawFriends = profileData.friends || [];
+  const friends = useMemo(() => {
+    if (isOwnProfile) return rawFriends;
+    if (!user) return [];
+    const myFriendIds = new Set(myFriends.map(f => f.id));
+    return rawFriends.filter(f => myFriendIds.has(f.id));
+  }, [isOwnProfile, user, rawFriends, myFriends]);
   const activities = profileData.activities || [];
 
   const openEditModal = () => {
@@ -729,7 +740,7 @@ export function ProfilePage() {
         <div className="modal-overlay" onClick={() => setIsFriendsModalOpen(false)}>
           <div className="modal-content friends-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', height: '600px', display: 'flex', flexDirection: 'column', padding: 0 }}>
             <div className="modal-header" style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <h2>All Friends</h2>
+              <h2>{isOwnProfile ? "All Friends" : "Mutual Friends"}</h2>
               <button className="close-btn" onClick={() => setIsFriendsModalOpen(false)}>
                 <X size={20} />
               </button>
