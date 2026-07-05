@@ -37,7 +37,7 @@ export default function GlobalAiChat() {
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text: input }]);
 
     try {
-      const result = await api.request("/api/ai/ask", {
+      const result = await api.request("/api/ai", {
         method: "POST",
         body: JSON.stringify({
           prompt: input,
