@@ -148,6 +148,7 @@ export function PlaygroundPage() {
   useEffect(() => {
     if (activeFile) {
       localStorage.setItem("current_code", activeFile.code || "");
+      localStorage.setItem("current_language", activeFile.language || "");
       localStorage.setItem("current_problem_title", `Playground File: ${activeFile.name}`);
     }
   }, [activeFile]);

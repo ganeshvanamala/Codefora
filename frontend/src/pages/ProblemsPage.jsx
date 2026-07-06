@@ -71,6 +71,16 @@ export function ProblemsPage() {
   const code = codeByLanguage[language] || selectedLanguage.template;
 
   useEffect(() => {
+    localStorage.setItem("current_code", code || "");
+    localStorage.setItem("current_language", language || "");
+    if (selectedProblem) {
+      localStorage.setItem("current_problem_title", `Problem: ${selectedProblem.title}`);
+    } else {
+      localStorage.setItem("current_problem_title", "");
+    }
+  }, [code, language, selectedProblem]);
+
+  useEffect(() => {
     async function loadProblems() {
       try {
         setLoadingProblems(true);

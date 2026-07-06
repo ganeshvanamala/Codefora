@@ -221,6 +221,7 @@ export function RoomPage() {
   useEffect(() => {
     if (activeFile) {
       localStorage.setItem("current_code", activeFile.code || "");
+      localStorage.setItem("current_language", activeFile.language || "");
       localStorage.setItem("current_problem_title", `Room File: ${activeFile.name}`);
     }
   }, [activeFile]);
@@ -822,12 +823,14 @@ export function RoomPage() {
                 permissions={permissions}
                 onChange={(val) => {
                   localStorage.setItem("current_code", val || "");
+                  localStorage.setItem("current_language", activeFile?.language || "");
                   localStorage.setItem("current_problem_title", `Room File: ${activeName}`);
                   actions.updateCode(val);
                 }}
                 onUpdateFileCode={(filename, code) => {
                   if (filename === activeName) {
                     localStorage.setItem("current_code", code || "");
+                    localStorage.setItem("current_language", activeFile?.language || "");
                     localStorage.setItem("current_problem_title", `Room File: ${filename}`);
                   }
                   actions.updateFileCode(filename, code);

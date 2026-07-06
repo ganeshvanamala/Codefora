@@ -56,10 +56,7 @@ export default function GlobalAiChat() {
     }
   }, [user, location.pathname]);
 
-  // Hide on pages that have their own custom combo AI chat (ProblemsPage)
-  if (location.pathname.startsWith("/problems")) {
-    return null;
-  }
+
 
   const getPageName = () => {
     const path = location.pathname;
@@ -85,6 +82,7 @@ export default function GlobalAiChat() {
           context: {
             page: getPageName(),
             code: localStorage.getItem("current_code") || "",
+            language: localStorage.getItem("current_language") || "",
             problemTitle: localStorage.getItem("current_problem_title") || "",
           }
         })
