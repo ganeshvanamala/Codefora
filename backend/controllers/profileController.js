@@ -336,7 +336,7 @@ export function createProfileController() {
           if (!users[userId].profile.activities) users[userId].profile.activities = [];
           
           users[userId].profile.activities.unshift({ ...activity, timestamp: Date.now() });
-          users[userId].profile.activities = users[userId].profile.activities.slice(0, 10);
+          users[userId].profile.activities = users[userId].profile.activities.slice(0, 1000);
           users[userId].updatedAt = Date.now();
           await writeLocalUsers(users);
           return;
@@ -347,7 +347,7 @@ export function createProfileController() {
         const data = doc.exists ? doc.data() : { profile: { activities: [] } };
         const activities = data.profile?.activities || [];
         activities.unshift({ ...activity, timestamp: Date.now() });
-        const cappedActivities = activities.slice(0, 10);
+        const cappedActivities = activities.slice(0, 1000);
         
         await docRef.set({ 
           profile: { ...data.profile, activities: cappedActivities },
@@ -385,7 +385,7 @@ export function createProfileController() {
               subtext: "Accepted 100%",
               timestamp: Date.now()
             });
-            profile.activities = profile.activities.slice(0, 10);
+            profile.activities = profile.activities.slice(0, 1000);
             
             users[userId].updatedAt = Date.now();
             await writeLocalUsers(users);
@@ -416,7 +416,7 @@ export function createProfileController() {
             subtext: "Accepted 100%",
             timestamp: Date.now()
           });
-          const cappedActivities = activities.slice(0, 10);
+          const cappedActivities = activities.slice(0, 1000);
           await docRef.set({ profile: { activities: cappedActivities } }, { merge: true });
         }
         
