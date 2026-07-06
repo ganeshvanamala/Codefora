@@ -66,12 +66,7 @@ export function PlaygroundPage() {
     }
   }, [location.state]);
 
-  useEffect(() => {
-    if (activeFile) {
-      localStorage.setItem("current_code", activeFile.code || "");
-      localStorage.setItem("current_problem_title", `Playground File: ${activeFile.name}`);
-    }
-  }, [activeFile]);
+
 
   const handleCreateFile = () => {
     const selectedType = FILE_TYPES.find((type) => type.language === newFileType) || FILE_TYPES[0];
@@ -149,6 +144,13 @@ export function PlaygroundPage() {
 
   const [previewTarget, setPreviewTarget] = useState(null);
   const activeFile = files.find(f => f.name === activeName) || files[0];
+
+  useEffect(() => {
+    if (activeFile) {
+      localStorage.setItem("current_code", activeFile.code || "");
+      localStorage.setItem("current_problem_title", `Playground File: ${activeFile.name}`);
+    }
+  }, [activeFile]);
   const previewDoc = buildPreview(files, previewTarget);
 
   const handleCodeChange = (value) => {
