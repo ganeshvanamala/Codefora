@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
+import { copyToClipboard } from "../lib/clipboard";
 import EmotionPicker from "../components/EmotionPicker";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, saveProfile } from "../api/client";
@@ -329,9 +330,13 @@ export function ProfilePage() {
                 USER ID: {profileData.friendCode || "..."}
                 {profileData.friendCode && (
                   <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(profileData.friendCode);
-                      showToast("USER ID copied to clipboard!");
+                    onClick={async () => {
+                      try {
+                        await copyToClipboard(profileData.friendCode);
+                        showToast("USER ID copied to clipboard!");
+                      } catch (err) {
+                        showToast("Failed to copy USER ID.");
+                      }
                     }}
                     style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
                     title="Copy USER ID"

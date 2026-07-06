@@ -13,6 +13,7 @@ import { FloatingProblem } from "../components/room/FloatingProblem";
 import { ProblemPanel } from "../components/room/ProblemPanel";
 import { FilesPanel } from "../components/room/FilesPanel";
 import { NotesModal } from "../components/room/NotesModal";
+import { copyToClipboard } from "../lib/clipboard";
 import { TimeTravelModal } from "../components/room/TimeTravelModal";
 import { LeftNavBar } from "../components/room/LeftNavBar";
 import { FooterBar } from "../components/room/FooterBar";
@@ -417,7 +418,11 @@ export function RoomPage() {
       // Ctrl + Shift + C -> Copy Room Invite Link
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
-        navigator.clipboard.writeText(window.location.href);
+        copyToClipboard(window.location.href).then(() => {
+          alert("Invite link copied!");
+        }).catch(() => {
+          alert("Failed to copy invite link.");
+        });
         return;
       }
     };
