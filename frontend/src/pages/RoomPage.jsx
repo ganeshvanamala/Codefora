@@ -22,7 +22,10 @@ import { WebPreviewFull } from "../components/room/WebPreviewFull";
 import { problems } from "../data/problems";
 import { getUsername, saveUsername } from "../lib/navigation";
 import { useAuth } from "../hooks/useAuth";
+import { api } from "../api/client";
 import loopsbg from "../../assets/loopsbgimage.jpeg";
+import { TargetViewer } from "../components/room/TargetViewer";
+import { ScoreModal } from "../components/room/ScoreModal";
 
 export function RoomPage() {
   const { roomId } = useParams();
@@ -46,6 +49,7 @@ export function RoomPage() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isNotesView = searchParams.get("view") === "notes";
+
 
   const [problemSearch, setProblemSearch] = useState("");
   const [problemDifficulty, setProblemDifficulty] = useState("All");
@@ -93,6 +97,38 @@ export function RoomPage() {
     compiler,
     actions
   } = useRoomSession(roomId, joinName, user?.uid, isBypassingBlocker);
+
+  const isChallenge = room?.isChallenge || location.state?.challengeMode;
+  const targetImage = room?.targetImage || location.state?.targetImage;
+  const difficulty = location.state?.difficulty || 'easy';
+  const [isScoring, setIsScoring] = useState(false);
+  const [scoreData, setScoreData] = useState(null);
+
+  const handleChallengeSubmit = async () => {
+    setIsScoring(true);
+    try {
+      const htmlFile = files.find(f => f.name.endsWith('.html'));
+      const cssFile = files.find(f => f.name.endsWith('.css'));
+      let userCode = htmlFile?.code || '';
+      if (cssFile?.code) {
+        if (userCode.includes('</head>')) {
+          userCode = userCode.replace('</head>', `<style>${cssFile.code}</style></head>`);
+        } else {
+          userCode += `<style>${cssFile.code}</style>`;
+        }
+      }
+
+      const data = await api.request("/api/challenge/submit", {
+        method: 'POST',
+        body: JSON.stringify({ userCode, targetImage })
+      });
+      setScoreData(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsScoring(false);
+    }
+  };
 
   const [floatingMsgs, setFloatingMsgs] = useState([]);
   const [consoleHeight, setConsoleHeight] = useState(280);
@@ -509,13 +545,17 @@ export function RoomPage() {
         actions.runCode(stdin);
       }}
       onSubmit={() => {
-        setIsConsoleOpen(true);
-        actions.submitCode(activeProblem);
-        setShowTimeTravel(true);
+        if (isChallenge) {
+          handleChallengeSubmit();
+        } else {
+          setIsConsoleOpen(true);
+          actions.submitCode(activeProblem);
+          setShowTimeTravel(true);
+        }
       }}
       isRunningCode={compiler.isRunningCode}
-      isSubmittingCode={compiler.isSubmittingCode}
-      canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
+      isSubmittingCode={compiler.isSubmittingCode || isScoring}
+      canSubmit={(!!activeProblem || isChallenge) && !compiler.isRunningCode && !compiler.isSubmittingCode}
       timer={timer}
       permissions={permissions}
       actions={actions}
@@ -586,9 +626,13 @@ export function RoomPage() {
                 >
                   <PanelLeftClose size={16} />
                 </button>
-                {activeProblem ? (
+                {activeProblem || isChallenge ? (
                   <>
-                    <ProblemPanel problem={activeProblem} />
+                    {isChallenge ? (
+                      <TargetViewer targetImage={targetImage} difficulty={difficulty} />
+                    ) : (
+                      <ProblemPanel problem={activeProblem} />
+                    )}
                     {permissions.isHost && (
                       <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", background: 'transparent', marginTop: 'auto' }}>
                         <button 
@@ -861,13 +905,17 @@ export function RoomPage() {
                   actions.runCode(stdin);
                 }}
                 onSubmit={() => {
-                  setIsConsoleOpen(true);
-                  actions.submitCode(activeProblem);
-                  setShowTimeTravel(true);
+                  if (isChallenge) {
+                    handleChallengeSubmit();
+                  } else {
+                    setIsConsoleOpen(true);
+                    actions.submitCode(activeProblem);
+                    setShowTimeTravel(true);
+                  }
                 }}
                 isRunningCode={compiler.isRunningCode}
-                isSubmittingCode={compiler.isSubmittingCode}
-                canSubmit={!!activeProblem && !compiler.isRunningCode && !compiler.isSubmittingCode}
+                isSubmittingCode={compiler.isSubmittingCode || isScoring}
+                canSubmit={(!!activeProblem || isChallenge) && !compiler.isRunningCode && !compiler.isSubmittingCode}
               />
               {isConsoleOpen && (
                 <ConsolePanel
@@ -910,11 +958,16 @@ export function RoomPage() {
                     actions.runCode(stdin);
                   }}
                   onSubmit={() => {
-                    actions.submitCode(activeProblem);
-                    setShowTimeTravel(true);
+                    if (isChallenge) {
+                      handleChallengeSubmit();
+                    } else {
+                      actions.submitCode(activeProblem);
+                      setShowTimeTravel(true);
+                    }
                   }}
                   activeProblem={activeProblem}
                   canSubmit={permissions.canEdit}
+                  isSubmitting={isScoring}
                 />
               )}
             </div>
@@ -1047,6 +1100,18 @@ export function RoomPage() {
               </div>
             </div>
           </div>
+        )}
+        
+        {/* Challenge Score Modal */}
+        {scoreData && (
+          <ScoreModal 
+            isOpen={!!scoreData}
+            onClose={() => setScoreData(null)}
+            score={scoreData.score}
+            feedback={scoreData.feedback}
+            userImage={scoreData.userImage}
+            targetImage={targetImage}
+          />
         )}
       </div>
     </div>

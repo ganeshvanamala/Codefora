@@ -328,6 +328,7 @@ export function Navbar() {
         <NavLink to="/home" end style={linkStyle}>Home</NavLink>
         <NavLink to="/rooms" style={linkStyle}>Rooms</NavLink>
         <NavLink to="/problems" style={linkStyle}>Problems</NavLink>
+        <NavLink to="/challenges" style={linkStyle}>Challenges</NavLink>
         <NavLink to="/playground" style={linkStyle}>Playground</NavLink>
         <NavLink to="/feedback" style={linkStyle}>Feedback</NavLink>
         {isAdmin && <NavLink to="/admin" style={linkStyle}>Dashboard</NavLink>}

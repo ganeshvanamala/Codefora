@@ -2,6 +2,7 @@ import { Router } from "express";
 import { createCompilerRoutes } from "./compiler.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 import rateLimit from "express-rate-limit";
+import { generateChallenge, submitChallenge } from "../controllers/challengeController.js";
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
@@ -63,6 +64,10 @@ export function createApiRoutes({ roomController, executionController, aiControl
   router.get("/emotions", emotionController.getEmotions);
   router.get("/emotions/:emotionId/image", emotionController.getEmotionImage);
   router.post("/emotions/init", emotionController.initEmotions);
+
+  // Challenge Routes
+  router.post("/challenge/generate", generateChallenge);
+  router.post("/challenge/submit", submitChallenge);
 
   // Feedback routes
   router.post("/feedback", feedbackController.submit);

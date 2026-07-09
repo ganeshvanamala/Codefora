@@ -4,6 +4,7 @@ import { useTheme } from "./hooks/useTheme";
 import HomePage from "./pages/HomePage";
 import SignInPage from "./pages/SignInPage";
 import { ProblemsPage } from "./pages/ProblemsPage";
+import { ChallengesPage } from "./pages/ChallengesPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RoomsPage } from "./pages/RoomsPage";
 import { RoomPage } from "./pages/RoomPage";
@@ -95,6 +96,7 @@ const router = createBrowserRouter([
       { path: "home", element: <HomePage /> },
       { path: "rooms", element: <RoomsPage /> },
       { path: "problems", element: <ProblemsPage /> },
+      { path: "challenges", element: <ChallengesPage /> },
       { path: "admin", element: <AdminDashboardPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "profile/:userId", element: <ProfilePage /> },
