@@ -201,14 +201,25 @@ async function renderHtmlToImage(html) {
   try {
     browser = await puppeteer.launch({
       headless: "new",
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--single-process'
+      ]
     });
     const page = await browser.newPage();
     
     // Set a standard viewport size for the challenge
     await page.setViewport({ width: 800, height: 600 });
     
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Use networkidle2 so it doesn't hang forever if the AI generated a broken external link/font
+    await page.setContent(html, { 
+      waitUntil: 'networkidle2',
+      timeout: 25000 // Give it enough time on slow cloud instances
+    });
     
     // Take screenshot as base64 string
     const screenshotBuffer = await page.screenshot({ type: 'png', encoding: 'base64' });

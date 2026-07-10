@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
+import { Footer } from "../components/Footer";
 import { BrandButton } from "../components/BrandButton";
 import { LayoutGrid, Loader2, Sparkles, Trophy } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
@@ -156,6 +157,7 @@ export function ChallengesPage() {
           
         </div>
       </div>
+      <Footer />
     </main>
   );
 }
