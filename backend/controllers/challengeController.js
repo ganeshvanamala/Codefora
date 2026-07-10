@@ -199,9 +199,8 @@ export const submitChallenge = async (req, res) => {
 async function renderHtmlToImage(html) {
   let browser = null;
   try {
-    browser = await puppeteer.launch({
+    const launchConfig = {
       headless: "new",
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
       args: [
         '--no-sandbox', 
         '--disable-setuid-sandbox',
@@ -209,7 +208,13 @@ async function renderHtmlToImage(html) {
         '--disable-gpu',
         '--single-process'
       ]
-    });
+    };
+
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchConfig.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+
+    browser = await puppeteer.launch(launchConfig);
     const page = await browser.newPage();
     
     // Set a standard viewport size for the challenge
