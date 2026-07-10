@@ -378,7 +378,6 @@ export function ProblemsPage() {
                       <th>Problem</th>
                       <th>Difficulty</th>
                       <th>Acceptance</th>
-                      <th>Solved</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -398,11 +397,6 @@ export function ProblemsPage() {
                         <td>
                           <div className="problems-v2-meta-cell star">
                             <Star size={14} fill="#F59E0B" /> {problem.acceptance}%
-                          </div>
-                        </td>
-                        <td>
-                          <div className="problems-v2-meta-cell">
-                            <Users size={14} /> {Math.floor(problem.acceptance * 3.4)}
                           </div>
                         </td>
                         <td>

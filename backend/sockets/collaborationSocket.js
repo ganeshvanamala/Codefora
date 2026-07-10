@@ -215,7 +215,7 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       broadcastRooms();
     });
 
-    socket.on("room:set_problem", ({ roomId, problemId }) => {
+    socket.on("room:set_problem", ({ roomId, problemId, targetImage }) => {
       const room = roomRepository.findById(roomId);
       const user = room && roomService.findUser(room, socket.id);
       const authorized = Boolean(room && ((user && user.role === "Host") || (user?.userId && room.ownerUserId && user.userId === room.ownerUserId)));
@@ -223,6 +223,9 @@ export function registerCollaborationSocket(io, { roomRepository, roomService, p
       if (!room || !authorized) return;
 
       room.problemId = problemId;
+      if (targetImage) {
+        room.targetImage = targetImage;
+      }
       roomRepository.save(room).catch((error) => console.warn(`Room persistence failed: ${error.message}`));
       io.to(roomId).emit("room:state", roomService.snapshot(room));
       broadcastRooms();

@@ -10,9 +10,6 @@ export function TargetViewer({ targetImage, difficulty }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#3b82f6', fontWeight: '600' }}>
           <Target size={18} /> Target Design ({difficulty})
         </div>
-        <button className="icon-btn" title="Expand">
-          <Maximize2 size={16} />
-        </button>
       </div>
       <div style={{ flex: 1, padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'auto' }}>
         <img 

@@ -102,7 +102,25 @@ export function RoomPage() {
   const targetImage = room?.targetImage || location.state?.targetImage;
   const difficulty = location.state?.difficulty || 'easy';
   const [isScoring, setIsScoring] = useState(false);
+  const [isGeneratingChallenge, setIsGeneratingChallenge] = useState(false);
   const [scoreData, setScoreData] = useState(null);
+
+  const handleGenerateNewChallenge = async () => {
+    setIsGeneratingChallenge(true);
+    try {
+      const targetPayload = await api.request("/api/challenge/generate", {
+        method: "POST",
+        body: JSON.stringify({ difficulty })
+      });
+      if (targetPayload.targetImage) {
+        actions.setProblem("ui-battle", targetPayload.targetImage);
+      }
+    } catch (err) {
+      alert("Failed to generate new challenge: " + err.message);
+    } finally {
+      setIsGeneratingChallenge(false);
+    }
+  };
 
   const handleChallengeSubmit = async () => {
     setIsScoring(true);
@@ -639,9 +657,10 @@ export function RoomPage() {
                           <button 
                             className="button secondary" 
                             style={{ width: "100%" }}
-                            onClick={() => window.location.href = "/challenges"}
+                            disabled={isGeneratingChallenge}
+                            onClick={handleGenerateNewChallenge}
                           >
-                            New Challenge
+                            {isGeneratingChallenge ? "Generating..." : "New Challenge"}
                           </button>
                         ) : (
                           <button 
