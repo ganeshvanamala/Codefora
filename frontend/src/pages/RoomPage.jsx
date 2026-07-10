@@ -635,13 +635,23 @@ export function RoomPage() {
                     )}
                     {permissions.isHost && (
                       <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", background: 'transparent', marginTop: 'auto' }}>
-                        <button 
-                          className="button secondary" 
-                          style={{ width: "100%" }}
-                          onClick={() => actions.setProblem(null)}
-                        >
-                          Change Problem
-                        </button>
+                        {isChallenge ? (
+                          <button 
+                            className="button secondary" 
+                            style={{ width: "100%" }}
+                            onClick={() => window.location.href = "/challenges"}
+                          >
+                            New Challenge
+                          </button>
+                        ) : (
+                          <button 
+                            className="button secondary" 
+                            style={{ width: "100%" }}
+                            onClick={() => actions.setProblem(null)}
+                          >
+                            Change Problem
+                          </button>
+                        )}
                       </div>
                     )}
                   </>

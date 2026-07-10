@@ -47,7 +47,7 @@ Website Type to Generate: ${randomArchetype}
 Requirements:
 1. ONLY return the raw HTML file. NO markdown formatting, NO backticks. Start with <!DOCTYPE html>.
 2. Embed all CSS in a <style> block.
-3. The layout MUST fill the screen. Use 'body { margin: 0; padding: 0; font-family: system-ui, sans-serif; background: #0f172a; color: white; min-height: 100vh; display: flex; flex-direction: column; }'.
+3. The layout MUST fill the screen. Use 'body { margin: 0; padding: 0; font-family: system-ui, sans-serif; background: #0f172a; color: white; min-height: 100vh; }'.
 4. CRITICAL RULE: YOU ARE STRICTLY FORBIDDEN FROM USING THE <img> TAG or CSS url() functions! DO NOT USE IMAGES. If you need a logo or avatar, use a <div> with a background color and text initials (e.g., <div class="avatar">JD</div>), or use Emojis. ANY use of external image URLs will break the system.
 5. Create a layout matching the requested Website Type and Difficulty Level. For EASY, keep it very simple (e.g., a single centered card). For HARD, make it complex with sidebars, grids, and multiple sections.
 6. The design must fit beautifully within an 800x600 window.`;
