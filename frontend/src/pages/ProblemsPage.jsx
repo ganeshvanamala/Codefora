@@ -419,7 +419,8 @@ export function ProblemsPage() {
                               <Users size={14} /> Create Room
                             </button>
                             {(() => {
-                              const dryRunIndex = PROBLEMS_DRYRUNS.findIndex(p => p.title === problem.title) + 1;
+                              const originalIndex = problems.findIndex(p => p.id === problem.id);
+                              const dryRunIndex = originalIndex >= 0 ? originalIndex + 1 : 0;
                               const hasDryRun = dryRunIndex > 0 && dryRunComponents[dryRunIndex];
                               return (
                                 <button 
