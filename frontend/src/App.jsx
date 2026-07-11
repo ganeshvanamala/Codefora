@@ -10,6 +10,7 @@ import { RoomsPage } from "./pages/RoomsPage";
 import { RoomPage } from "./pages/RoomPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import { PlaygroundPage } from "./pages/PlaygroundPage";
+import { DryRunPage } from "./pages/DryRunPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import Loader from "./components/Loader";
 import { Footer } from "./components/Footer";
@@ -96,6 +97,7 @@ const router = createBrowserRouter([
       { path: "home", element: <HomePage /> },
       { path: "rooms", element: <RoomsPage /> },
       { path: "problems", element: <ProblemsPage /> },
+      { path: "problems/:id/dry-run/:dryRunId", element: <DryRunPage /> },
       { path: "challenges", element: <ChallengesPage /> },
       { path: "admin", element: <AdminDashboardPage /> },
       { path: "profile", element: <ProfilePage /> },

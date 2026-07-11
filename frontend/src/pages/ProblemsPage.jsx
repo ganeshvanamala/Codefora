@@ -1,5 +1,7 @@
 import Editor from "@monaco-editor/react";
-import { ArrowLeft, Bot, BookOpen, CheckCircle, Loader2, MessageCircle, MessageSquare, Play, Search, Send, Sparkles, Users, X, XCircle, Plus, Lock, Zap, Filter, List, LayoutGrid, Bookmark, Star, ChevronRight, ChevronLeft, ChevronDown, Hash, Code, User } from "lucide-react";
+import { ArrowLeft, Bot, BookOpen, CheckCircle, Loader2, MessageCircle, MessageSquare, Play, Search, Send, Sparkles, Users, X, XCircle, Plus, Lock, Zap, Filter, List, LayoutGrid, Bookmark, Star, ChevronRight, ChevronLeft, ChevronDown, Hash, Code, User, Clock, Brain, AlertCircle, Maximize2, PlayCircle } from "lucide-react";
+import { dryRunComponents } from "../dryruns";
+import { PROBLEMS_DRYRUNS } from "../data/problemsDryRun";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { api } from "../api/client";
@@ -416,6 +418,29 @@ export function ProblemsPage() {
                             }}>
                               <Users size={14} /> Create Room
                             </button>
+                            {(() => {
+                              const dryRunIndex = PROBLEMS_DRYRUNS.findIndex(p => p.title === problem.title) + 1;
+                              const hasDryRun = dryRunIndex > 0 && dryRunComponents[dryRunIndex];
+                              return (
+                                <button 
+                                  className="problems-v2-btn-create" 
+                                  style={{ 
+                                    borderColor: hasDryRun ? '#F59E0B' : '#4B5563', 
+                                    color: hasDryRun ? '#F59E0B' : '#4B5563',
+                                    opacity: hasDryRun ? 1 : 0.5 
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (hasDryRun) {
+                                      navigate(`/problems/${problem.id}/dry-run/${dryRunIndex}`);
+                                    }
+                                  }}
+                                  title={hasDryRun ? "View Visual Dry Run" : "Dry run coming soon"}
+                                >
+                                  <PlayCircle size={14} /> Dry Run
+                                </button>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>
