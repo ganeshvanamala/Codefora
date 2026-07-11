@@ -508,6 +508,35 @@ export function ProblemsPage() {
                         }}>
                           Solve
                         </button>
+                        {(() => {
+                          const originalIndex = problems.findIndex(p => p.id === problem.id);
+                          const dryRunIndex = originalIndex >= 0 ? originalIndex + 1 : 0;
+                          const hasDryRun = dryRunIndex > 0 && dryRunComponents[dryRunIndex];
+                          return (
+                            <button 
+                              className="problems-v2-btn-create" 
+                              style={{ 
+                                borderColor: hasDryRun ? '#F59E0B' : '#4B5563', 
+                                color: hasDryRun ? '#F59E0B' : '#4B5563',
+                                opacity: hasDryRun ? 1 : 0.5,
+                                marginLeft: '8px',
+                                padding: '0.25rem 0.75rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (hasDryRun) {
+                                  navigate(`/problems/${problem.id}/dry-run/${dryRunIndex}`);
+                                }
+                              }}
+                              title={hasDryRun ? "View Visual Dry Run" : "Dry run coming soon"}
+                            >
+                              <PlayCircle size={14} /> Dry Run
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -584,6 +613,32 @@ export function ProblemsPage() {
             >
               <Users size={18} style={{ marginRight: "8px" }} /> Collaborate & Solve
             </button>
+            {(() => {
+              const originalIndex = problems.findIndex(p => p.id === selectedProblem.id);
+              const dryRunIndex = originalIndex >= 0 ? originalIndex + 1 : 0;
+              const hasDryRun = dryRunIndex > 0 && dryRunComponents[dryRunIndex];
+              return (
+                <button 
+                  className="button button-primary collaborate-btn" 
+                  style={{ 
+                    width: "100%", 
+                    marginBottom: "24px",
+                    backgroundColor: "transparent", 
+                    borderColor: hasDryRun ? '#F59E0B' : '#4B5563',
+                    color: hasDryRun ? '#F59E0B' : '#4B5563',
+                    opacity: hasDryRun ? 1 : 0.5 
+                  }}
+                  onClick={(e) => {
+                    if (hasDryRun) {
+                      navigate(`/problems/${selectedProblem.id}/dry-run/${dryRunIndex}`);
+                    }
+                  }}
+                  title={hasDryRun ? "View Visual Dry Run" : "Dry run coming soon"}
+                >
+                  <PlayCircle size={18} style={{ marginRight: "8px" }} /> Dry Run
+                </button>
+              );
+            })()}
 
             <p>{selectedProblem.statement}</p>
 
