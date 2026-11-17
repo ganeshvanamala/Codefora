@@ -1,9 +1,6 @@
-import { Globe2, Loader2, Play, Terminal, Keyboard, PanelLeftClose, Monitor } from "lucide-react";
-import { useState } from "react";
+import { Globe2, Loader2, Play, Terminal, Keyboard, PanelLeftClose, Monitor, Bug, Trash2, Send, TerminalSquare, AlertCircle, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { withChallengePolicy } from '../../lib/preview';
-
-// Double buffered iframe prevents the white flash when updating srcDoc
-
 
 export function ConsolePanel({ 
   output, 
@@ -27,7 +24,109 @@ export function ConsolePanel({
   const [localPanelMode, setLocalPanelMode] = useState("output");
   const panelMode = externalPanelMode !== undefined ? externalPanelMode : localPanelMode;
   const setPanelMode = externalSetPanelMode || setLocalPanelMode;
-  const [showInput, setShowInput] = useState(true); // Default to showing input side-by-side for better onboarding
+  const [showInput, setShowInput] = useState(true);
+  
+  // DevTools Console state
+  const [consoleLogs, setConsoleLogs] = useState([]);
+  const [logFilter, setLogFilter] = useState("all");
+  const [replInput, setReplInput] = useState("");
+  const logsEndRef = useRef(null);
+  const iframeRef = useRef(null);
+
+  // Listen for console messages from iframe preview
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data && event.data.type === 'CODEFORA_CONSOLE_MESSAGE') {
+        setConsoleLogs((prev) => [
+          ...prev.slice(-199),
+          {
+            id: Date.now() + Math.random(),
+            level: event.data.level || 'log',
+            message: event.data.message || '',
+            timestamp: event.data.timestamp || new Date().toLocaleTimeString()
+          }
+        ]);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  // Scroll to bottom of logs on new entry
+  useEffect(() => {
+    if (panelMode === "devtools" && logsEndRef.current) {
+      logsEndRef.current.scrollTop = logsEndRef.current.scrollHeight;
+    }
+  }, [consoleLogs, panelMode]);
+
+  const handleClearLogs = () => {
+    setConsoleLogs([]);
+    if (onClear) onClear();
+  };
+
+  const handleReplSubmit = (e) => {
+    e.preventDefault();
+    if (!replInput.trim()) return;
+    
+    const command = replInput.trim();
+    setConsoleLogs((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        level: 'command',
+        message: `> ${command}`,
+        timestamp: new Date().toLocaleTimeString()
+      }
+    ]);
+    setReplInput("");
+
+    try {
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        // Execute inside iframe context
+        const result = iframeRef.current.contentWindow.eval(command);
+        setConsoleLogs((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            level: 'result',
+            message: result !== undefined ? (typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)) : 'undefined',
+            timestamp: new Date().toLocaleTimeString()
+          }
+        ]);
+      } else {
+        // Fallback execute
+        // eslint-disable-next-line no-eval
+        const result = eval(command);
+        setConsoleLogs((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            level: 'result',
+            message: result !== undefined ? String(result) : 'undefined',
+            timestamp: new Date().toLocaleTimeString()
+          }
+        ]);
+      }
+    } catch (err) {
+      setConsoleLogs((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          level: 'error',
+          message: `Uncaught ${err.name}: ${err.message}`,
+          timestamp: new Date().toLocaleTimeString()
+        }
+      ]);
+    }
+  };
+
+  const filteredLogs = consoleLogs.filter((item) => {
+    if (logFilter === "errors") return item.level === "error";
+    if (logFilter === "warnings") return item.level === "warn";
+    if (logFilter === "info") return item.level === "info" || item.level === "log";
+    return true;
+  });
 
   const renderFormattedOutput = (rawOutput) => {
     if (!rawOutput) return <span style={{ color: 'var(--text-muted)' }}>Ready.</span>;
@@ -59,6 +158,22 @@ export function ConsolePanel({
     });
   };
 
+  const getLogBadge = (level) => {
+    switch (level) {
+      case 'error':
+        return <span style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={13} /> error</span>;
+      case 'warn':
+        return <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertTriangle size={13} /> warn</span>;
+      case 'info':
+        return <span style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '4px' }}><Info size={13} /> info</span>;
+      case 'command':
+        return <span style={{ color: '#a855f7', fontWeight: 'bold' }}>eval</span>;
+      case 'result':
+        return <span style={{ color: '#10b981' }}>&lt;</span>;
+      default:
+        return <span style={{ color: '#94a3b8' }}>log</span>;
+    }
+  };
 
   return (
     <section className="console-panel tour-console" style={style}>
@@ -68,10 +183,25 @@ export function ConsolePanel({
           <button 
             className={panelMode === "output" ? "active" : ""} 
             onClick={() => setPanelMode("output")}
+            title="Standard Runner & Stdin"
           >
             <Terminal size={15} /> 
-            <span>Console</span>
+            <span>Runner</span>
           </button>
+
+          <button 
+            className={panelMode === "devtools" ? "active" : ""} 
+            onClick={() => setPanelMode("devtools")}
+            title="Live Browser DevTools Console & REPL"
+            style={{ position: 'relative' }}
+          >
+            <Bug size={15} /> 
+            <span>Console</span>
+            {consoleLogs.some(l => l.level === 'error') && (
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', position: 'absolute', top: '8px', right: '6px' }} />
+            )}
+          </button>
+
           {preview && (
             <button 
               className={`${panelMode === "preview" ? "active" : ""} tour-web-preview`} 
@@ -107,6 +237,29 @@ export function ConsolePanel({
               <Keyboard size={14} style={{ color: 'var(--primary-orange)' }} />
               <span>Input</span>
             </button>
+          )}
+
+          {panelMode === "devtools" && (
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginRight: '8px' }}>
+              {["all", "info", "warnings", "errors"].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setLogFilter(filter)}
+                  style={{
+                    background: logFilter === filter ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    color: logFilter === filter ? '#fff' : '#94a3b8',
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    textTransform: 'capitalize',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           )}
           
           {activeProblem && (
@@ -188,7 +341,7 @@ export function ConsolePanel({
 
           <button 
             className="button secondary console-run-btn" 
-            onClick={onClear}
+            onClick={panelMode === "devtools" ? handleClearLogs : onClear}
             style={{
               height: '30px',
               borderRadius: '6px',
@@ -198,10 +351,14 @@ export function ConsolePanel({
               fontWeight: '500',
               fontSize: '12px',
               cursor: 'pointer',
-              padding: '0 12px'
+              padding: '0 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
             }}
           >
-            Clear
+            <Trash2 size={12} />
+            <span>Clear</span>
           </button>
           
           {onClose && (
@@ -270,12 +427,102 @@ export function ConsolePanel({
               {renderFormattedOutput(output)}
             </div>
           )
+        ) : panelMode === "devtools" ? (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', boxSizing: 'border-box' }}>
+            <div 
+              ref={logsEndRef}
+              style={{ 
+                flex: 1, 
+                padding: '12px 16px', 
+                overflowY: 'auto', 
+                fontFamily: '"Cascadia Code", "Fira Code", monospace', 
+                fontSize: '12px', 
+                lineHeight: '1.6',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px'
+              }}
+            >
+              {filteredLogs.length === 0 ? (
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', padding: '12px 0' }}>
+                  Console ready. Logs, errors, and warnings from your preview application will appear here live.
+                </div>
+              ) : (
+                filteredLogs.map((log) => (
+                  <div 
+                    key={log.id} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      gap: '8px',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      background: log.level === 'error' ? 'rgba(239, 68, 68, 0.1)' : log.level === 'warn' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                      borderLeft: log.level === 'error' ? '3px solid #ef4444' : log.level === 'warn' ? '3px solid #f59e0b' : '3px solid transparent'
+                    }}
+                  >
+                    <span style={{ color: '#64748b', fontSize: '10px', minWidth: '55px', marginTop: '2px' }}>{log.timestamp}</span>
+                    <span style={{ minWidth: '45px', fontSize: '11px', fontWeight: 'bold' }}>{getLogBadge(log.level)}</span>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: log.level === 'error' ? '#fca5a5' : log.level === 'warn' ? '#fde68a' : '#f8fafc', flex: 1, fontFamily: 'inherit' }}>
+                      {log.message}
+                    </pre>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Live Interactive REPL Input */}
+            <form 
+              onSubmit={handleReplSubmit}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <span style={{ color: '#f97316', fontWeight: 'bold', fontFamily: 'monospace' }}>&gt;</span>
+              <input 
+                type="text"
+                value={replInput}
+                onChange={(e) => setReplInput(e.target.value)}
+                placeholder="Evaluate JavaScript expression in live app context..."
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#fff',
+                  fontFamily: '"Cascadia Code", "Fira Code", monospace',
+                  fontSize: '12px'
+                }}
+              />
+              <button
+                type="submit"
+                disabled={!replInput.trim()}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: replInput.trim() ? '#f97316' : '#64748b',
+                  cursor: replInput.trim() ? 'pointer' : 'default',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '4px'
+                }}
+              >
+                <Send size={14} />
+              </button>
+            </form>
+          </div>
         ) : preview?.showPreview ? (
-            <div className="preview-container" style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+          <div className="preview-container" style={{ width: '100%', height: '100%', overflow: 'auto' }}>
             <iframe
+              ref={iframeRef}
               className="preview-iframe"
               title="Web preview"
-              sandbox={preview.challengeMode ? '' : 'allow-scripts allow-modals allow-popups allow-forms'}
+              sandbox={preview.challengeMode ? '' : 'allow-scripts allow-modals allow-popups allow-forms allow-same-origin'}
               srcDoc={preview.challengeMode ? withChallengePolicy(preview.previewDoc) : preview.previewDoc}
               style={{ width: preview.challengeMode ? 800 : '100%', height: '100%', border: 'none' }}
             />
@@ -283,11 +530,12 @@ export function ConsolePanel({
         ) : (
           <div className="console-output empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
             <Globe2 size={40} style={{ opacity: 0.2, marginBottom: '16px' }} />
-            <p>No HTML file detected for preview.</p>
-            <p style={{ fontSize: '12px', opacity: 0.7, marginTop: '8px' }}>Create an index.html file to view it here.</p>
+            <p>No previewable application files detected.</p>
+            <p style={{ fontSize: '12px', opacity: 0.7, marginTop: '8px' }}>Use the Templates button in Explorer to start a React or Web App.</p>
           </div>
         )}
       </div>
     </section>
   );
 }
+

@@ -3,6 +3,18 @@ import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { isLocalIdentityAllowed, saveCodeforaSession } from "../lib/session";
 import { subscribeProfileSync } from "../lib/profileSync";
+import { isAdminRole, isDefaultAdminEmail, isGuestUser } from "../lib/userAccess";
+
+function getStoredAdminRole(uid) {
+  if (!uid || typeof window === "undefined") return false;
+  try {
+    const storedUid = localStorage.getItem("codefora_user_id");
+    const storedRole = localStorage.getItem("codefora_role");
+    return storedUid === uid && isAdminRole(storedRole);
+  } catch {
+    return false;
+  }
+}
 
 function getManualUser() {
   try {
@@ -25,22 +37,29 @@ function getManualUser() {
 
 export const useAuth = () => {
   const [user, setUser] = useState(() => getManualUser());
+  const [serverIsAdmin, setServerIsAdmin] = useState(() => getStoredAdminRole(getManualUser()?.uid));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!auth) {
-      setUser(getManualUser());
+      const manualUser = getManualUser();
+      setUser(manualUser);
+      setServerIsAdmin(getStoredAdminRole(manualUser?.uid));
       setLoading(false);
       return undefined;
     }
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser || getManualUser());
+      const nextUser = currentUser || getManualUser();
+      setUser(nextUser);
+      setServerIsAdmin(getStoredAdminRole(nextUser?.uid));
       setLoading(false);
     }, (err) => {
       setError(err);
-      setUser(getManualUser());
+      const manualUser = getManualUser();
+      setUser(manualUser);
+      setServerIsAdmin(getStoredAdminRole(manualUser?.uid));
       setLoading(false);
     });
 
@@ -52,8 +71,12 @@ export const useAuth = () => {
       // Firebase remains authoritative for signed-in accounts. Browser sessions
       // are only used when there is no Firebase user, including guests.
       if (!auth?.currentUser) {
-        setUser(getManualUser());
+        const manualUser = getManualUser();
+        setUser(manualUser);
+        setServerIsAdmin(getStoredAdminRole(manualUser?.uid));
         setLoading(false);
+      } else {
+        setServerIsAdmin(getStoredAdminRole(auth.currentUser.uid));
       }
     };
 
@@ -61,15 +84,16 @@ export const useAuth = () => {
     return () => window.removeEventListener("codefora:session-changed", syncBrowserSession);
   }, []);
 
-  // This is only a client-side navigation/display hint. Admin API access is enforced by backend token checks.
-  const isAdmin = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(user?.email);
+  // Client-side navigation/display hint backed by default admin emails and server-synced profile role.
+  // Admin API access is always enforced by backend token and role checks.
+  const isAdmin = Boolean(user && !isGuestUser(user)) && (isDefaultAdminEmail(user?.email) || serverIsAdmin);
 
   useEffect(() => {
     if (user?.uid) {
       saveCodeforaSession({
         uid: user.uid,
         displayName: user.displayName || user.email?.split("@")[0] || "Developer",
-        role: isAdmin ? "admin" : "user"
+        ...(isAdmin ? { role: "admin" } : {})
       });
     }
   }, [isAdmin, user]);
@@ -78,6 +102,9 @@ export const useAuth = () => {
     return subscribeProfileSync((profile) => {
       setUser((current) => {
         if (!current?.uid || profile.uid !== current.uid) return current;
+        if (profile.isAdmin !== undefined || profile.role !== undefined) {
+          setServerIsAdmin(Boolean(profile.isAdmin) || isAdminRole(profile.role));
+        }
         return {
           ...current,
           displayName: profile.displayName || current.displayName,

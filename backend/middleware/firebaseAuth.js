@@ -17,12 +17,28 @@ export async function verifySocketIdentity(token, localUserId) {
   throw new Error('Sign in again to join this challenge.');
 }
 
+function decodeUnverifiedJwtPayload(token) {
+  try {
+    const parts = String(token || "").split(".");
+    if (parts.length !== 3) return null;
+    const json = Buffer.from(parts[1], "base64url").toString("utf8");
+    const parsed = JSON.parse(json);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function localMockUser(request) {
-  const localUserId = String(request.headers["x-codefora-user-id"] || request.params.userId || "").trim();
+  const authHeader = request.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  const jwtPayload = decodeUnverifiedJwtPayload(token);
+  const localUserId = String(request.headers["x-codefora-user-id"] || request.params.userId || jwtPayload?.user_id || jwtPayload?.sub || "").trim();
+  const localEmail = String(request.headers["x-codefora-user-email"] || jwtPayload?.email || "").trim().toLowerCase();
   return {
     uid: localUserId || "mock-uid",
-    name: request.headers["x-codefora-user-name"] || "Local Developer",
-    email: "",
+    name: request.headers["x-codefora-user-name"] || jwtPayload?.name || "Local Developer",
+    email: localEmail,
     firebase: { sign_in_provider: "local" }
   };
 }

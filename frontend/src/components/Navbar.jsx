@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { UserCircle2, LogOut, User, Bell, Users, MessageCircle, UserMinus, Copy } from "lucide-react";
+import { UserCircle2, LogOut, User, Bell, Users, MessageCircle, UserMinus, Copy, LayoutDashboard } from "lucide-react";
 import { createPortal } from "react-dom";
 import { BrandButton } from "./BrandButton";
 import { logoutUser } from "../lib/firebase";
@@ -769,6 +769,21 @@ export function Navbar() {
                 boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
                 display: 'flex', flexDirection: 'column', gap: '4px'
               }}>
+                {isAdmin && (
+                  <button
+                    onClick={() => { setShowDropdown(false); navigate('/admin'); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 12px', background: 'transparent', border: 'none',
+                      color: 'var(--primary-accent)', cursor: 'pointer', borderRadius: '4px', textAlign: 'left',
+                      fontSize: '14px', width: '100%', fontWeight: 600
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 145, 0, 0.12)'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <LayoutDashboard size={16} /> Admin Dashboard
+                  </button>
+                )}
                 <button 
                   onClick={() => { setShowDropdown(false); navigate('/profile'); }}
                   style={{

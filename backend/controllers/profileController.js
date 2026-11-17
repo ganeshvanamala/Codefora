@@ -1,4 +1,5 @@
 import { createFirestore, admin } from "../config/firebase.js";
+import { isDefaultAdminEmail, isSuperAdminEmail } from "../middleware/adminAuth.js";
 import { createHash } from "crypto";
 import fs from "fs/promises";
 import path from "path";
@@ -599,7 +600,15 @@ export function createProfileController() {
           photoURL: firebaseUser.picture,
           providerId: firebaseUser.firebase?.sign_in_provider || "firebase"
         });
-        return response.json({ ...profile, id: firebaseUser.uid });
+        const isSuperAdmin = isSuperAdminEmail(firebaseUser.email);
+        const isAdmin = isSuperAdmin || isDefaultAdminEmail(firebaseUser.email) || profile.role === "admin";
+        return response.json({
+          ...profile,
+          id: firebaseUser.uid,
+          role: isAdmin ? "admin" : (profile.role || "user"),
+          isAdmin,
+          isSuperAdmin
+        });
       } catch (error) {
         console.warn(`Profile bootstrap failed: ${error.message}`);
         return response.status(500).json({ error: "Could not prepare your profile." });

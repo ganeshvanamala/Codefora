@@ -8,14 +8,14 @@ import { saveUsername } from "../lib/navigation";
 import { DeferredBackgroundVideo } from "../components/DeferredBackgroundVideo";
 import { useAuth } from "../hooks/useAuth";
 import { saveCodeforaSession } from "../lib/session";
-import { isGuestUser } from "../lib/userAccess";
+import { isDefaultAdminEmail, isGuestUser } from "../lib/userAccess";
 
 const loadHomeVideo = () => import("../../assets/homevideo.mp4");
 
 export default function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin: authIsAdmin } = useAuth();
   
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState("login");
@@ -33,23 +33,23 @@ export default function SignInPage() {
   function getPostLoginPath(accountOrRole) {
     const email = typeof accountOrRole === "string" ? "" : accountOrRole?.email;
     const role = typeof accountOrRole === "string" ? accountOrRole : "";
-    const isAdmin = role === "admin" || ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(email);
+    const isAdmin = role === "admin" || isDefaultAdminEmail(email);
     return returnTo || (isAdmin ? "/admin" : "/home");
   }
 
   useEffect(() => {
     if (!loading && user && !isGuestUser(user)) {
-      const isAdmin = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(user.email);
+      const isAdmin = authIsAdmin || isDefaultAdminEmail(user.email);
       navigate(returnTo || (isAdmin ? '/admin' : '/home'), { replace: true });
     }
-  }, [user, loading, navigate, returnTo]);
+  }, [user, loading, authIsAdmin, navigate, returnTo]);
 
   async function handleGoogleSignIn() {
     try {
       const result = await signInWithGoogle();
       const account = result?.user;
       
-      const role = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(account.email) ? "admin" : "user";
+      const role = isDefaultAdminEmail(account?.email) ? "admin" : "user";
       
       const displayName = account?.displayName || account?.email?.split("@")[0] || "Developer";
       saveUsername(displayName);
@@ -86,7 +86,7 @@ export default function SignInPage() {
     const displayName = account.displayName || account.username;
     saveUsername(displayName);
     
-    const isAdmin = ["ganeshvanamala16@gmail.com", "roopasri061216@gmail.com"].includes(account.email);
+    const isAdmin = isDefaultAdminEmail(account.email);
     saveCodeforaSession({ uid: account.userId, displayName, role: isAdmin ? "admin" : "user" });
 
     setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });

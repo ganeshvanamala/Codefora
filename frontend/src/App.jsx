@@ -8,8 +8,9 @@ import { useLocation } from "react-router-dom";
 import { trackPageView } from "./lib/analytics";
 import { useAuth } from "./hooks/useAuth";
 import { api } from "./api/client";
-import { isGuestUser } from "./lib/userAccess";
+import { isGuestUser, isDefaultAdminEmail, isAdminRole } from "./lib/userAccess";
 import { saveCodeforaSession } from "./lib/session";
+import { publishProfileSync } from "./lib/profileSync";
 
 import { socket } from "./lib/socket";
 import GlobalAiChat from "./components/GlobalAiChat";
@@ -66,8 +67,11 @@ function LoaderManager({ children }) {
         const profileDisplayName = String(profile.displayName || "").trim();
         const authDisplayName = user.displayName || user.email?.split("@")[0] || "Developer";
         const displayName = !profileDisplayName || profileDisplayName === "Someone" ? authDisplayName : profileDisplayName;
+        const resolvedIsAdmin = Boolean(profile.isAdmin) || isAdminRole(profile.role) || isDefaultAdminEmail(user.email);
+        const role = resolvedIsAdmin ? "admin" : "user";
         document.documentElement.dataset.community = comm;
-        saveCodeforaSession({ uid: user.uid, displayName, community: comm });
+        saveCodeforaSession({ uid: user.uid, displayName, community: comm, role });
+        publishProfileSync({ uid: user.uid, displayName, community: comm, role, isAdmin: resolvedIsAdmin });
         window.dispatchEvent(new Event("profileUpdated"));
 
         socket.connect();

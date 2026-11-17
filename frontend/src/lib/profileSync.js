@@ -19,6 +19,8 @@ export function publishProfileSync(profile = {}) {
     emotionId: profile.emotionId || "",
     photoURL: profile.photoURL || "",
     community: profile.community || "",
+    ...(profile.role !== undefined ? { role: profile.role } : {}),
+    ...(profile.isAdmin !== undefined ? { isAdmin: Boolean(profile.isAdmin) } : {}),
     updatedAt: Date.now()
   };
 

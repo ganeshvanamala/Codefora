@@ -4,9 +4,22 @@ import { fileURLToPath } from "url";
 import { createAuth, createFirestore } from "../config/firebase.js";
 import { globalOnlineUsers } from "../utils/presenceTracker.js";
 import { ensureProfileRecord } from "./profileController.js";
+import { isDefaultAdminEmail } from "../middleware/adminAuth.js";
+import { runtimeDataPath } from "../utils/runtimeDataPath.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const localProblemsPath = path.join(__dirname, "../data/problems.json");
+const localUsersPath = runtimeDataPath("manualUsers.json");
+
+async function readLocalUsersMap() {
+  try {
+    const data = await fs.readFile(localUsersPath, "utf8");
+    const parsed = JSON.parse(data);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 async function readJSON(filePath) {
   try {
@@ -46,11 +59,14 @@ export function createAdminController(roomRepository, { submissionService, audit
         const rooms = roomRepository.listAll();
 
         let totalUsers = 0;
-        if (auth) {
+        if (auth && !auth.isMock && typeof auth.listUsers === "function") {
           // For small user bases, we can list all to get count.
           // For larger ones, we'd use a metadata counter or loop through pages.
           const listUsersResult = await auth.listUsers(1000);
           totalUsers = listUsersResult.users.length;
+        } else {
+          const localUsers = await readLocalUsersMap();
+          totalUsers = Object.keys(localUsers).length;
         }
 
         const submissions = submissionService ? await submissionService.list(1_000) : [];
@@ -88,7 +104,35 @@ export function createAdminController(roomRepository, { submissionService, audit
 
     getUsers: async (request, response) => {
       try {
-        if (!auth) return response.json([]);
+        if (!auth || auth.isMock || typeof auth.listUsers !== "function") {
+          const localUsers = await readLocalUsersMap();
+          const usersList = Object.entries(localUsers).map(([userId, entry]) => {
+            const profile = entry?.profile || {};
+            const email = entry?.email || "";
+            const effectiveRole = profile.role === "admin" || isDefaultAdminEmail(email) ? "admin" : "user";
+            return {
+              userId,
+              friendCode: profile.friendCode || "",
+              name: profile.displayName || email.split("@")[0] || "Developer",
+              email,
+              emotionId: profile.emotionId || "",
+              photoURL: profile.photoURL || "",
+              rating: profile.rating || 1500,
+              solved: profile.solvedCount || 0,
+              status: globalOnlineUsers.has(userId) ? "Online" : "Offline",
+              role: effectiveRole,
+              moderationStatus: profile.accountStatus || "active",
+              createdAt: entry?.createdAt || null,
+              lastActive: entry?.lastLoginAt || entry?.updatedAt || entry?.createdAt || null
+            };
+          });
+          usersList.sort((a, b) => {
+            if (a.status === "Online" && b.status !== "Online") return -1;
+            if (b.status === "Online" && a.status !== "Online") return 1;
+            return new Date(b.lastActive || 0) - new Date(a.lastActive || 0);
+          });
+          return response.json(usersList);
+        }
 
 
         const maxUsersToFetch = 1000;
@@ -97,7 +141,7 @@ export function createAdminController(roomRepository, { submissionService, audit
 
         // Fetch profiles from Firestore
         const profilesMap = {};
-        if (db) {
+        if (db && !db.isMock) {
           // Fetch up to 1000 recent profiles to match Auth limits without memory leaking
           const profilesSnap = await db.collection("users").orderBy("updatedAt", "desc").limit(maxUsersToFetch).get();
           profilesSnap.forEach(doc => {
@@ -127,7 +171,7 @@ export function createAdminController(roomRepository, { submissionService, audit
             rating: profile.rating || 1500,
             solved: profile.solvedCount || 0,
             status: globalOnlineUsers.has(user.uid) ? "Online" : "Offline",
-            role: profile.role || "user",
+            role: profile.role === "admin" || isDefaultAdminEmail(user.email) ? "admin" : (profile.role || "user"),
             moderationStatus: user.disabled ? "blocked" : (profile.accountStatus || "active"),
             createdAt: user.metadata.creationTime,
             lastActive: user.metadata.lastSignInTime || user.metadata.creationTime
@@ -158,7 +202,21 @@ export function createAdminController(roomRepository, { submissionService, audit
           return response.status(400).json({ error: "Role must be admin or user." });
         }
 
-        if (!db || db.isMock) return response.status(500).json({ error: "Database not available" });
+        if (!db || db.isMock) {
+          if (process.env.NODE_ENV === "production") {
+            return response.status(500).json({ error: "Database not available" });
+          }
+          const localUsers = await readLocalUsersMap();
+          const existing = localUsers[id] || {};
+          localUsers[id] = {
+            ...existing,
+            profile: { ...(existing.profile || {}), role },
+            updatedAt: Date.now()
+          };
+          await writeJSON(localUsersPath, localUsers);
+          recordAudit(request, "user.role_changed", id, `Role changed to ${role}`);
+          return response.json({ success: true, role });
+        }
 
         const userRef = db.collection("users").doc(id);
         const userDoc = await userRef.get();

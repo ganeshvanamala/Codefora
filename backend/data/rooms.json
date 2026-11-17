@@ -1,1 +1,134 @@
-[]
+[
+  {
+    "id": "CF-1AK8",
+    "name": "ganesh vanamala's Relay muso83q2",
+    "visibility": "private",
+    "files": [],
+    "messages": [],
+    "users": [],
+    "notes": {
+      "text": "",
+      "draws": []
+    },
+    "activeFile": null,
+    "timer": {
+      "endTime": null,
+      "duration": 1500,
+      "isRunning": false
+    },
+    "history": [],
+    "hostName": "ganesh vanamala",
+    "ownerUserId": "4aY3w2Zz4kh4D15rd58V8xMZrk72",
+    "hostToken": "jf9csx3cqk2q6g",
+    "inviteCode": "VZFKAJ0",
+    "problemId": null,
+    "max": 4,
+    "isChallenge": false,
+    "targetImage": null,
+    "challengeId": null,
+    "challengeDifficulty": "easy",
+    "readOnly": true,
+    "sourceWorkId": null,
+    "completedAt": null,
+    "relay": {
+      "version": 2,
+      "mode": "frontend",
+      "status": "ENDED",
+      "selectionEndsAt": null,
+      "members": [
+        {
+          "userId": "4aY3w2Zz4kh4D15rd58V8xMZrk72",
+          "name": "ganesh vanamala",
+          "ready": false,
+          "online": false,
+          "lastSeenAt": null
+        }
+      ],
+      "tasks": [
+        {
+          "id": "navigation",
+          "title": "Navigation",
+          "description": "Build a compact navigation bar with a brand and three links.",
+          "fileName": "navigation.html",
+          "language": "html",
+          "signature": null,
+          "code": "<style>body{margin:0;padding:24px;background:#101827;color:#eef6ff;font:16px system-ui}h2{color:#5eead4}</style>\n<section>\n  <h2>Navigation</h2>\n  <p>Build this section here.</p>\n</section>",
+          "ownerId": null,
+          "ownerName": null,
+          "revision": 0,
+          "done": false
+        },
+        {
+          "id": "hero",
+          "title": "Hero",
+          "description": "Build a headline, supporting description, and primary call to action.",
+          "fileName": "hero.html",
+          "language": "html",
+          "signature": null,
+          "code": "<style>body{margin:0;padding:24px;background:#101827;color:#eef6ff;font:16px system-ui}h2{color:#5eead4}</style>\n<section>\n  <h2>Hero</h2>\n  <p>Build this section here.</p>\n</section>",
+          "ownerId": null,
+          "ownerName": null,
+          "revision": 0,
+          "done": false
+        },
+        {
+          "id": "features",
+          "title": "Features",
+          "description": "Build three feature cards that stack at mobile widths.",
+          "fileName": "features.html",
+          "language": "html",
+          "signature": null,
+          "code": "<style>body{margin:0;padding:24px;background:#101827;color:#eef6ff;font:16px system-ui}h2{color:#5eead4}</style>\n<section>\n  <h2>Features</h2>\n  <p>Build this section here.</p>\n</section>",
+          "ownerId": null,
+          "ownerName": null,
+          "revision": 0,
+          "done": false
+        },
+        {
+          "id": "pricing",
+          "title": "Pricing",
+          "description": "Build a pricing section with clear plan names and features.",
+          "fileName": "pricing.html",
+          "language": "html",
+          "signature": null,
+          "code": "<style>body{margin:0;padding:24px;background:#101827;color:#eef6ff;font:16px system-ui}h2{color:#5eead4}</style>\n<section>\n  <h2>Pricing</h2>\n  <p>Build this section here.</p>\n</section>",
+          "ownerId": null,
+          "ownerName": null,
+          "revision": 0,
+          "done": false
+        },
+        {
+          "id": "footer",
+          "title": "Footer",
+          "description": "Build contact links, a short brand description, and copyright text.",
+          "fileName": "footer.html",
+          "language": "html",
+          "signature": null,
+          "code": "<style>body{margin:0;padding:24px;background:#101827;color:#eef6ff;font:16px system-ui}h2{color:#5eead4}</style>\n<section>\n  <h2>Footer</h2>\n  <p>Build this section here.</p>\n</section>",
+          "ownerId": null,
+          "ownerName": null,
+          "revision": 0,
+          "done": false
+        }
+      ],
+      "submittedAt": null,
+      "endedAt": 1791048906378,
+      "result": null,
+      "activity": [
+        {
+          "id": "1791048823337-792w07",
+          "text": "ganesh vanamala joined the Relay",
+          "createdAt": 1791048823337
+        }
+      ],
+      "chat": [],
+      "notes": {
+        "text": "",
+        "draws": []
+      }
+    },
+    "warArena": null,
+    "createdAt": 1791048821996,
+    "updatedAt": 1791048906378
+  }
+]

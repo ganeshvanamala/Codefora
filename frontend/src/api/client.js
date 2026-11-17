@@ -35,6 +35,9 @@ async function request(path, options) {
       headers["Authorization"] = `Bearer ${idToken}`;
       headers["X-Codefora-User-Id"] = auth.currentUser.uid;
       headers["X-Codefora-User-Name"] = auth.currentUser.displayName || auth.currentUser.email?.split("@")[0] || "Developer";
+      if (auth.currentUser.email) {
+        headers["X-Codefora-User-Email"] = auth.currentUser.email;
+      }
     } catch (e) {
       console.warn("Could not get Firebase ID token", e);
     }

@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../api/client';
 import { API_URL } from '../config';
+import { isGuestUser } from '../lib/userAccess';
+import { saveCodeforaSession } from '../lib/session';
+import { publishProfileSync } from '../lib/profileSync';
 import { 
   Users, Server, Code, Trophy, 
   Activity, BarChart3, CheckCircle2, ShieldAlert, Settings, LayoutDashboard,
@@ -30,6 +33,7 @@ export default function AdminDashboardPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [adminAccessError, setAdminAccessError] = useState("");
+  const [adminLoadError, setAdminLoadError] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [adminSession, setAdminSession] = useState(null);
   const [systemHealth, setSystemHealth] = useState(null);
@@ -60,8 +64,16 @@ export default function AdminDashboardPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [adminMe, healthData, s, r, p, u, f, submissionData, auditData] = await Promise.all([
-        api.request("/api/admin/me"),
+      setAdminLoadError("");
+      const adminMe = await api.request("/api/admin/me");
+      setAdminSession(adminMe);
+      setIsSuperAdmin(Boolean(adminMe?.isSuperAdmin));
+      if (user?.uid) {
+        saveCodeforaSession({ uid: user.uid, role: "admin" });
+        publishProfileSync({ uid: user.uid, role: "admin", isAdmin: true });
+      }
+
+      const [healthData, s, r, p, u, f, submissionData, auditData] = await Promise.all([
         api.request("/api/health").catch(() => null),
         api.request("/api/admin/stats"),
         api.request("/api/admin/rooms"),
@@ -71,7 +83,6 @@ export default function AdminDashboardPage() {
         api.request("/api/admin/submissions").catch(() => []),
         api.request("/api/admin/audit-log").catch(() => [])
       ]);
-      setAdminSession(adminMe);
       setSystemHealth(healthData);
       setStatsData(s);
       setIsSuperAdmin(adminMe.isSuperAdmin || s.isSuperAdmin || false);
@@ -90,11 +101,13 @@ export default function AdminDashboardPage() {
       setAdminAccessError("");
     } catch (err) {
       console.error("Failed to fetch admin data:", err);
-      const message = err.message.toLowerCase();
+      const message = String(err?.message || "").toLowerCase();
       if (message.includes("401") || message.includes("expired") || message.includes("invalid")) {
         setAdminAccessError("expired");
       } else if (message.includes("403") || message.includes("denied") || message.includes("forbidden")) {
         setAdminAccessError("forbidden");
+      } else {
+        setAdminLoadError(err?.message || "Could not load Admin Dashboard data.");
       }
     } finally {
       setLoading(false);
@@ -103,18 +116,13 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
+    if (!user || isGuestUser(user)) {
       setLoading(false);
       setAdminAccessError("login");
       return;
     }
-    if (!isAdmin) {
-      setLoading(false);
-      setAdminAccessError("forbidden");
-      return;
-    }
     fetchData();
-  }, [authLoading, user, isAdmin]);
+  }, [authLoading, user?.uid, user?.email, isAdmin]);
 
   const handleRoomDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this room?")) return;
@@ -314,6 +322,29 @@ export default function AdminDashboardPage() {
             style={{ marginTop: '22px' }}
           >
             {copy.action}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (adminLoadError && !adminSession) {
+    return (
+      <div className="admin-dashboard-container">
+        <Navbar />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '20px' }}>
+          <AlertTriangle size={56} style={{ color: '#f59e0b', marginBottom: '18px' }} />
+          <h2 style={{ marginBottom: '10px' }}>Unable to Load Admin Dashboard</h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', maxWidth: '440px' }}>
+            {adminLoadError}
+          </p>
+          <button
+            type="button"
+            className="admin-button primary"
+            onClick={fetchData}
+            style={{ marginTop: '22px' }}
+          >
+            <RefreshCw size={14} /> Retry
           </button>
         </div>
       </div>

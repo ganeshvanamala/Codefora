@@ -1,9 +1,11 @@
 {
   "4aY3w2Zz4kh4D15rd58V8xMZrk72": {
     "profile": {
-      "stats": {
-        "roomsJoined": 3
-      },
+      "displayName": "ganesh vanamala",
+      "bio": "Building consistency one problem at a time.",
+      "theme": "dark",
+      "community": "loop",
+      "friends": [],
       "activities": [
         {
           "type": "room_join",
@@ -186,12 +188,17 @@
           "timestamp": 1781209155215
         }
       ],
-      "displayName": "ganesh vanamala",
-      "bio": "Building consistency one problem at a time.",
+      "stats": {
+        "roomsJoined": 4
+      },
+      "photoURL": "",
       "emotionId": "loop:Screenshot 2026-05-10 191715.png",
-      "community": "loop",
       "friendCode": "13219873"
     },
-    "updatedAt": 1783527140052
+    "updatedAt": 1791048822007,
+    "email": "",
+    "authProvider": "local",
+    "createdAt": 1791048816917,
+    "lastLoginAt": 1791048816917
   }
 }

@@ -48,7 +48,7 @@ export function createFeedbackController({ auditService } = {}) {
         };
 
         // Save to Firestore (primary — survives deploys)
-        if (db) {
+        if (db && !db.isMock) {
           await db.collection("feedback").doc(feedback.id).set(feedback);
           console.log(`✓ Feedback saved to Firestore: ${feedback.id}`);
         }
@@ -72,7 +72,7 @@ export function createFeedbackController({ auditService } = {}) {
     getAll: async (request, response) => {
       try {
         // Try Firestore first (primary — persistent)
-        if (db) {
+        if (db && !db.isMock) {
           const snapshot = await db.collection("feedback").orderBy("createdAt", "desc").get();
           const feedback = [];
           snapshot.forEach(doc => feedback.push(doc.data()));
@@ -113,7 +113,7 @@ export function createFeedbackController({ auditService } = {}) {
         };
         let updatedFeedback = null;
 
-        if (db) {
+        if (db && !db.isMock) {
           const feedbackRef = db.collection("feedback").doc(id);
           const feedbackDoc = await feedbackRef.get();
           if (feedbackDoc.exists) {
